@@ -1,0 +1,313 @@
+{extends file="../layout.html"}
+
+{block name="title"}Orders — {$site_name|escape}{/block}
+
+{block name="head"}
+<style>
+/* ── DataTables footer ── */
+.ord-dt-bottom {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: .5rem;
+	margin-top: .75rem;
+}
+.dataTables_info {
+	font-size: .82rem;
+	color: var(--nc-text-dim);
+}
+.dataTables_paginate {
+	display: flex;
+	align-items: center;
+	gap: .25rem;
+}
+.dataTables_paginate span { display: contents; }
+.dataTables_paginate .paginate_button {
+	display: inline-block;
+	padding: .3rem .65rem;
+	border: 1px solid var(--nc-border, #d1d5db);
+	border-radius: .375rem;
+	font-size: .82rem;
+	cursor: pointer;
+	background: var(--nc-bg, #fff);
+	color: var(--nc-text, #111) !important;
+	text-decoration: none;
+	user-select: none;
+	transition: background .15s;
+}
+.dataTables_paginate .paginate_button:hover:not(.disabled) {
+	background: var(--nc-bg-alt, #f3f4f6);
+}
+.dataTables_paginate .paginate_button.current,
+.dataTables_paginate .paginate_button.current:hover {
+	background: linear-gradient(to bottom,
+		color-mix(in srgb, var(--nc-primary) 70%, #FF0000),
+		color-mix(in srgb, var(--nc-primary) 70%, #000000)) !important;
+	border-color: var(--nc-primary);
+}
+#ord-table_wrapper .paginate_button.current,
+#ord-table_wrapper .paginate_button.current:hover {
+	color: var(--nc-primary-text, #fff) !important;
+}
+.dataTables_paginate .paginate_button.disabled,
+.dataTables_paginate .paginate_button.disabled:hover {
+	opacity: .4;
+	cursor: default;
+}
+/* ── Sort arrows ── */
+table.dataTable thead th.sorting::after        { content: ' ⇅'; opacity: .35; font-size: .7em; }
+table.dataTable thead th.sorting_asc::after    { content: ' ↑'; opacity: .7;  font-size: .7em; }
+table.dataTable thead th.sorting_desc::after   { content: ' ↓'; opacity: .7;  font-size: .7em; }
+table.dataTable thead th.sorting,
+table.dataTable thead th.sorting_asc,
+table.dataTable thead th.sorting_desc { cursor: pointer; }
+/* ── Clickable cells ── */
+#ord-table td.ord-id-cell,
+#ord-table td.ord-cust-cell { cursor: pointer; }
+#ord-table td.ord-id-cell:hover  { background: #b8cce8 !important; }
+#ord-table td.ord-cust-cell:hover { background: #c6d9b0 !important; }
+/* ── Search ── */
+.ord-search-input {
+	padding: .43rem .7rem;
+	border: 1px solid var(--nc-border, #d1d5db);
+	border-radius: .375rem;
+	font-size: .87rem;
+	color: var(--nc-text);
+	background: var(--nc-bg);
+	outline: none;
+	width: 230px;
+	transition: border-color .15s, box-shadow .15s;
+}
+.ord-search-input:focus {
+	border-color: var(--nc-primary, #2563eb);
+	box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+}
+/* ── Inline status select ── */
+.status-select {
+	appearance: none;
+	-webkit-appearance: none;
+	padding: .22rem .55rem;
+	border: 1px solid transparent;
+	border-radius: .3rem;
+	font-size: .78rem;
+	font-weight: 600;
+	cursor: pointer;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right .4rem center;
+	padding-right: 1.4rem;
+	transition: box-shadow .15s;
+}
+.status-select:focus { outline: none; box-shadow: 0 0 0 2px rgba(37,99,235,.2); }
+.status-select.saving { opacity: .6; pointer-events: none; }
+</style>
+{/block}
+
+{block name="content"}
+
+<div class="nc-toolbar">
+	<div style="display:flex;gap:.75rem;align-items:center">
+		<span style="font-size:.88rem;color:var(--nc-text-dim)" id="ord-count"></span>
+	</div>
+	<button class="btn btn-danger" id="btn-bulk-delete" disabled style="float:right;">Delete Selected</button>
+	<input type="search" id="ord-search" class="ord-search-input" placeholder="Search order # or customer…" aria-label="Search orders">
+</div>
+
+<table class="nc-table" id="ord-table">
+	<thead>
+		<tr>
+			<th>Order #</th>
+			<th>Customer</th>
+			<th>Type</th>
+			<th>Date</th>
+			<th>Status</th>
+			<th style="text-align:right">Total</th>
+			<th class="col-check"><input type="checkbox" id="chk-all" title="Select all"></th>
+		</tr>
+	</thead>
+	<tbody id="ord-tbody"></tbody>
+</table>
+
+<div id="drawer-overlay"></div>
+
+<me-drawer id="ord-drawer">
+	<drawer-head>
+		<h2 id="ord-drawer-title">Order</h2>
+		<button class="drawer-close" id="ord-drawer-close">&times;</button>
+	</drawer-head>
+	<drawer-content id="ord-drawer-content">
+		<div id="ord-detail-loading" style="color:var(--nc-text-dim)">Loading…</div>
+		<div id="ord-detail-body" style="display:none">
+
+			<div class="drawer-tabs" role="tablist">
+				<button class="drawer-tab active" data-ord-tab="details" role="tab">Details</button>
+				<button class="drawer-tab"        data-ord-tab="message" role="tab">Message</button>
+			</div>
+
+			<div id="ord-panel-details" class="drawer-tab-panel active">
+
+				<div class="df-row" style="gap:1.5rem;margin-bottom:1rem;margin-top:1rem">
+					<div style="flex:1">
+						<div class="peek-label">Customer</div>
+						<div id="ord-d-customer" style="font-weight:600"></div>
+						<div id="ord-d-email" style="font-size:.85rem;color:var(--nc-text-dim)"></div>
+					</div>
+					<div style="flex:1">
+						<div class="peek-label">Ship To</div>
+						<div id="ord-d-address" style="font-size:.88rem;line-height:1.5"></div>
+					</div>
+				</div>
+
+				<div class="df-row" style="gap:1.5rem;margin-bottom:1.25rem">
+					<div style="flex:1">
+						<div class="peek-label">Date</div>
+						<div id="ord-d-date"></div>
+					</div>
+					<div style="flex:1">
+						<div class="peek-label">Ship Method</div>
+						<div id="ord-d-ship-method"></div>
+					</div>
+					<div style="flex:1">
+						<div class="peek-label">Payment Ref</div>
+						<div id="ord-d-payment-ref" style="font-size:.82rem;word-break:break-all"></div>
+					</div>
+				</div>
+
+				<div id="ord-d-mark-paid-row" style="display:none;margin-bottom:1.25rem">
+					<button class="btn btn-primary btn-sm" id="btn-ord-mark-paid" type="button">Mark Payment Received</button>
+					<div class="hint" style="margin-top:.35rem">Fires fulfillment immediately — same as a Stripe/PayPal payment completing.</div>
+				</div>
+
+				<table class="nc-table" id="ord-d-items-table">
+					<thead>
+						<tr>
+							<th>Item</th>
+							<th style="text-align:center">Qty</th>
+							<th style="text-align:right">Price</th>
+							<th style="text-align:right">Line</th>
+						</tr>
+					</thead>
+					<tbody id="ord-d-items"></tbody>
+					<tfoot>
+						<tr>
+							<td colspan="3" style="text-align:right;color:var(--nc-text-dim);font-size:.85rem">Subtotal</td>
+							<td id="ord-d-subtotal" style="text-align:right"></td>
+						</tr>
+						<tr>
+							<td colspan="3" style="text-align:right;color:var(--nc-text-dim);font-size:.85rem">Shipping</td>
+							<td id="ord-d-shipping" style="text-align:right"></td>
+						</tr>
+						<tr style="font-weight:700">
+							<td colspan="3" style="text-align:right">Total</td>
+							<td id="ord-d-total" style="text-align:right"></td>
+						</tr>
+					</tfoot>
+				</table>
+
+			</div>
+
+			<div id="ord-panel-message" class="drawer-tab-panel">
+				<div style="margin-top:1rem">
+					<div class="df">
+						<label for="ord-msg-subject">Subject</label>
+						<input type="text" id="ord-msg-subject" maxlength="255" autocomplete="off">
+					</div>
+					<div class="df">
+						<label for="ord-msg-body">Message</label>
+						<textarea id="ord-msg-body" rows="8" style="resize:vertical"></textarea>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</drawer-content>
+	<drawer-foot>
+		<a id="ord-receipt-link" href="#" target="_blank" class="btn btn-secondary" style="display:none">Print Receipt</a>
+		<a id="ord-label-link" href="#" target="_blank" class="btn btn-secondary" style="display:none">Print Label</a>
+		<button id="ord-label-generate" class="btn btn-secondary" style="display:none">Generate Label</button>
+		<button class="btn btn-primary" id="ord-msg-send" style="display:none">Send Message</button>
+		<button class="btn btn-secondary" id="ord-drawer-cancel">Close</button>
+	</drawer-foot>
+</me-drawer>
+
+<me-drawer id="cust-peek-drawer">
+	<drawer-head>
+		<h2 id="cust-peek-title">Customer</h2>
+		<button class="drawer-close" id="cust-peek-close">&times;</button>
+	</drawer-head>
+	<drawer-content id="cust-peek-content">
+		<div id="cust-peek-loading" style="color:var(--nc-text-dim)">Loading…</div>
+		<div id="cust-peek-body" style="display:none">
+
+			<div class="drawer-tabs" role="tablist">
+				<button class="drawer-tab active" data-peek-tab="info"    role="tab">Info</button>
+				<button class="drawer-tab"        data-peek-tab="message" role="tab">Message</button>
+			</div>
+
+			<div id="cust-peek-panel-info" class="drawer-tab-panel active">
+				<div class="df-row" style="gap:1.5rem;margin-bottom:1rem">
+					<div style="flex:1">
+						<div class="peek-label">Name</div>
+						<div id="cust-peek-name" style="font-weight:600"></div>
+					</div>
+					<div style="flex:1">
+						<div class="peek-label">Status</div>
+						<div id="cust-peek-status"></div>
+					</div>
+				</div>
+				<div style="margin-bottom:.85rem">
+					<div class="peek-label">Email</div>
+					<div id="cust-peek-email" style="font-size:.88rem"></div>
+				</div>
+				<div style="margin-bottom:.85rem">
+					<div class="peek-label">Address</div>
+					<div id="cust-peek-address" style="font-size:.88rem;line-height:1.6"></div>
+				</div>
+				<div style="margin-bottom:.85rem">
+					<div class="peek-label">Member Since</div>
+					<div id="cust-peek-registered" style="font-size:.88rem"></div>
+				</div>
+			</div>
+
+			<div id="cust-peek-panel-message" class="drawer-tab-panel">
+				<div class="df">
+					<label for="cust-peek-subject">Subject</label>
+					<input type="text" id="cust-peek-subject" maxlength="255" autocomplete="off">
+				</div>
+				<div class="df">
+					<label for="cust-peek-msg">Message</label>
+					<textarea id="cust-peek-msg" rows="8" style="resize:vertical"></textarea>
+				</div>
+			</div>
+
+		</div>
+	</drawer-content>
+	<drawer-foot>
+		<button class="btn btn-secondary" id="cust-peek-cancel">Close</button>
+		<button class="btn btn-primary"   id="cust-peek-send" style="display:none">Send Message</button>
+	</drawer-foot>
+</me-drawer>
+
+<style>
+.peek-label {
+	font-size: .75rem;
+	text-transform: uppercase;
+	letter-spacing: .06em;
+	color: var(--nc-text-dim);
+	margin-bottom: .2rem;
+}
+</style>
+
+{/block}
+
+{block name="scripts"}
+<script>
+Object.assign(NC, {
+	adminUrl: '{$url_admin}',
+	rootUrl:  '{$url_root}',
+	siteName: '{$site_name|escape:"javascript"}'
+});
+</script>
+<script src="{$url_admin_real}js/orders.js?{$nowstr}"></script>
+{/block}

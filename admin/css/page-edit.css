@@ -1,0 +1,318 @@
+/* ═══════════════════════════════════════════════════════════════
+   Page editor — embedded in admin layout
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Top bar ── */
+#pe-topbar {
+	display: flex; align-items: center; gap: .6rem;
+	margin-bottom: .65rem;
+}
+#pe-title {
+	flex: 1;
+	padding: .42rem .7rem;
+	border: 1px solid var(--nc-border);
+	border-radius: var(--nc-radius);
+	font-size: 1rem; font-weight: 600; min-width: 0;
+}
+#pe-title:focus { outline: none; border-color: var(--nc-primary); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+#pe-topbar-right { display: flex; gap: .4rem; flex-shrink: 0; align-items: center; }
+.pe-system-badge { flex-shrink: 0; }
+#pe-page-switcher {
+	padding: .32rem .55rem;
+	border: 1px solid var(--nc-border);
+	border-radius: var(--nc-radius);
+	font-size: .82rem;
+	background: var(--nc-bg);
+	color: var(--nc-text);
+	cursor: pointer;
+	max-width: 180px;
+}
+#pe-topbar-right button {
+	padding: .32rem .75rem;
+	border: 1px solid var(--nc-border);
+	border-radius: var(--nc-radius);
+	background: var(--nc-bg);
+	color: var(--nc-text);
+	font-size: .82rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background .12s, color .12s, border-color .12s;
+	white-space: nowrap;
+}
+#pe-topbar-right button:hover { background: var(--nc-hover); }
+#pe-topbar-right .pe-btn-primary {
+	background: var(--nc-primary);
+	color: #fff;
+	border-color: var(--nc-primary);
+}
+#pe-topbar-right .pe-btn-primary:hover { background: var(--nc-primary-hover, #1d4ed8); border-color: var(--nc-primary-hover, #1d4ed8); }
+
+/* ── Palette ── */
+#pe-palette {
+	display: flex; flex-wrap: wrap; gap: .3rem;
+	padding: .45rem .55rem;
+	background: var(--nc-bg);
+	border: 1px solid var(--nc-border);
+	border-radius: var(--nc-radius);
+	margin-bottom: .65rem;
+}
+.pe-pal-btn {
+	padding: .25rem .55rem;
+	border: 1px solid var(--nc-border);
+	border-radius: var(--nc-radius);
+	background: var(--nc-bg); cursor: pointer;
+	font-size: .78rem; color: var(--nc-text);
+	transition: background .1s, border-color .1s, color .1s;
+	white-space: nowrap; user-select: none;
+}
+.pe-pal-btn:hover:not(:disabled) {
+	background: var(--nc-primary-muted);
+	border-color: var(--nc-primary); color: var(--nc-primary);
+}
+.pe-pal-btn:disabled {
+	opacity: .38; cursor: not-allowed;
+}
+.pe-pal-btn[draggable="true"] { cursor: grab; }
+
+/* ── Canvas: 2-column layout ── */
+#pe-canvas {
+	display: flex;
+	gap: .75rem;
+	align-items: flex-start;
+	min-height: 120px;
+}
+.pe-col {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	border: 1px solid var(--nc-border);
+	border-radius: var(--nc-radius);
+	overflow: visible;
+}
+.pe-col-sidebar { width: 22%; flex-shrink: 0; order: 1; }
+.pe-col-main    { flex: 1; order: 2; }
+.pe-col-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: .3rem .55rem;
+	background: var(--nc-bg-alt);
+	border-bottom: 1px solid var(--nc-border);
+	border-radius: var(--nc-radius) var(--nc-radius) 0 0;
+	font-size: .78rem;
+	font-weight: 700;
+	white-space: nowrap;
+}
+.pe-col-hint {
+	font-size: .7rem;
+	font-weight: 400;
+	color: var(--nc-text-dim);
+	margin-left: .35rem;
+}
+.pe-col-body {
+	display: flex;
+	flex-direction: column;
+	gap: .45rem;
+	padding: .45rem;
+	min-height: 80px;
+	border-radius: 0 0 var(--nc-radius) var(--nc-radius);
+	transition: background .12s;
+}
+.pe-col-body.pe-col-drop-over {
+	background: var(--nc-primary-muted);
+	outline: 2px dashed var(--nc-primary);
+	outline-offset: -2px;
+}
+.pe-col-empty {
+	text-align: center;
+	padding: 2rem .75rem;
+	color: var(--nc-text-dim);
+	font-size: .8rem;
+	border: 2px dashed var(--nc-border);
+	border-radius: var(--nc-radius);
+	pointer-events: none;
+}
+
+/* ── Block card ── */
+.pe-block-card {
+	background: var(--nc-bg);
+	border: 1px solid var(--nc-border);
+	border-radius: var(--nc-radius);
+	box-shadow: 0 1px 3px rgba(0,0,0,.07);
+	display: flex; flex-direction: column;
+	position: relative;
+	transition: box-shadow .15s, opacity .3s;
+}
+.pe-block-card:focus-within { box-shadow: 0 0 0 2px var(--nc-primary); }
+.pe-block-card.pe-disabled { opacity: .5; }
+.pe-block-card.pe-drag-source { opacity: .35; }
+.pe-block-card.drag-over { outline: 2px dashed var(--nc-primary); }
+
+/* Drop-before indicator */
+.pe-block-card.pe-drop-before { border-top: 3px solid var(--nc-primary); }
+
+/* ── Block head ── */
+.pe-block-head {
+	display: flex; align-items: center; gap: .35rem;
+	padding: .3rem .45rem;
+	background: var(--nc-bg-alt);
+	border-bottom: 1px solid var(--nc-border);
+	border-radius: var(--nc-radius) var(--nc-radius) 0 0;
+}
+.pe-drag-handle { cursor: move; color: var(--nc-text-dim); font-size: .95rem; flex-shrink: 0; }
+.pe-block-label { font-size: .75rem; font-weight: 700; color: var(--nc-text); flex-shrink: 0; }
+
+
+/* Block name input */
+.pe-block-name-input {
+	font-size: .72rem; padding: .08rem .3rem;
+	border: 1px solid transparent; border-radius: var(--nc-radius-sm);
+	background: transparent; color: var(--nc-text-dim);
+	width: 85px; flex-shrink: 0;
+	flex: 1;  /* pushes delete to the right */
+}
+.pe-block-name-input:focus { outline: none; border-color: var(--nc-border); background: var(--nc-bg); }
+.pe-block-name-input::placeholder { color: var(--nc-border-light, #d1d5db); font-style: italic; }
+
+/* Delete button */
+.pe-block-delete-btn {
+	background: none; border: none; cursor: pointer;
+	color: var(--nc-danger, #dc2626); font-size: .75rem;
+	padding: 0 .15rem; opacity: .65; flex-shrink: 0;
+	line-height: 1;
+}
+.pe-block-delete-btn:hover { opacity: 1; }
+
+/* ── Block body ── */
+.pe-block-body { padding: .5rem; overflow: hidden; }
+.pe-block-body::after { content: ''; display: table; clear: both; }
+.pe-block-body .trumbowyg-box { margin: 0; display: flex; flex-direction: column; height: 360px; resize: vertical; overflow-y: auto; }
+.pe-block-body .trumbowyg-button-pane { flex-shrink: 0; }
+.pe-block-body .trumbowyg-editor { min-height: 100px; overflow-y: auto; flex: 1; font-size: .85rem; line-height: 1.6; }
+.pe-block-body .trumbowyg-editor p { margin: 0 0 .65rem; }
+
+/* Block fields */
+.pe-field { margin-bottom: .45rem; }
+.pe-field:last-child { margin-bottom: 0; }
+.pe-field label { display: block; font-size: .77rem; font-weight: 600; margin-bottom: .18rem; }
+.pe-field input, .pe-field select, .pe-field textarea {
+	width: 100%; padding: .28rem .42rem;
+	border: 1px solid var(--nc-border); border-radius: var(--nc-radius); font-size: .82rem;
+}
+.pe-field input:focus, .pe-field select:focus, .pe-field textarea:focus {
+	outline: none; border-color: var(--nc-primary); box-shadow: 0 0 0 2px rgba(37,99,235,.1);
+}
+.pe-field textarea { resize: vertical; min-height: 60px; font-family: monospace; }
+.pe-field-row { display: flex; gap: .4rem; }
+.pe-field-row .pe-field { flex: 1; }
+
+/* Properties drawer body */
+.pe-props-body { display: flex; flex-direction: column; gap: .6rem; }
+.pe-props-body .df { margin-bottom: 0; }
+.section-head {
+	font-size: .72rem; font-weight: 700; text-transform: uppercase;
+	letter-spacing: .05em; color: var(--nc-text-dim);
+	margin-top: .5rem;
+}
+
+/* ── Image properties panel ── */
+#pe-img-panel {
+	position: fixed; z-index: 600;
+	background: var(--nc-bg);
+	border: 1px solid var(--nc-border);
+	border-radius: var(--nc-radius);
+	box-shadow: 0 4px 24px rgba(0,0,0,.18);
+	width: 340px; font-size: .85rem;
+}
+.pe-img-panel-head {
+	display: flex; align-items: center; justify-content: space-between;
+	padding: .4rem .6rem;
+	background: var(--nc-bg-alt); border-bottom: 1px solid var(--nc-border);
+	font-weight: 700; font-size: .8rem;
+	border-radius: var(--nc-radius) var(--nc-radius) 0 0;
+}
+#pe-img-panel-close {
+	background: none; border: none; cursor: pointer;
+	font-size: 1.1rem; color: var(--nc-text-dim); line-height: 1; padding: 0;
+}
+.pe-img-panel-body {
+	padding: .55rem .6rem; display: flex; flex-direction: column; gap: .5rem;
+}
+.pe-img-panel-body > div:not(.pe-img-panel-grid) { display: flex; flex-direction: column; gap: .25rem; }
+.pe-img-panel-grid {
+	display: grid; grid-template-columns: 1fr 1fr; gap: .5rem;
+}
+.pe-img-panel-grid > div { display: flex; flex-direction: column; gap: .22rem; }
+.pe-img-panel-body label { font-size: .78rem; font-weight: 500; }
+.pe-img-panel-body input, .pe-img-panel-body select {
+	width: 100%; font-size: .8rem; padding: .28rem .38rem;
+	border: 1px solid var(--nc-border); border-radius: 3px;
+	background: var(--nc-bg); color: var(--nc-text);
+	box-sizing: border-box;
+}
+.pe-img-panel-foot {
+	padding: .4rem .6rem; border-top: 1px solid var(--nc-border);
+	display: flex; justify-content: flex-end;
+}
+
+/* Palette link for unavailable block types */
+.pe-pal-link {
+	display: inline-flex; align-items: center;
+	padding: .25rem .55rem;
+	border: 1px dashed var(--nc-border);
+	border-radius: var(--nc-radius);
+	font-size: .78rem; color: var(--nc-text-dim);
+	text-decoration: none; white-space: nowrap;
+	transition: border-color .1s, color .1s;
+}
+.pe-pal-link:hover { border-color: var(--nc-primary); color: var(--nc-primary); }
+.pe-pal-link em { margin-left: .25rem; font-style: italic; }
+
+
+#pe-topbar-right .pe-btn-danger {
+	background: #dc2626;
+	color: #fff !important;
+	border-color: #dc2626;
+}
+#pe-topbar-right .pe-btn-danger:hover {
+	background: #b91c1c;
+	border-color: #b91c1c;
+	color: #fff !important;
+}
+
+
+/* ── Core block clear-canvas flash ── */
+@keyframes pe-core-flash {
+	0%   { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,.3); }
+	60%  { border-color: #dc2626; box-shadow: 0 0 0 2px rgba(220,38,38,.1); }
+	100% { border-color: var(--nc-primary); box-shadow: none; }
+}
+.pe-core-flash {
+	animation: pe-core-flash .7s ease-out;
+}
+
+/* ── Core block badge ── */
+.pe-core-badge {
+	font-size: .68rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: .04em;
+	color: var(--nc-primary);
+	background: var(--nc-primary-muted, #dbeafe);
+	border-radius: var(--nc-radius-sm, .25rem);
+	padding: .1rem .4rem;
+	flex-shrink: 0;
+}
+.pe-block-card.pe-core {
+	border-color: var(--nc-primary);
+	border-style: dashed;
+}
+
+/* Sidebar toggle: move sidebar from left to right */
+#pe-canvas.sidebar-right .pe-col-main {
+	order: 1;
+}
+
+#pe-canvas.sidebar-right .pe-col-sidebar {
+	order: 2;
+}

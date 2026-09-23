@@ -1,0 +1,79 @@
+{extends file="../layout.html"}
+
+{block name="title"}Plugins — {$site_name|escape}{/block}
+
+{block name="head"}
+<link rel="stylesheet" href="{$url_admin_real}css/plugins.css">
+{/block}
+
+{block name="content"}
+
+<div class="plugin-notice" id="plugin-notice">
+	<span class="notice-icon">&#9888;</span>
+	<div>
+		<strong>Back up before installing.</strong>
+		Always back up your database and files before installing or removing a plugin.
+		If something goes wrong, a backup is the only way to fully recover.
+		<!-- <a href="{$url_admin}?route=setup#backup">Go to backup</a> -->
+	</div>
+	<button class="notice-dismiss" id="notice-dismiss" title="Dismiss">&times;</button>
+</div>
+
+<div class="plugin-upload" id="plugin-upload-zone">
+	<div class="upload-icon">&#128229;</div>
+	<p>Drop a plugin .zip here, or click to browse</p>
+	<p class="upload-hint">Plugins are .zip files containing a plugin.xml manifest</p>
+</div>
+
+<input type="file" id="plugin-file-input" accept=".zip" style="display:none">
+
+<div class="upload-progress" id="upload-progress">
+	<span class="spinner"></span>
+	<span id="upload-progress-msg">Installing…</span>
+</div>
+
+<div class="plugin-tabs" id="plugin-tabs" role="tablist"></div>
+
+<table class="nc-table">
+	<thead>
+		<tr>
+			<th>Plugin</th>
+			<th>Author</th>
+			<th>Link</th>
+			<th class="col-settings"></th>
+			<th class="col-toggle">Enabled</th>
+			<th class="col-delete"></th>
+		</tr>
+	</thead>
+	<tbody id="plugin-tbody">
+		<tr>
+			<td colspan="5"><div class="nc-empty">No plugins installed.</div></td>
+		</tr>
+	</tbody>
+</table>
+
+{* ── Plugin settings drawer ── *}
+<div id="drawer-overlay"></div>
+<me-drawer id="plugin-drawer" role="dialog" aria-modal="true" aria-labelledby="plugin-drawer-title">
+	<drawer-head>
+		<h2 id="plugin-drawer-title">Plugin Settings</h2>
+		<button class="drawer-close" id="plugin-drawer-close" aria-label="Close">&times;</button>
+	</drawer-head>
+	<drawer-content id="plugin-drawer-content"></drawer-content>
+	<drawer-foot>
+		<button class="btn btn-secondary" id="plugin-drawer-cancel">Cancel</button>
+		<save-button class="btn btn-primary" id="plugin-drawer-save" data-label="Save Settings">Save Settings</save-button>
+	</drawer-foot>
+</me-drawer>
+
+{/block}
+
+{block name="scripts"}
+<script>
+Object.assign(NC, {
+	adminUrl: '{$url_admin}',
+	rootUrl:  '{$url_root}'
+});
+</script>
+<script src="{$url_admin_real}js/plugins.js?v={$nowstr}"></script>
+{/block}

@@ -1,0 +1,237 @@
+{extends file="../layout.html"}
+
+{block name="title"}Categories - {$site_name|escape}{/block}
+
+{block name="head"}
+<style>
+.cat-img-preview-wrap {
+	display: flex; align-items: flex-start; gap: .75rem; margin-bottom: 1.5rem;
+}
+.cat-img-preview {
+	width: 120px; height: 120px; object-fit: cover;
+	border: 1px solid var(--nc-border); border-radius: var(--nc-radius);
+}
+#cat-img-drop-zone {
+	padding: 3rem 1.5rem;
+	margin-bottom: 1rem;
+}
+me-drawer.img-drag-target::before {
+	content: '';
+	position: absolute;
+	inset: 4px;
+	border: 2px dashed var(--nc-primary);
+	border-radius: var(--nc-radius);
+	pointer-events: none;
+	z-index: 600;
+	background: rgba(160,82,45,.05);
+}
+</style>
+{/block}
+
+{block name="content"}
+
+<div class="nc-toolbar">
+	<button class="btn btn-primary" id="btn-add-category"
+		data-limit="{$cat_limit}"
+		data-count="{$cat_count}">+ Add Category</button>
+	<button class="btn btn-danger" id="btn-bulk-delete" disabled style="float: right">Delete Selected</button>
+</div>
+
+<table class="nc-table" id="cat-table">
+	<thead>
+		<tr>
+			<th class="col-drag"></th>
+			<th>Category Name</th>
+			<th>Parent</th>
+			<th class="col-status">Status</th>
+			<th class="col-toggle">Featured</th>
+			<th class="col-toggle">Home</th>
+			<th class="col-products"></th>
+			<th class="col-browse"></th>
+			<th class="col-delete"></th>
+			<th class="col-check"><input type="checkbox" id="chk-all" title="Select all"></th>
+		</tr>
+	</thead>
+	<tbody id="cat-tbody">
+		<tr id="cat-loading-row">
+			<td colspan="8">
+				<div class="nc-empty"><span class="nc-spinner"></span></div>
+			</td>
+		</tr>
+		<tr id="cat-empty-row" style="display:none">
+			<td colspan="8">
+				<div class="nc-empty">
+					<p>No categories yet.</p>
+					<button class="btn btn-primary" id="btn-add-first">Add your first category</button>
+				</div>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<div id="drawer-overlay"></div>
+
+<me-drawer id="cat-drawer">
+	<drawer-head>
+		<h2 id="drawer-title">Add Category</h2>
+		<button class="drawer-close" id="drawer-close">&times;</button>
+	</drawer-head>
+	<drawer-content id="cat-drawer-content">
+		<input type="hidden" id="cat-id" value="">
+		<input type="hidden" id="cat-image" value="">
+		<input type="hidden" id="cat-banner" value="">
+
+		<div class="drawer-tabs" role="tablist" aria-label="Category sections">
+			<button class="drawer-tab active" data-panel="details" role="tab" aria-selected="true"  aria-controls="cat-panel-details">Details</button>
+			<button class="drawer-tab"        data-panel="images"  role="tab" aria-selected="false" aria-controls="cat-panel-images">Images</button>
+			<button class="drawer-tab"        data-panel="seo"     role="tab" aria-selected="false" aria-controls="cat-panel-seo">SEO</button>
+		</div>
+
+		{* ── Details tab ── *}
+		<div class="drawer-tab-panel active" id="cat-panel-details" role="tabpanel">
+
+			<div class="df">
+				<label for="cat-name">Category Name <span class="field-required" aria-hidden="true">*</span></label>
+				<input type="text" id="cat-name" maxlength="255" required
+				       aria-required="true" aria-label="Category name">
+			</div>
+
+			{if $subcats_enabled}
+			<div class="df">
+				<label for="cat-parent">Parent Category</label>
+				<select id="cat-parent" aria-label="Parent category">
+					<option value="0">&mdash; Top Level &mdash;</option>
+				</select>
+			</div>
+			{/if}
+
+			<div class="df">
+				<label for="cat-html-long">Description</label>
+				<div class="df-editor-wrap">
+					<div id="cat-html-long-toolbar-ext" class="trumbowyg-ext-toolbar">
+						<button type="button" class="btn-trumbo-ext" id="btn-cat-insert-image"
+						        title="Insert image from File Manager" aria-label="Insert image from File Manager">&#128247;</button>
+						<button type="button" class="btn-trumbo-ext btn-ai" id="btn-cat-ai-desc"
+						        title="Generate description with AI" aria-label="Generate AI description">&#10024; AI</button>
+					</div>
+					<textarea id="cat-html-long" rows="6" aria-label="Category description"></textarea>
+				</div>
+			</div>
+
+			<div class="df-row">
+				<div class="df">
+					<label>Status</label>
+					<roller-select id="cat-status" name="cat-status" value="1" aria-label="Category status">
+						<rs-item value="0">Not Active</rs-item>
+						<rs-item value="1">Active</rs-item>
+						<rs-item value="2">Browse Only</rs-item>
+					</roller-select>
+				</div>
+				<div class="df-toggle">
+					<ios-toggle id="cat-featured" name="cat-featured" size="sm"
+					            aria-label="Featured category"></ios-toggle>
+					<label for="cat-featured">Featured</label>
+				</div>
+				<div class="df-toggle">
+					<ios-toggle id="cat-homepage-default" name="cat-homepage-default" size="sm"
+					            aria-label="Use as homepage default"></ios-toggle>
+					<label for="cat-homepage-default">Homepage Default</label>
+				</div>
+			</div>
+
+		</div>{* /cat-panel-details *}
+
+		{* ── Images tab ── *}
+		<div class="drawer-tab-panel" id="cat-panel-images" role="tabpanel">
+
+			<p class="df-section">Card Image</p>
+			<p style="font-size:.8rem;color:var(--nc-text-dim);margin-bottom:.75rem">Shown on the homepage category cards.</p>
+
+			<div class="cat-img-preview-wrap" id="cat-img-preview-wrap" style="display:none">
+				<img id="cat-img-preview" src="" alt="Category image" class="cat-img-preview">
+				<button type="button" class="btn btn-secondary btn-sm" id="btn-cat-img-clear">Remove</button>
+			</div>
+			<div class="img-upload-zone" id="cat-img-drop-zone" role="button" tabindex="0"
+			     aria-label="Drop image here or click to upload">
+				<div>&#128247; Drop image here or click to upload</div>
+				<div style="font-size:.78rem;margin-top:.3rem">JPG, PNG or WebP.</div>
+			</div>
+			<input type="file" id="cat-img-file-input" accept="image/jpeg,image/png,image/webp"
+			       style="display:none" aria-label="Upload category image">
+			<button type="button" class="btn btn-secondary btn-fm-picker" id="btn-cat-open-fm"
+			        aria-label="Choose image from File Manager">&#128193; Choose from File Manager</button>
+
+			<p class="df-section">Banner</p>
+			<p style="font-size:.8rem;color:var(--nc-text-dim);margin-bottom:.75rem">Wide landscape image displayed as the header on the category page.</p>
+
+			<div class="cat-img-preview-wrap" id="cat-banner-preview-wrap" style="display:none">
+				<img id="cat-banner-preview" src="" alt="Category banner" class="cat-img-preview">
+				<button type="button" class="btn btn-secondary btn-sm" id="btn-cat-banner-clear">Remove</button>
+			</div>
+			<div class="img-upload-zone" id="cat-banner-drop-zone" role="button" tabindex="0"
+			     aria-label="Drop banner image here or click to upload">
+				<div>&#128247; Drop image here or click to upload</div>
+				<div style="font-size:.78rem;margin-top:.3rem">JPG, PNG or WebP. Wide landscape recommended.</div>
+			</div>
+			<input type="file" id="cat-banner-file-input" accept="image/jpeg,image/png,image/webp"
+			       style="display:none" aria-label="Upload category banner">
+			<button type="button" class="btn btn-secondary btn-fm-picker" id="btn-cat-open-fm-banner"
+			        aria-label="Choose banner from File Manager">&#128193; Choose from File Manager</button>
+
+		</div>{* /cat-panel-images *}
+
+		{* ── SEO tab ── *}
+		<div class="drawer-tab-panel" id="cat-panel-seo" role="tabpanel">
+
+			<div class="seo-section-head">
+				<span class="df-section">SEO</span>
+				<button type="button" class="btn btn-secondary btn-xs btn-ai-seo" id="btn-cat-ai-seo"
+				        aria-label="Generate all SEO fields with AI">&#10024; Generate SEO</button>
+			</div>
+			<div class="df">
+				<label for="cat-seo">Page Title</label>
+				<input type="text" id="cat-seo" maxlength="300"
+				       placeholder="Defaults to category name if left blank"
+				       aria-label="SEO page title">
+			</div>
+			<div class="df">
+				<label for="cat-seo-keywords">Keywords</label>
+				<input type="text" id="cat-seo-keywords" maxlength="500"
+				       placeholder="comma, separated, keywords"
+				       aria-label="SEO keywords">
+			</div>
+			<div class="df">
+				<label for="cat-seo-description">Meta Description</label>
+				<textarea id="cat-seo-description" rows="2" maxlength="500"
+				          placeholder="Defaults to description excerpt if left blank"
+				          aria-label="SEO meta description"></textarea>
+			</div>
+
+		</div>{* /cat-panel-seo *}
+
+		<!-- Scroll indicator: shown when content overflows, hidden on desc focus or scroll -->
+		<div class="drawer-scroll-indicator hidden" id="cat-scroll-indicator" aria-hidden="true">
+			<span class="drawer-scroll-chevron">&#8964;</span>
+		</div>
+
+	</drawer-content>
+	<drawer-foot>
+		<button class="btn btn-secondary" id="btn-drawer-cancel">Cancel</button>
+		<save-button class="btn btn-primary" id="btn-drawer-save" data-label="Save Category">Save Category</save-button>
+	</drawer-foot>
+</me-drawer>
+
+{/block}
+
+{block name="scripts"}
+<script>
+Object.assign(NC, {
+	adminUrl:       '{$url_admin}',
+	rootUrl:        '{$url_root}',
+	siteName:       '{$site_name|escape:"javascript"}',
+	incompleteCats: {$incomplete_cat_ids|json_encode},
+	deepaiKey:      '{$deepai_key|escape:"javascript"}'
+});
+</script>
+<script src="{$url_admin_real}js/categories.js?v={$nowstr}"></script>
+{/block}

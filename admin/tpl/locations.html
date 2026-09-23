@@ -1,0 +1,185 @@
+{extends file="layout.html"}
+
+{block name="title"}Locations & Tax - {$site_name|escape}{/block}
+{block name="page_title"}Locations & Tax{/block}
+
+{block name="head"}
+<link rel="stylesheet" href="{$url_admin_real}css/locations.css?v={$nowstr}">
+{/block}
+
+{block name="content"}
+
+<div class="nc-help-box" style="background:var(--nc-bg-alt);border:1px solid var(--nc-border);border-radius:.5rem;padding:1rem 1.25rem;margin-bottom:1.25rem;font-size:.9rem;line-height:1.5;color:var(--nc-text-dim)">
+	<p style="margin:0 0 .5rem"><strong style="color:var(--nc-text)">How this works:</strong> tax is calculated automatically at checkout from the zones and rates you configure below - no external tax service or API key is required.</p>
+	<p style="margin:0 0 .5rem"><strong style="color:var(--nc-text)">What's a "zone"?</strong> A zone is a place you charge tax in - usually one US state, but it can also be a whole country (for a flat national rate) or, with Country left as the state's blank "—" option, every location within that country. Each zone can have one or more rates attached to it (e.g. a state rate and a separate local rate), and if a location matches more than one zone, the highest-<em>priority</em> zone wins.</p>
+	<p style="margin:0 0 .5rem"><strong style="color:var(--nc-text)">Finding the right rate:</strong> most US states publish their current sales tax rate on their Department of Revenue (or equivalent) website - search "[state name] department of revenue sales tax rate." Some states also have county/city rates on top of the state rate; if you need to charge those too, add them as separate rates in the same zone and they'll be summed together. This app does not look up or update rates for you - revisit this page whenever a rate changes in a state you sell into.</p>
+	<p style="margin:0">A customer only sees tax at checkout once their state matches a zone with at least one <em>active</em> rate. No matching zone/rate means no tax is charged for that order - so an empty list here is the same as "not currently charging tax anywhere," which is the default for a new store.</p>
+</div>
+
+<div data-nc-tabs>
+	<ul>
+		<li><a href="#zones-tab">Tax Zones</a></li>
+		<li><a href="#rates-tab">Tax Rates</a></li>
+	</ul>
+
+	{* ── Tax Zones Tab ── *}
+	<div id="zones-tab">
+		<div class="nc-toolbar">
+			<button class="btn btn-primary" id="btn-add-zone">+ Add Zone</button>
+			<button class="btn btn-secondary" id="btn-opensalestax-import">Import from OpenSalesTax</button>
+		</div>
+		<p class="hint" style="margin:.25rem 0 1rem">
+			Free, keyless, one-rate-per-state import from <a href="https://opensalestax.org" target="_blank" rel="noopener">OpenSalesTax</a> (open source, self-hostable - no account required). Each state gets one representative combined rate; states with significant local rate variance may need manual per-zone adjustment.
+			<span id="opensalestax-last-import">{if $opensalestax_last_import}Last imported: {$opensalestax_last_import|escape}{/if}</span>
+		</p>
+
+		<div class="nc-table-wrapper">
+			<table class="nc-table">
+				<thead>
+					<tr>
+						<th>Zone Name</th>
+						<th>Country</th>
+						<th>State</th>
+							<th class="delete-col"></th>
+					</tr>
+				</thead>
+				<tbody id="zones-tbody">
+					<tr class="nc-empty"><td colspan="4"><div class="nc-empty">No zones configured.</div></td></tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	{* ── Tax Rates Tab ── *}
+	<div id="rates-tab">
+		<div class="nc-toolbar">
+			<button class="btn btn-primary" id="btn-add-rate">+ Add Rate</button>
+			<label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin: 0; margin-left: auto">
+				<input type="checkbox" id="toggle-all-rates" style="cursor: pointer">
+				<span style="font-size: 0.9rem">All Active</span>
+			</label>
+		</div>
+
+		<div class="nc-table-wrapper">
+			<table class="nc-table">
+				<thead>
+					<tr>
+						<th>Rate Name</th>
+						<th>Zone</th>
+						<th style="width: 100px">Rate %</th>
+						<th style="width: 120px">Applies to Shipping</th>
+						<th style="width: 80px">Active</th>
+						<th class="delete-col"></th>
+					</tr>
+				</thead>
+				<tbody id="rates-tbody">
+					<tr class="nc-empty"><td colspan="6"><div class="nc-empty">No rates configured.</div></td></tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+
+</div>
+
+{* ── Zone Drawer ── *}
+<div id="drawer-overlay"></div>
+<me-drawer id="zone-drawer">
+	<drawer-head>
+		<h2 id="zone-drawer-title">Add Zone</h2>
+		<button class="drawer-close" id="zone-drawer-close">&times;</button>
+	</drawer-head>
+	<drawer-content>
+		<div class="df">
+			<label for="zone-name">Zone Name <span class="field-required" aria-hidden="true">*</span></label>
+			<input type="text" id="zone-name" placeholder="e.g., US - California" required aria-required="true">
+		</div>
+
+		<div class="df-row">
+			<div class="df">
+				<label for="zone-country">Country</label>
+				<select id="zone-country">
+					{foreach $countries as $country}
+					<option value="{$country.code}">{$country.name}</option>
+					{/foreach}
+				</select>
+			</div>
+
+			<div class="df">
+				<label for="zone-state">State</label>
+				<select id="zone-state">
+					<option value="">—</option>
+					{foreach $us_states as $code => $name}
+					<option value="{$code}">{$name}</option>
+					{/foreach}
+				</select>
+			</div>
+		</div>
+
+		<!-- Zip range fields hidden (for future use) -->
+		<input type="hidden" id="zone-zip-from">
+		<input type="hidden" id="zone-zip-to">
+
+		<div class="df">
+			<label for="zone-priority">Priority</label>
+			<input type="number" id="zone-priority" value="0" min="0">
+		</div>
+	</drawer-content>
+	<drawer-foot>
+		<button class="btn btn-secondary" id="zone-drawer-cancel">Cancel</button>
+		<button class="btn btn-primary" id="zone-drawer-save">Save Zone</button>
+		<delete-in-place caption="🗑" confirm="OK?" data-id="0" id="btn-delete-zone" style="margin-left: auto"></delete-in-place>
+	</drawer-foot>
+</me-drawer>
+
+{* ── Rate Drawer ── *}
+<me-drawer id="rate-drawer">
+	<drawer-head>
+		<h2 id="rate-drawer-title">Add Rate</h2>
+		<button class="drawer-close" id="rate-drawer-close">&times;</button>
+	</drawer-head>
+	<drawer-content>
+		<div class="df">
+			<label for="rate-name">Rate Name <span class="field-required" aria-hidden="true">*</span></label>
+			<input type="text" id="rate-name" placeholder="e.g., Sales Tax - California" required aria-required="true">
+		</div>
+
+		<div class="df">
+			<label for="rate-zone">Zone <span class="field-required" aria-hidden="true">*</span></label>
+			<select id="rate-zone" required aria-required="true">
+				<option value="">Select a zone</option>
+			</select>
+		</div>
+
+		<div class="df">
+			<label for="rate-percentage">Tax Rate (%) <span class="field-required" aria-hidden="true">*</span></label>
+			<input type="number" id="rate-percentage" placeholder="e.g., 8.5" min="0" max="100" step="0.01" required aria-required="true">
+		</div>
+
+		<div class="df-toggle">
+			<ios-toggle id="rate-applies-shipping" size="sm"></ios-toggle>
+			<label for="rate-applies-shipping">Applies to Shipping</label>
+		</div>
+
+		<div class="df-toggle">
+			<ios-toggle id="rate-active" size="sm" checked></ios-toggle>
+			<label for="rate-active">Active</label>
+		</div>
+	</drawer-content>
+	<drawer-foot>
+		<button class="btn btn-secondary" id="rate-drawer-cancel">Cancel</button>
+		<button class="btn btn-primary" id="rate-drawer-save">Save Rate</button>
+		<delete-in-place caption="🗑" confirm="OK?" data-id="0" id="btn-delete-rate" style="margin-left: auto"></delete-in-place>
+	</drawer-foot>
+</me-drawer>
+
+{/block}
+
+{block name="scripts"}
+<script>
+NC.ajaxUrl = '{$url_admin_real}?route=locations';
+NC.countries = {$countries|json_encode};
+NC.usStates = {$us_states|json_encode};
+</script>
+<script src="{$url_admin_real}js/locations.js?{$nowstr}"></script>
+{/block}

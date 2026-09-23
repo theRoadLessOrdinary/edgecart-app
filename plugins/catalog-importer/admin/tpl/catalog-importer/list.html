@@ -1,0 +1,159 @@
+{extends file="layout.html"}
+
+{block name="content"}
+<div class="nc-card catalog-importer-card">
+	<h2>Catalog Importer</h2>
+	<p class="page-desc">
+		Import categories, products, and customers from another store platform.
+		Categories, products, and customers are matched by slug/email — running an
+		import again updates existing rows instead of duplicating them.
+	</p>
+
+	{if $error}
+	<div class="error-msg">{$error|escape}</div>
+	{/if}
+
+	{if $result}
+	<div class="success-msg">
+		Import complete —
+		{$result.categories.imported} categories
+		{if $result.categories.skipped}({$result.categories.skipped} skipped — category limit reached){/if},
+		{$result.products.created} products created / {$result.products.updated} updated
+		{if $result.products.skipped}({$result.products.skipped} skipped){/if},
+		{$result.customers.created} customers created / {$result.customers.updated} updated
+		{if $result.customers.skipped}({$result.customers.skipped} skipped){/if}.
+	</div>
+	{/if}
+
+	<h3 style="margin-top:2rem;">Import from OpenCart</h3>
+	<p class="page-desc">
+		Connect directly to your OpenCart store's database (read-only — nothing there
+		is modified). Works for OpenCart 3.x and 4.x.
+	</p>
+	<form method="post" action="{$url_admin}?route=catalog-importer">
+		<input type="hidden" name="csrf_token" value="{$csrf_token|escape}">
+		<input type="hidden" name="action" value="import_opencart">
+		<div class="ci-grid">
+			<div>
+				<label for="oc_host">Database host</label>
+				<input type="text" id="oc_host" name="oc_host" placeholder="localhost" required>
+			</div>
+			<div>
+				<label for="oc_name">Database name</label>
+				<input type="text" id="oc_name" name="oc_name" required>
+			</div>
+			<div>
+				<label for="oc_user">Database user</label>
+				<input type="text" id="oc_user" name="oc_user" required>
+			</div>
+			<div>
+				<label for="oc_pass">Database password</label>
+				<input type="password" id="oc_pass" name="oc_pass">
+			</div>
+			<div>
+				<label for="oc_prefix">Table prefix</label>
+				<input type="text" id="oc_prefix" name="oc_prefix" placeholder="oc_" value="oc_">
+			</div>
+		</div>
+		<button type="submit" class="btn btn-primary" style="margin-top:1rem;">Import from OpenCart</button>
+	</form>
+
+	<h3 style="margin-top:2.5rem;">Import from Shopify</h3>
+	<p class="page-desc">
+		Upload your Shopify export CSVs (Shopify admin: Products &gt; Export, and
+		optionally Customers &gt; Export). Variant pricing on single-option products
+		(e.g. just "Size") carries over exactly; products with two option dimensions
+		(e.g. Size <em>and</em> Color) keep their option/value structure but variant
+		price differences aren't preserved — Shopify prices those per combination in a
+		way EdgeCart's option model can't represent, so review pricing on those after
+		import rather than trust it blindly.
+	</p>
+	<form method="post" action="{$url_admin}?route=catalog-importer" enctype="multipart/form-data">
+		<input type="hidden" name="csrf_token" value="{$csrf_token|escape}">
+		<input type="hidden" name="action" value="import_shopify">
+		<div class="ci-grid">
+			<div>
+				<label for="shopify_products_csv">Products CSV</label>
+				<input type="file" id="shopify_products_csv" name="shopify_products_csv" accept=".csv" required>
+			</div>
+			<div>
+				<label for="shopify_customers_csv">Customers CSV (optional)</label>
+				<input type="file" id="shopify_customers_csv" name="shopify_customers_csv" accept=".csv">
+			</div>
+		</div>
+		<button type="submit" class="btn btn-primary" style="margin-top:1rem;">Import from Shopify</button>
+	</form>
+
+	<h3 style="margin-top:2.5rem;">Import from Etsy</h3>
+	<p class="page-desc">
+		Upload your Etsy shop listings CSV (Shop Manager &gt; Settings &gt; Options &gt;
+		Download Data). Etsy doesn't expose buyer email addresses to sellers, so
+		customers can't be imported from Etsy — only categories and products.
+	</p>
+	<form method="post" action="{$url_admin}?route=catalog-importer" enctype="multipart/form-data">
+		<input type="hidden" name="csrf_token" value="{$csrf_token|escape}">
+		<input type="hidden" name="action" value="import_etsy">
+		<label for="etsy_listings_csv">Listings CSV</label>
+		<input type="file" id="etsy_listings_csv" name="etsy_listings_csv" accept=".csv" required>
+		<button type="submit" class="btn btn-primary" style="margin-top:1rem;display:block;">Import from Etsy</button>
+	</form>
+
+	<h3 style="margin-top:2.5rem;">Import from staging JSON</h3>
+	<p class="page-desc">
+		For anything else, paste data already converted to the staging format below.
+	</p>
+	<form method="post" action="{$url_admin}?route=catalog-importer">
+		<input type="hidden" name="csrf_token" value="{$csrf_token|escape}">
+		<input type="hidden" name="action" value="import_json">
+		<label for="staging_json" style="display:block;font-weight:600;margin-bottom:.5rem;">Staging JSON</label>
+		<textarea id="staging_json" name="staging_json" rows="12" spellcheck="false"
+		          style="width:100%;font-family:monospace;font-size:.85rem;padding:.75rem;border:1px solid var(--nc-border);border-radius:var(--nc-radius);background:var(--nc-bg);color:var(--nc-text);"
+		          placeholder='{literal}{"categories":[...],"products":[...],"customers":[...]}{/literal}'></textarea>
+		<button type="submit" class="btn btn-primary" style="margin-top:1rem;">Run Import</button>
+	</form>
+</div>
+
+<style>
+.catalog-importer-card { max-width: 720px; margin: 2.5rem auto; padding: 2.5rem; }
+.catalog-importer-card h2 { margin-top: 0; margin-bottom: 1rem; }
+.catalog-importer-card h3 { margin-bottom: .5rem; }
+.ci-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1rem;
+	margin-top: 1rem;
+}
+.ci-grid label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: .35rem;
+	font-size: .9rem;
+}
+.ci-grid input {
+	width: 100%;
+	padding: .5rem .65rem;
+	border: 1px solid var(--nc-border);
+	border-radius: var(--nc-radius);
+	background: var(--nc-bg);
+	color: var(--nc-text);
+}
+.error-msg {
+	background: color-mix(in srgb, var(--nc-danger) 12%, #fff);
+	color: var(--nc-danger);
+	border-radius: var(--nc-radius);
+	padding: .6rem .85rem;
+	font-size: .87rem;
+	font-weight: 500;
+	margin-bottom: 1rem;
+}
+.success-msg {
+	background: color-mix(in srgb, var(--nc-success, #16a34a) 12%, #fff);
+	color: var(--nc-success, #16a34a);
+	border-radius: var(--nc-radius);
+	padding: .6rem .85rem;
+	font-size: .87rem;
+	font-weight: 500;
+	margin-bottom: 1rem;
+}
+</style>
+{/block}

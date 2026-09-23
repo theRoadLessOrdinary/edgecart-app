@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+    <name>Theme: Pink</name>
+    <code>theme-pink</code>
+    <version>1.0</version>
+    <type>theme</type>
+    <description>Bold rose pink color scheme with deep plum admin sidebar.</description>
+</plugin>

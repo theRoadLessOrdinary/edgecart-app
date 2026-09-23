@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="csrf-token" content="{$csrf_token|escape}">
+	<title>{block name="title"}{$page_title|default:'Admin'} — {$site_name|escape}{/block}</title>
+	{if $site_favicon}
+	<link rel="icon" href="{$site_favicon|escape}" sizes="any">{/if}
+	{if $favicon_svg_url}
+	<link rel="icon" type="image/svg+xml" href="{$favicon_svg_url|escape}">{/if}
+	<link rel="stylesheet" href="{$url_admin_real}css/vars.css?v={$nowstr}">
+	{if $theme_head}{$theme_head nofilter}{/if}
+	<link rel="stylesheet" href="{$url_admin_real}css/nc-tabs.css?v={$nowstr}">
+	<link rel="stylesheet" href="{$url_admin_real}css/shared.css?v={$nowstr}">
+	<link rel="stylesheet" href="{$url_admin_real}css/categories.css?v={$nowstr}">
+
+	<link rel="stylesheet" href="{$url_admin_real}css/filemanager.css?v={$nowstr}">
+	<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css"
+		integrity="sha384-cya1SKeBBe5YTpHgx4WoICmzqkoHTxoGqjPySUq2nLksbJ/JiKXX2RmhyLz6jwST" crossorigin="anonymous">
+	<link rel="stylesheet" href="{$url_root}js/vendor/SimpleNotification/simpleNotification.min.css">
+	<link rel="stylesheet" href="{$url_root}js/vendor/save-button.css?v={$nowstr}">
+	<link rel="stylesheet" href="{$url_root}js/vendor/trumbowyg/trumbowyg.css">
+	<link rel="stylesheet" href="{$url_root}js/vendor/trumbowyg/plugins/fontsize/ui/trumbowyg.fontsize.min.css">
+	<link rel="stylesheet" href="{$url_root}js/vendor/trumbowyg/plugins/fontfamily/ui/trumbowyg.fontfamily.min.css">
+	<style>
+		@font-face {
+			font-family: 'TeX Gyre Chorus';
+			src: url('{$url_root}fonts/texgyrechorus-mediumitalic.otf') format('opentype');
+			font-weight: 500;
+			font-style: italic;
+		}
+
+		*,
+		*::before,
+		*::after {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+
+		html,
+		body {
+			height: 100%;
+		}
+
+		html {
+			scrollbar-gutter: stable;
+		}
+
+		body {
+			font-family: var(--nc-font);
+			background: var(--nc-bg-page);
+			color: var(--nc-text);
+			font-size: .92rem;
+		}
+
+		/* ── Top bar ── */
+		#topbar {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: var(--nc-topbar-h);
+			background: var(--nc-topbar-bg);
+			color: var(--nc-topbar-text);
+			display: flex;
+			align-items: center;
+			padding: 0 1rem;
+			z-index: 200;
+			gap: .75rem;
+		}
+
+		#sidebar-toggle {
+			background: none;
+			border: none;
+			color: var(--nc-topbar-text);
+			cursor: pointer;
+			padding: .35rem .4rem;
+			border-radius: .3rem;
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+			flex-shrink: 0;
+			transition: background .15s;
+		}
+
+		#sidebar-toggle:hover {
+			background: rgba(255, 255, 255, .1);
+		}
+
+		#sidebar-toggle span {
+			display: block;
+			width: 20px;
+			height: 2px;
+			background: var(--nc-topbar-text);
+			border-radius: 2px;
+			transition: transform .25s, opacity .25s;
+		}
+
+		#store-logo-area {
+			flex: 1;
+			font-size: 1.05rem;
+			font-weight: 700;
+			color: var(--nc-topbar-text);
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		#store-logo-area img {
+			max-height: 36px;
+			width: auto;
+			vertical-align: middle;
+		}
+
+		#topbar-right {
+			display: flex;
+			align-items: center;
+			gap: 1.25rem;
+			flex-shrink: 0;
+		}
+
+		#topbar-right a {
+			color: var(--nc-topbar-text);
+			text-decoration: none;
+			font-size: .85rem;
+			opacity: .85;
+			display: flex;
+			align-items: center;
+			gap: .3rem;
+			transition: opacity .15s;
+		}
+
+		#topbar-right a:hover {
+			opacity: 1;
+		}
+
+		.topbar-divider {
+			width: 1px;
+			height: 20px;
+			background: rgba(255, 255, 255, .2);
+		}
+
+		#admin-user-label {
+			font-size: .82rem;
+			opacity: .7;
+		}
+
+		#admin-avatar {
+			width: 28px;
+			height: 28px;
+			border-radius: 50%;
+			object-fit: cover;
+			border: 2px solid rgba(255, 255, 255, .3);
+			vertical-align: middle;
+		}
+
+		#admin-avatar-initials {
+			width: 28px;
+			height: 28px;
+			border-radius: 50%;
+			background: var(--nc-primary, #2563eb);
+			color: #fff;
+			font-size: .72rem;
+			font-weight: 700;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			border: 2px solid rgba(255, 255, 255, .3);
+			vertical-align: middle;
+		}
+
+		/* ── Sidebar ── */
+		#sidebar {
+			position: fixed;
+			top: var(--nc-topbar-h);
+			left: 0;
+			bottom: 0;
+			width: var(--nc-sidebar-w);
+			background: var(--nc-sidebar-bg);
+			overflow-y: auto;
+			overflow-x: hidden;
+			z-index: 100;
+			transition: width .25s ease;
+			display: flex;
+			flex-direction: column;
+		}
+
+		#sidebar.collapsed {
+			width: var(--nc-sidebar-w-collapsed);
+		}
+
+		#sidebar nav {
+			flex: 1;
+			padding: .5rem 0;
+		}
+
+		#sidebar nav a {
+			display: flex;
+			align-items: center;
+			gap: .75rem;
+			padding: .65rem 1rem;
+			color: var(--nc-sidebar-text);
+			text-decoration: none;
+			font-size: .88rem;
+			font-weight: 500;
+			white-space: nowrap;
+			overflow: hidden;
+			transition: background .15s, color .15s;
+			border-left: 3px solid transparent;
+		}
+
+		#sidebar nav a:hover {
+			background: var(--nc-sidebar-hover);
+			color: #fff;
+		}
+
+		#sidebar nav a.active {
+			background: var(--nc-sidebar-hover);
+			border-left-color: var(--nc-sidebar-active);
+			color: #fff;
+		}
+
+		#sidebar nav a .nav-icon {
+			flex-shrink: 0;
+			width: 18px;
+			text-align: center;
+			font-size: 1rem;
+			opacity: .8;
+		}
+
+		#sidebar nav a .nav-label {
+			transition: opacity .2s;
+		}
+
+		#sidebar.collapsed nav a .nav-label {
+			opacity: 0;
+			pointer-events: none;
+		}
+
+		#sidebar nav .nav-section {
+			font-size: .68rem;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: .08em;
+			color: var(--nc-sidebar-dim);
+			padding: 1rem 1rem .3rem;
+			white-space: nowrap;
+			overflow: hidden;
+			transition: opacity .2s;
+		}
+
+		#sidebar.collapsed nav .nav-section {
+			opacity: 0;
+		}
+
+		/* ── Accordion groups ── */
+		.nav-group {
+			overflow: hidden;
+		}
+
+		.nav-group.open {
+			border-bottom: 1px solid rgba(255, 255, 255, .25);
+		}
+		.nav-group.open .nav-group-head{
+			background: var(--nc-sidebar-open);
+			border-bottom: 1px solid var(--nc-sidebar-bg);
+		}
+
+		.nav-group-head {
+			display: flex;
+			align-items: center;
+			gap: .75rem;
+			width: 100%;
+			padding: .65rem 1rem;
+			background: none;
+			border: none;
+			border-left: 3px solid transparent;
+			color: var(--nc-sidebar-text);
+			font-size: .88rem;
+			font-weight: 500;
+			cursor: pointer;
+			white-space: nowrap;
+			overflow: hidden;
+			text-align: left;
+			transition: background .15s, color .15s;
+		}
+
+		.nav-group-head:hover {
+			background: var(--nc-sidebar-hover);
+			color: #fff;
+		}
+
+		.nav-group-head .nav-icon {
+			flex-shrink: 0;
+			width: 18px;
+			text-align: center;
+			font-size: 1rem;
+			opacity: .8;
+		}
+
+		.nav-group-head .nav-label {
+			flex: 1;
+			transition: opacity .2s;
+		}
+
+		.nav-group-arrow {
+			flex-shrink: 0;
+			font-size: .85rem;
+			transition: transform .2s ease;
+			color: var(--nc-sidebar-dim);
+		}
+
+		.nav-group.open .nav-group-arrow {
+			transform: rotate(90deg);
+		}
+
+		#sidebar.collapsed .nav-group-head .nav-label,
+		#sidebar.collapsed .nav-group-arrow {
+			opacity: 0;
+		}
+
+		.nav-group-items {
+			max-height: 0;
+			overflow: hidden;
+			transition: max-height .4s ease;
+			background: rgba(0, 0, 0, .12);
+		}
+
+		.nav-group.open .nav-group-items {
+			max-height: 400px;
+		}
+
+		.nav-child {
+			padding-left: 2.5rem !important;
+			font-size: .84rem !important;
+			font-weight: 400 !important;
+			border-left-color: transparent !important;
+		}
+
+		.nav-child.active {
+			border-left-color: var(--nc-sidebar-active) !important;
+			background: var(--nc-sidebar-hover) !important;
+			color: #fff !important;
+		}
+
+		#sidebar.collapsed .nav-child {
+			padding-left: 1rem !important;
+		}
+
+		/* ── Sidebar footer ── */
+		#sidebar-foot {
+			padding: .85rem 1rem;
+			font-size: .72rem;
+			color: var(--nc-sidebar-dim);
+			border-top: 1px solid rgba(255, 255, 255, .07);
+			white-space: nowrap;
+			overflow: hidden;
+			transition: opacity .2s;
+			line-height: 1.6;
+		}
+
+		#sidebar.collapsed #sidebar-foot {
+			opacity: 0;
+		}
+
+		/* ── Main content ── */
+		#main {
+			margin-left: var(--nc-sidebar-w);
+			margin-top: var(--nc-topbar-h);
+			min-height: calc(100vh - var(--nc-topbar-h));
+			transition: margin-left .25s ease;
+			display: flex;
+			flex-direction: column;
+		}
+
+		#main.sidebar-collapsed {
+			margin-left: var(--nc-sidebar-w-collapsed);
+		}
+
+		#content-header {
+			background: var(--nc-bg);
+			border-bottom: 1px solid var(--nc-border);
+			padding: 1rem 1.5rem;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 1rem;
+		}
+
+		#content-header h1 {
+			font-size: 1.15rem;
+			font-weight: 700;
+			color: var(--nc-text);
+		}
+
+		#content {
+			padding: 1.5rem;
+			flex: 1;
+		}
+
+		/* ── Admin footer ── */
+		#admin-footer {
+			text-align: center;
+			padding: .85rem;
+			font-size: .75rem;
+			color: var(--nc-text-secondary);
+			border-top: 1px solid var(--nc-border);
+			background: var(--nc-bg);
+		}
+
+		/* ── Flash messages ── */
+		.flash {
+			padding: .7rem 1rem;
+			border-radius: .375rem;
+			margin-bottom: 1rem;
+			font-weight: 500;
+			font-size: .88rem;
+		}
+
+		.flash-success {
+			background: #dcfce7;
+			color: #14532d;
+		}
+
+		.flash-error {
+			background: #fee2e2;
+			color: #7f1d1d;
+		}
+
+		.flash-info {
+			background: #dbeafe;
+			color: #1e3a5f;
+		}
+
+		/* ── Reminder banners ── */
+		#reminders-wrap {
+			margin-bottom: 1rem;
+		}
+
+		.reminder-banner {
+			display: flex;
+			align-items: flex-start;
+			gap: .65rem;
+			background: #fff8e1;
+			border: 1px solid #f59e0b;
+			border-left: 4px solid #f59e0b;
+			border-radius: .375rem;
+			padding: .65rem .9rem;
+			margin-bottom: .5rem;
+			font-size: .87rem;
+			color: #1a1a1a;
+			line-height: 1.5;
+		}
+
+		.reminder-icon {
+			flex-shrink: 0;
+			color: #b45309;
+		}
+
+		/* ── Alternating table rows — global ── */
+		.nc-table tbody tr:nth-child(even) td {
+			background: #f5f6f8;
+		}
+
+		.nc-table tbody tr.dragging td,
+		.nc-table tbody tr.drag-over td {
+			background: transparent;
+		}
+
+		/* ── Tooltip on collapsed sidebar ── */
+		#sidebar.collapsed nav a {
+			position: relative;
+		}
+
+		#sidebar.collapsed nav a::after {
+			content: attr(data-label);
+			position: absolute;
+			left: calc(var(--nc-sidebar-w-collapsed) + 8px);
+			top: 50%;
+			transform: translateY(-50%);
+			background: #1a1a1a;
+			color: #fff;
+			padding: .3rem .6rem;
+			border-radius: .3rem;
+			font-size: .8rem;
+			white-space: nowrap;
+			pointer-events: none;
+			opacity: 0;
+			transition: opacity .15s;
+			z-index: 300;
+		}
+
+		#sidebar.collapsed nav a:hover::after {
+			opacity: 1;
+		}
+
+		/* ── Fetch navigation loading indicator ── */
+		#main.nc-loading #content {
+			opacity: .5;
+			pointer-events: none;
+			transition: opacity .15s;
+		}
+
+		#main::before {
+			content: '';
+			display: none;
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 3px;
+			background: var(--nc-primary);
+			z-index: 9999;
+			animation: nc-progress 1s ease infinite;
+		}
+
+		#main.nc-loading::before {
+			display: block;
+		}
+
+		@keyframes nc-progress {
+			0% {
+				transform: translateX(-100%);
+			}
+
+			100% {
+				transform: translateX(100%);
+			}
+		}
+
+		/* ── Common UI Elements ── */
+		/* Buttons */
+		.btn {
+			padding: .45rem 1rem;
+			border: none;
+			border-radius: var(--nc-radius);
+			font-size: .87rem;
+			font-weight: 600;
+			cursor: pointer;
+			transition: filter .15s;
+			font-family: var(--nc-font);
+		}
+
+		.btn:hover {
+			filter: brightness(.92);
+		}
+
+		.btn:disabled {
+			opacity: .45;
+			cursor: not-allowed;
+		}
+
+		.btn-primary {
+			background: linear-gradient(to bottom,
+					color-mix(in srgb, var(--nc-primary) 70%, #FF0000),
+					color-mix(in srgb, var(--nc-primary) 70%, #000000));
+			color: #fff;
+		}
+
+		.btn-secondary {
+			background: var(--nc-bg-alt);
+			color: var(--nc-text);
+			border: 1px solid var(--nc-border);
+		}
+
+		.btn-danger {
+			background: var(--nc-danger);
+			color: #fff;
+		}
+
+		.btn-icon {
+			padding: .35rem .55rem;
+			border: none;
+			border-radius: var(--nc-radius);
+			background: var(--nc-success);
+			color: #fff;
+			font-size: 1.1rem;
+			font-weight: 700;
+			cursor: pointer;
+			line-height: 1;
+		}
+
+		.btn-icon:hover {
+			filter: brightness(.9);
+		}
+
+		/* Input fields */
+		input[type="text"],
+		input[type="email"],
+		input[type="password"],
+		input[type="number"],
+		input[type="search"],
+		textarea,
+		select {
+			width: 100%;
+			padding: .5rem .75rem;
+			border: 1px solid var(--nc-border);
+			border-radius: var(--nc-radius);
+			font-size: .92rem;
+			font-family: var(--nc-font);
+			background: var(--nc-bg);
+			color: var(--nc-text);
+			box-sizing: border-box;
+		}
+
+		input[type="text"]:focus,
+		input[type="email"]:focus,
+		input[type="password"]:focus,
+		input[type="number"]:focus,
+		input[type="search"]:focus,
+		textarea:focus,
+		select:focus {
+			outline: none;
+			border-color: var(--nc-border-focus);
+		}
+
+		/* Common UI states */
+		.nc-empty {
+			text-align: center;
+			padding: 3rem 1rem;
+			color: var(--nc-text-dim);
+			font-size: .92rem;
+		}
+
+		.nc-empty p {
+			margin-bottom: 1rem;
+		}
+	</style>
+	{block name="head"}{/block}
+</head>
+
+<body>
+
+	{assign var="p" value=$page|default:'dashboard'}
+	{if !$nc_partial}
+	{* ── Top bar ── *}
+	<div id="topbar">
+		<button id="sidebar-toggle" title="Toggle menu" aria-label="Toggle menu">
+			<span></span><span></span><span></span>
+		</button>
+		<div id="store-logo-area">
+			{* Logo image will go here once uploaded *}
+			<span id="topbar-store-name">{$site_name|escape}</span>
+		</div>
+		<div id="topbar-right">
+			{if $admin_avatar}
+			<img src="{$admin_avatar|escape}" id="admin-avatar" alt="{$admin_user|escape}">
+			{else}
+			<span id="admin-avatar-initials">{$admin_user|truncate:2:'':true|upper}</span>
+			{/if}
+			<span id="admin-user-label">{$admin_user|escape}</span>
+			<div class="topbar-divider"></div>
+			<a href="{$url_root}" target="_blank" rel="noopener">
+				Visit Store
+				<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"
+					stroke-linecap="round" stroke-linejoin="round">
+					<path d="M7 1h4v4M11 1L5 7" />
+					<path d="M9 7v4H1V3h4" />
+				</svg>
+			</a>
+			<div class="topbar-divider"></div>
+			<a href="{$url_admin}?route=logout">Log Out</a>
+		</div>
+	</div>
+
+	{* ── Sidebar ── *}
+	<div id="sidebar">
+		<nav>
+			{* ── Plugin groups: before ── *}
+			<div id="plugin-groups-before" style="display:none"></div>
+			{foreach $plugin_menu_groups_before as $pg}
+			<div class="nav-group{if $pg.is_active} open{/if}" data-plugin-group="{$pg.code|escape}">
+				<button class="nav-group-head" aria-expanded="{if $pg.is_active}true{else}false{/if}">
+					<span class="nav-icon">{$pg.icon|escape}</span><span class="nav-label">{$pg.label|escape}</span>
+					<span class="nav-group-arrow">&#8250;</span>
+				</button>
+				<div class="nav-group-items" data-section="{$pg.section|escape}">
+					{foreach $pg.items as $pgi}
+					<a href="{$url_admin}?route={$pgi.route|escape}"
+						class="nav-link nav-child{if $p==$pgi.route} active{/if}"
+						data-plugin-nav="{$pg.section|escape}">{$pgi.label|escape}</a>
+					{/foreach}
+				</div>
+			</div>
+			{/foreach}
+
+			{* ── Dashboard (plugin) ── *}
+			{if isset($active_plugins['dashboard'])}
+			<a href="{$url_admin}?route=dashboard" class="nav-link{if $p=='dashboard'} active{/if}">
+				<span class="nav-icon">&#9783;</span><span class="nav-label">Dashboard</span>
+			</a>
+			{/if}
+
+			{* ── Orders ── *}
+			{if ($access & 8)}
+			<a href="{$url_admin}?route=orders" class="nav-link{if $p=='orders'} active{/if}">
+				<span class="nav-icon">&#128230;</span><span class="nav-label">Orders</span>
+			</a>
+			{/if}
+
+			{* ── Catalog ── *}
+			{if ($access & 8)}
+			<div class="nav-group{if $p=='categories'||$p=='products'||$p=='options'||$p=='reviews'} open{/if}">
+				<button class="nav-group-head"
+					aria-expanded="{if $p=='categories'||$p=='products'||$p=='options'||$p=='reviews'}true{else}false{/if}">
+					<span class="nav-icon">&#128085;</span><span class="nav-label">Catalog</span>
+					<span class="nav-group-arrow">&#8250;</span>
+				</button>
+				<div class="nav-group-items">
+					<a href="{$url_admin}?route=categories"
+						class="nav-link nav-child{if $p=='categories'} active{/if}">Categories</a>
+					<a href="{$url_admin}?route=products"
+						class="nav-link nav-child{if $p=='products'} active{/if}">Products</a>
+					<a href="{$url_admin}?route=options"
+						class="nav-link nav-child{if $p=='options'} active{/if}">Options</a>
+					{if ($access & 64) && isset($active_plugins.reviews)}
+					<a href="{$url_admin}?route=reviews"
+						class="nav-link nav-child{if $p=='reviews'} active{/if}">Reviews</a>
+					{/if}
+					{foreach $plugin_menu_catalog as $pmi}
+					<a href="{$url_admin}?route={$pmi.route|escape}"
+						class="nav-link nav-child{if $p==$pmi.route} active{/if}">{$pmi.label|escape}</a>
+					{/foreach}
+				</div>
+			</div>
+			{/if}
+
+			{* ── Customers ── *}
+			{if ($access & 8)}
+			<div class="nav-group{if $p=='customers'||$p=='messages'||$p=='discounts'||$customers_group_open} open{/if}">
+				<button class="nav-group-head"
+					aria-expanded="{if $p=='customers'||$p=='messages'||$p=='discounts'||$customers_group_open}true{else}false{/if}">
+					<span class="nav-icon">&#128101;</span><span class="nav-label">Customers</span>
+					<span class="nav-group-arrow">&#8250;</span>
+				</button>
+				<div class="nav-group-items">
+					<a href="{$url_admin}?route=customers"
+						class="nav-link nav-child{if $p=='customers'} active{/if}">Customers</a>
+					<a href="{$url_admin}?route=messages"
+						class="nav-link nav-child{if $p=='messages'} active{/if}">Messages</a>
+					<a href="{$url_admin}?route=discounts"
+						class="nav-link nav-child{if $p=='discounts'} active{/if}">Discounts</a>
+					{foreach $plugin_menu_customers as $pmi}
+					<a href="{$url_admin}?route={$pmi.route|escape}"
+						class="nav-link nav-child{if $p==$pmi.route} active{/if}">{$pmi.label|escape}</a>
+					{/foreach}
+				</div>
+			</div>
+			{/if}
+
+			{* ── Content ── *}
+			{if ($access & 128)}
+			<div
+				class="nav-group{if $p=='filemanager'||$p=='pages'||$p=='page-edit'||$plugin_content_active} open{/if}">
+				<button class="nav-group-head"
+					aria-expanded="{if $p=='filemanager'||$p=='pages'||$p=='page-edit'||$plugin_content_active}true{else}false{/if}">
+					<span class="nav-icon">&#128196;</span><span class="nav-label">Content</span>
+					<span class="nav-group-arrow">&#8250;</span>
+				</button>
+				<div class="nav-group-items">
+					<a href="{$url_admin}?route=filemanager"
+						class="nav-link nav-child{if $p=='filemanager'} active{/if}">File Manager</a>
+					<a href="{$url_admin}?route=pages"
+						class="nav-link nav-child{if $p=='pages'||$p=='page-edit'} active{/if}">Pages</a>
+					{foreach $plugin_menu_content as $pmi}
+					<a href="{$url_admin}?route={$pmi.route|escape}"
+						class="nav-link nav-child{if $p==$pmi.route} active{/if}"
+						data-plugin-nav="content">{$pmi.label|escape}</a>
+					{/foreach}
+				</div>
+			</div>
+			{/if}
+
+			{* ── Setup & Utilities ── *}
+			{if $access == 254}
+			<div
+				class="nav-group{if $p=='setup'||$p=='plugins'||$p=='locations'||$p=='reports'||$p=='shipping'} open{/if}">
+				<button class="nav-group-head"
+					aria-expanded="{if $p=='setup'||$p=='plugins'||$p=='locations'||$p=='reports'||$p=='shipping'}true{else}false{/if}">
+					<span class="nav-icon">&#128295;</span><span class="nav-label">Setup &amp; Utilities</span>
+					<span class="nav-group-arrow">&#8250;</span>
+				</button>
+				<div class="nav-group-items" data-section="setup">
+					<a href="{$url_admin}?route=setup" class="nav-link nav-child{if $p=='setup'} active{/if}">Setup
+						&amp; Utilities</a>
+					<a href="{$url_admin}?route=plugins"
+						class="nav-link nav-child{if $p=='plugins'} active{/if}">Plugins</a>
+					<a href="{$url_admin}?route=locations"
+						class="nav-link nav-child{if $p=='locations'} active{/if}">Locations &amp; Tax</a>
+					{if ($access & 32)}
+					<a href="{$url_admin}?route=reports"
+						class="nav-link nav-child{if $p=='reports'} active{/if}">Reports</a>
+					{/if}
+					<a href="{$url_admin}?route=shipping"
+						class="nav-link nav-child{if $p=='shipping'} active{/if}">Shipping</a>
+					{foreach $plugin_menu_setup as $pmi}
+					<a href="{$url_admin}?route={$pmi.route|escape}"
+						class="nav-link nav-child{if $p==$pmi.route} active{/if}"
+						data-plugin-nav="setup">{$pmi.label|escape}</a>
+					{/foreach}
+				</div>
+			</div>
+			{/if}
+
+			{* ── Plugin groups: after ── *}
+			<div id="plugin-groups-after" style="display:none"></div>
+			{foreach $plugin_menu_groups_after as $pg}
+			<div class="nav-group{if $pg.is_active} open{/if}" data-plugin-group="{$pg.code|escape}">
+				<button class="nav-group-head" aria-expanded="{if $pg.is_active}true{else}false{/if}">
+					<span class="nav-icon">{$pg.icon|escape}</span><span class="nav-label">{$pg.label|escape}</span>
+					<span class="nav-group-arrow">&#8250;</span>
+				</button>
+				<div class="nav-group-items" data-section="{$pg.section|escape}">
+					{foreach $pg.items as $pgi}
+					<a href="{$url_admin}?route={$pgi.route|escape}"
+						class="nav-link nav-child{if $p==$pgi.route} active{/if}"
+						data-plugin-nav="{$pg.section|escape}">{$pgi.label|escape}</a>
+					{/foreach}
+				</div>
+			</div>
+			{/foreach}
+
+		</nav>
+		<div id="btn-clear-cache" class="nav-group"
+			title="Clear the template cache. NOTE: This does NOT clear your browser cache.">
+			<button class="nav-group-head" notrigger>
+				<span style="flex-shrink:0;width:18px;text-align:center;font-size:1rem;opacity:.8">&#128472;</span>
+				<span class="nav-label">Clear Cache</span>
+			</button>
+		</div>
+		<div id="sidebar-foot">
+			{$ec_name} v{$ec_version}<br>
+			&copy; {$smarty.now|date_format:'%Y'} {$ec_company|escape}
+		</div>
+	</div>
+
+	{/if}{* end nc_partial chrome *}
+
+	{* ── Main ── *}
+	<div id="main" class="page-{$p}">
+
+		<div id="content-header">
+			<h1>{block name="page_title"}{$page_title|default:''|escape}{/block}</h1>
+			{block name="content_actions"}{/block}
+		</div>
+
+		<div id="content">
+			{if $flash}
+			<div class="flash flash-{$flash.type|escape}">{$flash.message|escape}</div>
+			{/if}
+
+			{* ── Incomplete item reminders ── *}
+			{if $reminders}
+			<div id="reminders-wrap">
+				{foreach $reminders as $r}
+				<div class="reminder-banner" data-entity="{$r.entity|escape}" data-entity-id="{$r.entity_id|escape}">
+					<span class="reminder-icon">&#9888;</span>
+					<span class="reminder-text">
+						<strong>{$r.label|escape}</strong> &mdash; {$r.message|escape}
+					</span>
+				</div>
+				{/foreach}
+			</div>
+			{/if}
+
+			{block name="content"}
+			{if $page == 'dashboard'}
+			<p>Welcome back, {$admin_user|escape}.</p>
+			{elseif $page == '404'}
+			<p>Page not found.</p>
+			{/if}
+			{/block}
+		</div>
+
+		{if !$nc_partial}
+		<div id="admin-footer">
+			{$ec_name} &mdash; &copy; {$smarty.now|date_format:'%Y'} <a href="{$ec_company_url|escape}"
+				target="_blank" rel="noopener" style="color:inherit">{$ec_company|escape}</a>
+		</div>
+		{/if}
+
+	</div>{* /main *}
+
+	{* ── JS ── *}
+	{* ── Global NC object (must be before filemanager.js which depends on it) ── *}
+	<script>
+		var NC = {
+			adminUrl: '{$url_admin}',
+			rootUrl: '{$url_root}',
+			adminReal: '{$url_admin_real}',
+			siteName: '{$site_name|escape:"javascript"}',
+			access: {$access|intval},
+			upgradeUrl: '{$ec_upgrade_url|default:"https://edgecart.io/plugins"|escape:"javascript"}'
+		};
+	</script>
+
+	{* ── Vendor JS (loaded before page scripts so helpers are available) ── *}
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"
+		integrity="sha384-1H217gwSVyLSIfaLxHbE7dRb3v4mYCKbpQvzx0cegeju1MVsGrX5xXxAvs/HgeFs"
+		crossorigin="anonymous"></script>
+	<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"
+		integrity="sha384-Udt767MMeKelGRBxaCfxX88YDLbViYdQ7T/gkRoB197Jf+OviZ+lsaRAOpS/MIjf"
+		crossorigin="anonymous"></script>
+	<script src="{$url_root}js/vendor/roller-select.js?v={$nowstr}"></script>
+	<script src="{$url_admin_real}js/nc-tabs.js?v={$nowstr}"></script>
+	<script src="{$url_admin_real}js/filemanager.js?v={$nowstr}"></script>
+	<script src="{$url_root}js/app.js?v={$nowstr}"></script>
+	<script src="{$url_root}js/vendor/debounce-button.js?v={$nowstr}"></script>
+	<script src="{$url_root}js/vendor/password-field.js?v={$nowstr}"></script>
+	<script src="{$url_root}js/vendor/SimpleNotification/simpleNotification.min.js?v={$nowstr}"></script>
+	<script src="{$url_root}js/vendor/ios-toggle.js?v={$nowstr}"></script>
+	<script src="{$url_root}js/vendor/maps-edge-date.js?v={$nowstr}"></script>
+	<script src="{$url_root}js/vendor/trumbowyg/trumbowyg.js?v={$nowstr}"></script>
+	<script src="{$url_root}js/vendor/trumbowyg/plugins/fontsize/trumbowyg.fontsize.min.js?v={$nowstr}"></script>
+	<script src="{$url_root}js/vendor/trumbowyg/plugins/fontfamily/trumbowyg.fontfamily.min.js?v={$nowstr}"></script>
+	<script src="{$url_root}js/vendor/save-button.js?v={$nowstr}"></script>
+	{* Drag reorder (product images/rows, pages, page-blocks) uses SortableJS
+	   with forceFallback — native HTML5 Drag and Drop has a real
+	   Chromium/Linux platform bug where a real physical drag never
+	   progresses past dragstart; forceFallback uses pointer events instead,
+	   sidestepping the native OS drag handoff entirely. *}
+	<script src="{$url_root}js/vendor/sortablejs/Sortable.min.js?v={$nowstr}"></script>
+	<script src="{$url_admin_real}js/layout.js?v={$nowstr}"></script>
+	<div id="page-scripts-wrap">{block name="scripts"}{/block}{if $plugin_page_scripts}{foreach $plugin_page_scripts as $_s}{$_s nofilter}{/foreach}{/if}</div>
+</body>
+
+</html>

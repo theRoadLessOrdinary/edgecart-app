@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+    <code>email-templates</code>
+    <name>Email Templates</name>
+    <version>1.0</version>
+    <type>marketing</type>
+    <icon>✉</icon>
+    <author>EdgeCart</author>
+    <description>Reusable email templates with [tokens] and signatures, offered in the order Message tab, plus events that send a template automatically (for example when an order status changes to Shipped). Manage them from Setup, Email Templates in the sidebar. This plugin has no settings drawer.</description>
+    <hooks>
+        <hook>app.boot</hook>
+    </hooks>
+    <admin_menu>
+        <item section="setup" label="Email Templates" route="email-templates"/>
+    </admin_menu>
+</plugin>

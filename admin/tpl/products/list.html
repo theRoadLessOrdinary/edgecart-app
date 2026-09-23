@@ -1,0 +1,272 @@
+{extends file="../layout.html"}
+
+{block name="title"}Products — {$site_name|escape}{/block}
+
+{block name="head"}
+<link rel="stylesheet" href="{$url_admin_real}css/products.css?v={$prod_css_v}">
+{/block}
+
+{block name="content"}
+
+<div class="nc-toolbar">
+	<button class="btn btn-primary" id="btn-add-product"
+		data-prod-per-cat-limit="{$prod_per_cat_limit}"
+		data-options-limit="{$options_per_prod_limit}"
+		data-images-limit="{$images_per_prod_limit}"
+		data-cat-limit="{$cat_limit}"
+		data-cat-count="{$cat_count}"
+		data-product-cat-limit="{$product_cat_limit}">+ Add Product</button>
+	<button class="btn btn-danger"  id="btn-bulk-delete" disabled style="float: right">Delete Selected</button>
+</div>
+
+<div class="prod-filter-bar" id="prod-filter-bar">
+	<input  type="search" id="flt-name" class="prod-flt-input" placeholder="Search by name…" aria-label="Filter by product name">
+	<select id="flt-cat"      class="prod-flt-select" aria-label="Filter by category">
+		<option value="">All Categories</option>
+	</select>
+	<roller-select id="flt-status" class="prod-flt-roller" aria-label="Filter by active status">
+		<rs-item value="">Active &amp; Inactive</rs-item>
+		<rs-item value="1">Active only</rs-item>
+		<rs-item value="0">Inactive only</rs-item>
+	</roller-select>
+	<roller-select id="flt-featured" class="prod-flt-roller" aria-label="Filter by featured">
+		<rs-item value="">Featured &amp; Not</rs-item>
+		<rs-item value="1">Featured only</rs-item>
+		<rs-item value="0">Not featured</rs-item>
+	</roller-select>
+	<button class="btn" id="btn-flt-clear" style="display:none">&#10005; Clear</button>
+</div>
+
+<table class="nc-table" id="prod-table">
+	<thead>
+		<tr>
+			<th class="col-drag"></th>
+			<th data-sort="name">Product <span class="sort-ind" aria-hidden="true"></span></th>
+			<th data-sort="categories">Categories <span class="sort-ind" aria-hidden="true"></span></th>
+			<th class="col-price" data-sort="price">Price / List <span class="sort-ind" aria-hidden="true"></span></th>
+			<th class="col-stock" data-sort="stock">Stock <span class="sort-ind" aria-hidden="true"></span></th>
+			<th class="col-active" data-sort="status">Active <span class="sort-ind" aria-hidden="true"></span></th>
+			<th class="col-toggle" data-sort="featured">Featured <span class="sort-ind" aria-hidden="true"></span></th>
+			<th class="col-delete"></th>
+			<th class="col-menu"></th>
+			<th class="col-check"><input type="checkbox" id="chk-all" title="Select all"></th>
+		</tr>
+	</thead>
+	<tbody id="prod-tbody">
+		<tr id="prod-loading-row">
+			<td colspan="10">
+				<div class="nc-empty"><span class="nc-spinner"></span></div>
+			</td>
+		</tr>
+		<tr id="prod-empty-row" style="display:none">
+			<td colspan="10">
+				<div class="nc-empty">
+					<p>No products yet.</p>
+					<button class="btn btn-primary" id="btn-add-first">Add your first product</button>
+				</div>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<div id="drawer-overlay"></div>
+
+<me-drawer id="prod-drawer">
+	<drawer-head>
+		<h2 id="drawer-title">Add Product</h2>
+		<button class="drawer-close" id="drawer-close">&times;</button>
+	</drawer-head>
+
+	<drawer-content id="prod-drawer-content">
+		<input type="hidden" id="prod-id" value="">
+
+		<div class="drawer-tabs" role="tablist" aria-label="Product sections">
+			<button class="drawer-tab active" data-panel="details" role="tab" aria-selected="true"  aria-controls="panel-details">Details</button>
+			<button class="drawer-tab"        data-panel="images"  role="tab" aria-selected="false" aria-controls="panel-images">Images</button>
+			<button class="drawer-tab"        data-panel="options" role="tab" aria-selected="false" aria-controls="panel-options">Options</button>
+			<button class="drawer-tab"        data-panel="seo"     role="tab" aria-selected="false" aria-controls="panel-seo">SEO</button>
+			{if $plugin_product_tabs}{foreach $plugin_product_tabs as $_t}{$_t nofilter}{/foreach}{/if}
+		</div>
+		<div class="drawer-tab-name" id="drawer-tab-name" aria-hidden="true"></div>
+
+		{* ── Details tab ── *}
+		<div class="drawer-tab-panel active" id="panel-details" role="tabpanel">
+
+			<div class="df">
+				<label for="prod-name">Product Name <span class="field-required" aria-hidden="true">*</span></label>
+				<input type="text" id="prod-name" maxlength="255" required
+				       aria-required="true" aria-label="Product name">
+			</div>
+
+			<div class="df-row">
+				<div class="df">
+					<label for="prod-sku">SKU</label>
+					<input type="text" id="prod-sku" maxlength="128" data-uppercase aria-label="SKU">
+				</div>
+				<div class="df">
+					<label for="prod-price">Price <span class="field-required" aria-hidden="true">*</span></label>
+					<input type="number" id="prod-price" min="0" step="0.01" required aria-required="true" aria-label="Price">
+				</div>
+				<div class="df">
+					<label for="prod-list-price">List Price</label>
+					<input type="number" id="prod-list-price" min="0" step="0.01" aria-label="List price">
+					<div class="hint">Shown with "You save X%" when higher than price</div>
+				</div>
+			</div>
+
+			<div class="df-row">
+				<div class="df">
+					<label for="prod-stock">Stock</label>
+					<input type="number" id="prod-stock" min="-1" step="1" value="-1" aria-label="Stock quantity">
+					<div class="hint">-1 disables stock check</div>
+				</div>
+				<div class="df">
+					<label for="prod-weight">Weight</label>
+					<input type="number" id="prod-weight" min="0" step="0.01" aria-label="Product weight">
+					<div class="hint">For shipping calculations</div>
+				</div>
+			</div>
+
+			<div class="df-section">Categories</div>
+
+			<div class="df">
+				<div class="cat-list" id="prod-cat-list" role="group" aria-label="Product categories">
+					<span style="color:var(--nc-text-dim);font-size:.83rem">Loading…</span>
+				</div>
+				<div class="quick-add-row">
+					<input type="text" id="quick-cat-name" placeholder="Add new category…" maxlength="255" aria-label="New category name">
+					<button type="button" class="btn-icon" id="btn-quick-add-cat" title="Add category" aria-label="Add new category">+</button>
+				</div>
+			</div>
+
+			<div class="df-section">Description</div>
+
+			<div class="df">
+				<div class="df-label-row">
+					<label for="prod-desc">Short Description</label>
+					<button type="button" class="btn-ai btn-xs" id="btn-prod-ai-short"
+					        aria-label="Generate short description with AI">&#10024; AI</button>
+				</div>
+				<textarea id="prod-desc" rows="2" aria-label="Short description"></textarea>
+			</div>
+
+			<div class="df">
+				<div class="df-label-row">
+					<label for="prod-desc-long">Full Description</label>
+					<button type="button" class="btn-ai btn-xs" id="btn-prod-ai-long"
+					        aria-label="Generate full description with AI">&#10024; AI</button>
+				</div>
+				<textarea id="prod-desc-long" rows="4" aria-label="Full description"></textarea>
+			</div>
+
+			<div class="df-section">Options</div>
+
+			<div class="df-row">
+				<div class="df-toggle">
+					<ios-toggle id="prod-active" name="prod-active" size="sm" checked aria-label="Active"></ios-toggle>
+					<label for="prod-active">Active</label>
+				</div>
+				<div class="df-toggle">
+					<ios-toggle id="prod-featured" name="prod-featured" size="sm" aria-label="Featured"></ios-toggle>
+					<label for="prod-featured">Featured</label>
+				</div>
+				<div class="df-toggle">
+					<ios-toggle id="prod-free-ship" name="prod-free-ship" size="sm" aria-label="Free shipping"></ios-toggle>
+					<label for="prod-free-ship">Free Shipping</label>
+				</div>
+				<div class="df-toggle">
+					<ios-toggle id="prod-requires-shipping" name="prod-requires-shipping" size="sm" aria-label="Requires shipping"></ios-toggle>
+					<label for="prod-requires-shipping">Requires Shipping<span class="help-tip" tabindex="0" data-tip="Off for digital/download products with no physical shipping at all. When every item in a cart has this off, checkout skips the shipping step entirely.">?</span></label>
+				</div>
+			</div>
+
+		</div>{* /panel-details *}
+
+		{* ── Images tab ── *}
+		<div class="drawer-tab-panel" id="panel-images" role="tabpanel">
+			<div class="img-upload-zone" id="img-drop-zone" role="button" tabindex="0"
+			     aria-label="Drop images here or click to browse">
+				<div>&#128247; Drop images here or click to browse</div>
+				<div style="font-size:.78rem;margin-top:.3rem">JPG, PNG or WebP.</div>
+			</div>
+			<input type="file" id="img-file-input" accept="image/jpeg,image/png,image/webp" multiple
+			       style="display:none" aria-label="Upload product images">
+			<button type="button" class="btn btn-secondary btn-fm-picker" id="btn-open-fm"
+			        aria-label="Choose image from File Manager">&#128193; Choose from File Manager</button>
+			<div class="img-grid" id="img-grid" role="list" aria-label="Product images"></div>
+			<p class="hint" style="margin-top:.65rem">Images sorted by drag. First image is primary.</p>
+		</div>
+
+		{* ── SEO tab ── *}
+		<div class="drawer-tab-panel" id="panel-seo" role="tabpanel">
+			<div class="seo-panel-head">
+				<button type="button" class="btn btn-secondary btn-sm btn-ai-seo" id="btn-prod-ai-seo"
+				        aria-label="Generate all SEO fields with AI">&#10024; Generate All SEO</button>
+			</div>
+			<div class="df">
+				<label for="prod-seo-title">Page Title</label>
+				<input type="text" id="prod-seo-title" maxlength="300"
+				       placeholder="Defaults to product name if left blank"
+				       aria-label="SEO page title">
+			</div>
+			<div class="df">
+				<label for="prod-seo-keywords">Keywords</label>
+				<input type="text" id="prod-seo-keywords" maxlength="500"
+				       placeholder="comma, separated, keywords"
+				       aria-label="SEO keywords">
+			</div>
+			<div class="df">
+				<label for="prod-seo-description">Meta Description</label>
+				<textarea id="prod-seo-description" rows="3" maxlength="500"
+				          placeholder="Defaults to short description if left blank"
+				          aria-label="SEO meta description"></textarea>
+			</div>
+		</div>
+
+		{* ── Options tab ── *}
+		<div class="drawer-tab-panel" id="panel-options" role="tabpanel">
+
+			{* Autocomplete to add an option *}
+			<div class="df" style="position:relative">
+				<label for="opt-search-input">Add Option</label>
+				<input type="text" id="opt-search-input" placeholder="Search options…"
+				       autocomplete="off" aria-label="Search and add option"
+				       aria-autocomplete="list" aria-controls="opt-search-results">
+				<ul id="opt-search-results" class="opt-autocomplete-list" role="listbox"
+				    aria-label="Option suggestions" style="display:none"></ul>
+			</div>
+
+			<div id="product-options-list" role="list" aria-label="Product options">
+				{* rendered by JS *}
+			</div>
+
+		</div>
+
+		{if $plugin_product_panels}{foreach $plugin_product_panels as $_p}{$_p nofilter}{/foreach}{/if}
+
+		<!-- Scroll indicator -->
+		<div class="drawer-scroll-indicator hidden" id="prod-scroll-indicator" aria-hidden="true">
+			<span class="drawer-scroll-chevron">&#8964;</span>
+		</div>
+
+	</drawer-content>
+
+	<drawer-foot>
+		<button class="btn btn-secondary" id="btn-drawer-cancel">Cancel</button>
+		<save-button class="btn btn-primary" id="btn-drawer-save" data-label="Save">Save</save-button>
+	</drawer-foot>
+</me-drawer>
+
+{/block}
+
+{block name="scripts"}
+<script>
+Object.assign(NC, {
+	adminUrl:    '{$url_admin}',
+	rootUrl:     '{$url_root}',
+	deepaiKey:   '{$deepai_key|escape:"javascript"}',
+	weightClass: '{$weight_class|escape:"javascript"}'
+});
+</script>
+<script src="{$url_admin_real}js/products.js?v={$prod_js_v}"></script>
+{/block}

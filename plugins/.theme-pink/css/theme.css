@@ -1,0 +1,21 @@
+/* Theme: Pink — bold rose */
+:root {
+    --nc-primary:        #c2185b;
+    --nc-primary-hover:  #a0144d;
+    --nc-primary-muted:  #fce4ec;
+    --nc-border-focus:   #c2185b;
+    --nc-utility-text:       #ffffff;
+    --nc-utility-text-hover: #ffffff;
+
+    --nc-footer-bg:      #a0144d;
+    --nc-footer-text:    #ffffff;
+    --nc-sidebar-bg:     #2a1020;
+    --nc-sidebar-hover:  #501a38;
+    --nc-sidebar-open:   linear-gradient(to bottom, #361429, #200c19);
+    --nav-group-open:   #1b0915;
+    --nc-sidebar-active: #ec4899;
+    --nc-sidebar-text:   #e8c8d8;
+    --nc-sidebar-dim:    #aa7a90;
+    --nc-topbar-bg:      #501a38;
+    --nc-topbar-text:    #ffffff;
+}

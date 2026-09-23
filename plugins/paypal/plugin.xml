@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+    <code>paypal</code>
+    <name>PayPal Payments</name>
+    <version>1.0.0</version>
+    <type>payment</type>
+    <icon>🅿</icon>
+    <author>EdgeCart</author>
+    <description>Accept payments via PayPal using the PayPal JS SDK.</description>
+    <hooks>
+        <hook>catalog.checkout.payment_methods</hook>
+        <hook>catalog.checkout.payment_scripts</hook>
+        <hook>catalog.order.payment_complete</hook>
+    </hooks>
+    <settings origin="paypal">
+        <key>paypal_mode</key>
+        <key>paypal_sandbox_client_id</key>
+        <key>paypal_sandbox_secret_key</key>
+        <key>paypal_live_client_id</key>
+        <key>paypal_live_secret_key</key>
+    </settings>
+</plugin>

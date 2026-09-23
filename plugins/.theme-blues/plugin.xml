@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+    <name>Theme: Blues</name>
+    <code>theme-blues</code>
+    <version>1.0</version>
+    <type>theme</type>
+    <description>Cool blue color scheme with deep navy admin sidebar.</description>
+</plugin>

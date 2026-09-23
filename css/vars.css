@@ -1,0 +1,98 @@
+/**
+ * new-cart — CSS custom properties (shared)
+ * Single source of truth. Loaded by both admin and catalog layouts.
+ * Never repeat a value elsewhere.
+ */
+
+:root {
+	/* ── Brand ── */
+	--nc-primary:        #8f4a29;
+	--nc-primary-hover:  #86422a;
+	--nc-primary-muted:  #f5ede4;
+	--nc-primary-text:   #fff;
+	--nc-success:        #22a34a;
+	--nc-danger:         #d32f2f;
+	--nc-warning:        #f57c00;
+
+	/* ── Text ── */
+	--nc-text:           #1a1a1a;
+	--nc-text-secondary: #444444;
+	--nc-text-dim:       #555555;
+
+	/* ── Backgrounds ── */
+	--nc-bg:             #ffffff;
+	--nc-bg-alt:         #f8f9fa;
+	--nc-bg-page:        #f0f2f5;
+	--nc-surface:        #ffffff;
+	--nc-hover:          #f3f4f6;
+
+	/* ── Borders ── */
+	--nc-border:         #5a6472;
+	--nc-border-light:   #e5e7eb;
+	--nc-border-focus:   #2563eb;
+
+	/* ── Toggle ── */
+	--nc-track-off:      #c7c7cc;
+	--nc-thumb:          #00CF00;
+
+	/* ── Sidebar (admin) ── */
+	--nc-sidebar-bg:     #1e2a38;
+	--nc-sidebar-hover:  #42576d;
+	--nc-sidebar-open:   #4c647e;
+	--nc-sidebar-active: #2563eb;
+	--nc-sidebar-text:   #c8d0da;
+	--nc-sidebar-dim:    #7a8a9a;
+	--nav-group-open: #253446;
+
+	/* ── Topbar (admin) ── */
+	--nc-topbar-bg:      #2c3e50;
+	--nc-topbar-text:    #ffffff;
+
+	/* ── Utility bar ── */
+	--nc-utility-text:       #ffffff;
+	--nc-utility-text-hover: #ffffff;
+
+	/* ── Footer (brand) ── */
+	--nc-footer-bg:         #86422a;
+	--nc-footer-text:       #ffffff;
+	--nc-footer-text-hover: #ffffff;
+	--nc-footer-gradient:   linear-gradient(to bottom, var(--nc-footer-bg), var(--nc-primary-hover));
+
+	/* ── Sizing ── */
+	--nc-sidebar-w:            220px;
+	--nc-sidebar-w-collapsed:   48px;
+	--nc-topbar-h:              52px;
+	--nc-radius:                .375rem;
+	--nc-radius-sm:             .25rem;
+	--nc-radius-lg:             .5rem;
+
+	/* ── Font ── */
+	--nc-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+	--nc-font-heading: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+	/* ── Shadows ── */
+	--nc-box-shadow:     3px 3px 6px rgba(0,0,0,.5);
+	--nc-box-shadow-med: 6px 6px 12px rgba(0,0,0,.5);
+	--nc-box-shadow-far: 10px 10px 20px rgba(0,0,0,.5);
+
+	/* ── Layout ── */
+	--nc-content-w:  1200px;
+	--nc-content-px: 1.5rem;
+
+	/* ── Spacing / input ── */
+	--nc-input-padding:          .5rem .7rem;
+	--nc-flt-padding:            .38rem .6rem;
+	--nc-focus-shadow:           0 0 0 3px rgba(37,99,235,.12);
+	--nc-table-th-padding:       .65rem .85rem;
+	--nc-table-td-padding:       .55rem .85rem;
+	--nc-drawer-padding:         1rem 1.25rem;
+	--nc-drawer-content-padding: 1.25rem;
+	--nc-drawer-shadow:          -4px 0 32px rgba(0,0,0,.15);
+	--nc-overlay-bg:             rgba(0,0,0,.35);
+
+	/* ── AI button ── */
+	--nc-ai-bg:     #f0f7ff;
+	--nc-ai-border: #bfdbfe;
+	--nc-ai-color:  #1d4ed8;
+	--nc-ai-hover:  #dbeafe;
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+    <code>db-backup</code>
+    <name>Database Backup</name>
+    <version>1.0</version>
+    <type>utility</type>
+    <icon>💾</icon>
+    <author>EdgeCart</author>
+    <description>One-click database backup. Downloads a complete SQL dump of the store database directly to your browser. Use it from Setup &amp; Utilities → DB Backup in the sidebar — this plugin has no settings drawer.</description>
+    <admin_menu section="setup">
+        <item label="DB Backup" route="db-backup" />
+    </admin_menu>
+</plugin>

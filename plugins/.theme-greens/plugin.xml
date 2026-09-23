@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+    <name>Theme: Greens</name>
+    <code>theme-greens</code>
+    <version>1.0</version>
+    <type>theme</type>
+    <description>Rich forest green color scheme with deep woodland admin sidebar.</description>
+</plugin>

@@ -1,0 +1,419 @@
+/* ── Products admin ── */
+
+/* ── Filter bar ── */
+.prod-filter-bar {
+	padding: .5rem 0 .75rem;
+}
+.prod-flt-input,
+.prod-flt-select,
+.prod-flt-roller {
+	display: inline-block;
+	vertical-align: middle;
+	margin-right: .5rem;
+}
+.prod-flt-input {
+	padding: var(--nc-flt-padding);
+	border: 1px solid var(--nc-border);
+	border-radius: var(--nc-radius);
+	font-size: .85rem;
+	font-family: var(--nc-font);
+	background: var(--nc-bg);
+	color: var(--nc-text);
+	box-sizing: border-box;
+	max-width: 20rem !important;
+	width: auto !important;
+}
+.prod-flt-select {
+	padding: var(--nc-flt-padding);
+	border: 1px solid var(--nc-border);
+	border-radius: var(--nc-radius);
+	font-size: .85rem;
+	font-family: var(--nc-font);
+	background: var(--nc-bg);
+	color: var(--nc-text);
+	height: 2.1rem;
+	box-sizing: border-box;
+	cursor: pointer;
+	max-width: 20rem !important;
+	width: auto !important;
+}
+
+/* ── Sort headers ── */
+th[data-sort] {
+	cursor: pointer;
+	user-select: none;
+}
+th[data-sort]:hover { background: var(--nc-hover, #f5f5f5); }
+.sort-ind {
+	display: inline-block;
+	width: .9em;
+	text-align: center;
+	font-size: .72em;
+	opacity: .3;
+	margin-left: .25rem;
+	vertical-align: middle;
+}
+.sort-ind::after { content: '⇅'; }
+th.sort-asc  .sort-ind,
+th.sort-desc .sort-ind { opacity: 1; }
+th.sort-asc  .sort-ind::after { content: '▲'; }
+th.sort-desc .sort-ind::after { content: '▼'; }
+
+/* ── Drag disabled when filtered/sorted ── */
+#prod-table.drag-disabled .col-drag { opacity: .25; pointer-events: none; cursor: not-allowed; }
+
+/* ── Table column widths ── */
+.nc-table th.col-drag   { width: 28px; }
+.nc-table th.col-price  { width: 160px; }
+.nc-table th.col-stock  { width: 70px; text-align: center; }
+.nc-table th.col-toggle { width: 70px; text-align: center; }
+.nc-table th.col-active { width: 70px; text-align: center; }
+.nc-table th.col-delete { width: 44px; text-align: center; }
+.nc-table th.col-check  { width: 36px; text-align: center; }
+.nc-table th.col-menu   { width: 34px; text-align: center; }
+
+.nc-table td.col-toggle,
+.nc-table td.col-active,
+.nc-table td.col-delete,
+.nc-table td.col-stock,
+.nc-table td.col-check,
+.nc-table td.col-menu { text-align: center; }
+
+/* ── Product name / SKU ── */
+.prod-name-link {
+	color: var(--nc-primary); cursor: pointer; font-weight: 500;
+	font-size: 1rem;
+	text-decoration: none; background: none; border: none;
+	padding: 0; font-family: var(--nc-font);
+}
+.prod-name-link:hover { text-decoration: underline; }
+.prod-sku {
+	font-size: .78rem; color: var(--nc-text-dim);
+	margin-top: .5rem;
+}
+
+.prod-cats { font-size: .78rem; color: var(--nc-text-secondary); }
+
+/* ── Price display ── */
+.price-display-wrap {
+	display: flex; align-items: baseline; gap: .3rem; flex-wrap: wrap;
+}
+.price-display,
+.list-price-display {
+	cursor: pointer; font-weight: 600;
+}
+.price-display:hover,
+.list-price-display:hover { text-decoration: underline; color: var(--nc-primary); }
+
+.list-price { font-size: .88rem; color: var(--nc-text-secondary); }
+.price-sep  { color: var(--nc-text-dim); font-size: .8rem; }
+
+.price-edit-wrap,
+.list-price-edit-wrap { display: none; margin-top: .2rem; }
+.price-edit-wrap.active,
+.list-price-edit-wrap.active { display: block; }
+.price-edit-wrap input,
+.list-price-edit-wrap input {
+	width: 80px; padding: .25rem .4rem;
+	border: 1px solid var(--nc-border-focus); border-radius: var(--nc-radius-sm);
+	font-size: .85rem; font-family: var(--nc-font); outline: none;
+}
+
+/* ── Stock ── */
+.stock-low       { color: var(--nc-danger); font-weight: 700; }
+.stock-ok        { color: var(--nc-success); }
+.stock-zero      { color: var(--nc-danger); }
+.stock-unlimited { color: var(--nc-text-dim); }
+
+/* ── Row deleting ── */
+.row-deleting      { outline: 1px solid var(--nc-danger); }
+.row-deleting-fade { opacity: 0; transition: opacity .3s ease; }
+
+/* ── Drawer width (products-specific) ── */
+me-drawer, edge-drawer { width: 800px; }
+
+/* ── Drawer form — products-specific ── */
+.df-row { display: flex; flex-wrap: wrap; gap: .75rem; }
+.df-row .df { flex: 1 1 120px; min-width: 0; }
+
+/* ── Category checkboxes ── */
+.cat-list {
+	display: flex; flex-wrap: wrap; gap: .4rem .75rem;
+	max-height: 140px; overflow-y: auto;
+	border: 1px solid var(--nc-border); border-radius: var(--nc-radius);
+	padding: .6rem;
+}
+.cat-list label {
+	display: flex; align-items: center; gap: .35rem;
+	font-size: .85rem; font-weight: normal; cursor: pointer; flex: 0 0 auto;
+}
+.cat-list input[type=checkbox] { width: auto; }
+
+/* ── Quick-add category ── */
+.quick-add-row {
+	display: flex; gap: .5rem; margin-top: .5rem; align-items: center;
+}
+.quick-add-row input {
+	flex: 1; padding: .4rem .6rem;
+	border: 1px solid var(--nc-border); border-radius: var(--nc-radius);
+	font-size: .85rem; font-family: var(--nc-font); color: var(--nc-text);
+	outline: none;
+}
+.quick-add-row input:focus { border-color: var(--nc-border-focus); }
+.btn-icon {
+	padding: .35rem .55rem; border: none; border-radius: var(--nc-radius);
+	background: var(--nc-success); color: #fff; font-size: 1.1rem;
+	font-weight: 700; cursor: pointer; line-height: 1;
+}
+.btn-icon:hover { filter: brightness(.9); }
+
+/* ── Stock edit-in-place ── */
+.stock-display { cursor: pointer; display: inline-block; min-width: 24px; }
+.stock-display:hover { text-decoration: underline; color: var(--nc-primary); }
+.stock-edit-wrap { display: none; }
+.stock-edit-wrap.active { display: inline-flex; gap: .25rem; align-items: center; }
+.stock-edit-wrap input {
+	width: 60px; padding: .2rem .4rem;
+	border: 1px solid var(--nc-border-focus); border-radius: var(--nc-radius-sm);
+	font-size: .85rem; font-family: var(--nc-font); outline: none;
+}
+
+
+/* ── Per-tab product name strip ── */
+.drawer-tab-name {
+	display: none;
+	font-size: .78rem; font-weight: 600; color: var(--nc-text-dim);
+	padding: .5rem 0 .1rem; margin-bottom: .65rem;
+	white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.drawer-tab-name.visible { display: block; }
+
+/* ── File download drop zone ── */
+.dd-drop-zone {
+	border: 2px dashed var(--nc-border); border-radius: var(--nc-radius);
+	padding: 1rem 1.25rem; color: var(--nc-text-dim); font-size: .88rem;
+	transition: border-color .2s, background .2s;
+}
+.dd-drop-zone.drag-over {
+	border-color: var(--nc-primary); background: color-mix(in srgb, var(--nc-primary) 6%, white);
+	color: var(--nc-primary);
+}
+
+/* ── Image upload area ── */
+.img-upload-zone {
+	border: 2px dashed var(--nc-border); border-radius: var(--nc-radius-lg);
+	padding: 1.5rem; text-align: center; cursor: pointer;
+	color: var(--nc-text-dim); font-size: .88rem;
+	transition: border-color .2s, background .2s;
+}
+.img-upload-zone:hover, .img-upload-zone.drag-over {
+	border-color: var(--nc-primary); background: #eff6ff; color: var(--nc-primary);
+}
+.img-grid {
+	display: flex; flex-wrap: wrap; gap: .65rem; margin-top: .85rem;
+}
+.img-thumb {
+	position: relative; width: 160px; height: 160px;
+	border-radius: var(--nc-radius); overflow: hidden;
+	border: 2px solid var(--nc-border); cursor: grab;
+}
+.img-thumb.is-primary { border-color: var(--nc-primary); }
+/* Chromium still runs its own native image-drag on an <img> under mousedown
+   even with draggable="false" set — without also suppressing it here, that
+   native drag competes with SortableJS's forceFallback pointer-based drag
+   happening at the same time, which is what shows a "denied" cursor and
+   silently eats the drop. */
+.img-thumb img { width: 100%; height: 100%; object-fit: cover; -webkit-user-drag: none; user-drag: none; }
+.img-thumb-dip {
+	position: absolute; top: 2px; right: 2px;
+	opacity: 0; transition: opacity .15s;
+}
+.img-thumb:hover .img-thumb-dip { opacity: 1; }
+.img-primary-label {
+	position: absolute; bottom: 0; left: 0; right: 0;
+	background: rgba(37,99,235,.8); color: #fff;
+	font-size: .62rem; font-weight: 700; text-align: center; padding: .1rem;
+}
+.img-thumb.img-dragging  { opacity: .4; }
+.img-thumb.img-drag-over { outline: 2px solid var(--nc-primary); outline-offset: 2px; }
+
+/* ── File manager picker button ── */
+
+/* ── Inline edit-in-place inputs ── */
+.eip-input {
+	display: inline; width: 72px; padding: .2rem .35rem;
+	border: 1px solid var(--nc-border-focus); border-radius: var(--nc-radius-sm);
+	font-size: .85rem; font-family: var(--nc-font); vertical-align: baseline; outline: none;
+}
+.eip-input[data-field="list_price"] { margin-left: .25rem; }
+.stock-input.eip-input { width: 56px; }
+
+/* ── Row hamburger menu ── */
+.row-menu { position: relative; display: inline-block; }
+.row-menu-btn {
+	background: none; border: none; cursor: pointer;
+	color: var(--nc-text-dim); font-size: 1rem;
+	padding: .15rem .35rem; border-radius: var(--nc-radius);
+	line-height: 1; transition: background .15s;
+}
+.row-menu-btn:hover { background: var(--nc-bg-alt); color: var(--nc-text); }
+.row-menu-drop {
+	position: fixed;
+	background: var(--nc-bg); border: 1px solid var(--nc-border);
+	border-radius: var(--nc-radius); box-shadow: 0 4px 12px rgba(0,0,0,.12);
+	min-width: 160px; z-index: 1000; overflow: hidden;
+}
+.row-menu-item {
+	display: block; width: 100%; padding: .5rem .85rem; text-align: left;
+	background: none; border: none; cursor: pointer;
+	font-size: .85rem; font-family: var(--nc-font); color: var(--nc-text);
+	white-space: nowrap; transition: background .1s; text-decoration: none;
+}
+.row-menu-item:hover { background: var(--nc-bg-alt); }
+
+/* ── Description label + AI button row ── */
+.df-label-row {
+	display: flex; align-items: center; justify-content: space-between; margin-bottom: .3rem;
+}
+.df-label-row label { margin-bottom: 0; }
+
+/* ── SEO tab ── */
+.seo-panel-head { display: flex; justify-content: flex-end; margin-bottom: .85rem; }
+
+/* ── Options autocomplete ── */
+.opt-autocomplete-list {
+	position: absolute; top: 100%; left: 0; right: 0;
+	background: var(--nc-bg); border: 1px solid var(--nc-border);
+	border-radius: var(--nc-radius); box-shadow: 0 4px 12px rgba(0,0,0,.1);
+	list-style: none; margin: 0; padding: .25rem 0;
+	z-index: 200; max-height: 200px; overflow-y: auto;
+}
+.opt-autocomplete-list li {
+	padding: .45rem .75rem; cursor: pointer; font-size: .88rem;
+	display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+}
+.opt-autocomplete-list li:hover,
+.opt-autocomplete-list li[aria-selected=true] { background: var(--nc-hover); }
+.opt-autocomplete-type {
+	font-size: .75rem; color: var(--nc-text-dim);
+	background: var(--nc-bg-alt); border: 1px solid var(--nc-border-light);
+	border-radius: 99px; padding: .1rem .45rem;
+}
+
+/* ── Product option card ── */
+.po-card {
+	border: 1px solid var(--nc-border); border-radius: var(--nc-radius);
+	margin-bottom: .5rem; background: var(--nc-bg);
+}
+.po-card-head {
+	display: flex; align-items: center; gap: .5rem;
+	padding: .55rem .75rem; cursor: pointer; user-select: none;
+}
+.po-card-head:hover { background: var(--nc-hover); }
+.po-card-toggle { color: var(--nc-text-dim); font-size: .75rem; flex-shrink: 0; width: 14px; }
+.po-card-name { font-weight: 600; font-size: .9rem; flex: 1; }
+.po-card-type {
+	font-size: .78rem; color: var(--nc-text-dim);
+	background: var(--nc-bg-alt); border: 1px solid var(--nc-border-light);
+	border-radius: 99px; padding: .1rem .45rem;
+}
+.po-card-required {
+	display: flex; align-items: center; gap: .3rem;
+	font-size: .8rem; cursor: pointer; white-space: nowrap;
+}
+.po-card-action-btn {
+	background: none; border: none; cursor: pointer;
+	font-size: .88rem; color: var(--nc-text-dim);
+	padding: .1rem .3rem; border-radius: var(--nc-radius); line-height: 1; flex-shrink: 0;
+}
+.po-card-action-btn:hover { color: var(--nc-text); background: var(--nc-hover); }
+.po-card-use-as-images {
+	display: flex; align-items: center; gap: .5rem;
+	font-size: .85rem; cursor: pointer; margin-bottom: .75rem;
+}
+.po-card-body {
+	border-top: 1px solid var(--nc-border); padding: .65rem .75rem; display: none;
+}
+.po-card.open .po-card-body { display: block; }
+.po-card.open .po-card-toggle { transform: rotate(90deg); }
+
+/* ── Option label override field ── */
+.po-label-field { margin-bottom: .75rem; }
+.po-label-field label {
+	font-size: .82rem; font-weight: 600; color: var(--nc-text-dim);
+	display: block; margin-bottom: .25rem;
+}
+.po-label-field input {
+	width: 100%; padding: .35rem .55rem;
+	border: 1px solid var(--nc-border); border-radius: var(--nc-radius); font-size: .88rem;
+}
+
+/* ── Option value rows ── */
+.po-value-row {
+	display: flex; align-items: center; gap: .5rem;
+	padding: .35rem .4rem; border-bottom: 1px solid var(--nc-border-light); font-size: .85rem;
+}
+.po-value-row:last-child { border-bottom: none; }
+.po-value-enabled { flex-shrink: 0; }
+.po-value-name {
+	flex: 1; color: var(--nc-text);
+	white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+	cursor: text; border-radius: 3px; padding: .1rem .25rem; min-width: 0;
+	outline: none;
+}
+.po-value-name:focus {
+	background: var(--nc-bg); box-shadow: 0 0 0 2px var(--nc-primary-muted);
+	white-space: nowrap; overflow: visible;
+}
+.po-value-name.disabled { color: var(--nc-text-dim); text-decoration: line-through; }
+.po-value-price { display: flex; align-items: center; gap: .2rem; }
+.po-value-price roller-select .rs-track {
+	min-width: 2.4rem; height: 1.7rem; font-size: .82rem; padding: .15rem .3rem;
+}
+.po-value-weight-input,
+.po-value-stock-input,
+.po-value-price-input {
+	width: 6rem !important;
+}
+.po-value-price-input {
+	padding: .2rem .35rem;
+	border: 1px solid var(--nc-border); border-radius: var(--nc-radius);
+	font-size: .82rem; text-align: right;
+}
+.po-value-weight-input,
+.po-value-stock-input {
+	padding: .2rem .2rem;
+	border: 1px solid var(--nc-border); border-radius: var(--nc-radius);
+	font-size: .82rem; text-align: right;
+}
+
+/* ── Floating-label wrapper (weight field) ── */
+.po-value-field-wrap {
+	position: relative; display: inline-block;
+}
+.po-value-field-label {
+	position: absolute; top: 0; left: .35rem;
+	transform: translateY(-50%);
+	background: var(--nc-bg); padding: 0 .2rem;
+	font-size: .62rem; line-height: 1; color: var(--nc-text-dim);
+	pointer-events: none; white-space: nowrap; z-index: 1;
+}
+
+.po-value-stock-wrap {
+	display: flex; align-items: center; gap: .2rem;
+	font-size: .78rem; color: var(--nc-text-dim);
+}
+
+.po-value-default {
+	display: flex; align-items: center; gap: .25rem;
+	flex-shrink: 0; font-size: .78rem; color: var(--nc-text-dim);
+	white-space: nowrap; cursor: pointer;
+}
+
+#cust-table {
+	button {
+		width: 100%; text-align: left;
+		border: 1px solid transparent; background: transparent;
+		cursor: hand; padding: .5rem;
+	}
+}

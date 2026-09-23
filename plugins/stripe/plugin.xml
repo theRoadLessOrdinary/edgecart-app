@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+    <code>stripe</code>
+    <name>Stripe Payments</name>
+    <version>1.0.0</version>
+    <type>payment</type>
+    <icon>💳</icon>
+    <author>EdgeCart</author>
+    <description>Accept credit card payments via Stripe Payment Element.</description>
+    <hooks>
+        <hook>catalog.checkout.payment_methods</hook>
+        <hook>catalog.order.payment_complete</hook>
+    </hooks>
+    <settings origin="stripe">
+        <key>stripe_mode</key>
+        <key>stripe_site_tag</key>
+        <key>stripe_test_publishable_key</key>
+        <key>stripe_test_secret_key</key>
+        <key>stripe_test_webhook_secret</key>
+        <key>stripe_publishable_key</key>
+        <key>stripe_secret_key</key>
+        <key>stripe_webhook_secret</key>
+    </settings>
+</plugin>

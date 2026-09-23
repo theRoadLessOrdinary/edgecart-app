@@ -1,0 +1,83 @@
+{extends file="../layout.html"}
+
+{block name="head"}
+<link rel="stylesheet" href="{$url_admin_real}css/filemanager.css?v={$fm_css_v}">
+{/block}
+
+{block name="content"}
+
+<div class="fm-shell" id="fm-shell" role="main">
+
+	<!-- Tree pane -->
+	<div class="fm-tree-pane" id="fm-tree-pane" aria-label="Folder tree">
+		<div class="fm-pane-header">
+			<button class="btn btn-fm-header" id="btn-fm-mkdir" aria-label="New folder">+ Folder</button>
+		</div>
+		<div class="fm-tree-root" id="fm-tree" role="tree" aria-label="Image folders">
+			<div class="fm-tree-node fm-tree-root-node fm-tree-selected"
+			     data-rel="" role="treeitem" aria-expanded="true" aria-selected="true"
+			     tabindex="0">
+				<span class="fm-tree-icon">&#128193;</span>
+				<span class="fm-tree-label">img</span>
+			</div>
+			<div class="fm-tree-children" id="fm-tree-children-root"></div>
+		</div>
+	</div>
+
+	<!-- List pane -->
+	<div class="fm-list-pane" id="fm-list-pane">
+		<div class="fm-pane-header">
+			<span class="fm-breadcrumb" id="fm-breadcrumb" aria-label="Current folder">img</span>
+			<div class="fm-view-toggles">
+				<button class="fm-view-btn" id="btn-fm-size-dec"
+				        aria-label="Decrease thumbnail size" title="Smaller thumbnails">&#8722;</button>
+				<button class="fm-view-btn" id="btn-fm-size-inc"
+				        aria-label="Increase thumbnail size" title="Larger thumbnails">&#43;</button>
+				<span class="fm-view-sep"></span>
+				<button class="fm-view-btn active" id="btn-fm-view-icons"
+				        aria-label="Thumbnail view" aria-pressed="true" title="Thumbnail view">&#9638;</button>
+				<button class="fm-view-btn" id="btn-fm-view-list"
+				        aria-label="List view" aria-pressed="false" title="List view">&#8801;</button>
+			</div>
+		</div>
+		<input type="file" id="fm-upload-input" accept="image/jpeg,image/png,image/gif,image/webp" multiple
+		       aria-label="Upload image files" style="display:none">
+
+		<div class="fm-list-container" id="fm-list-container"
+		     role="listbox" aria-label="Images" aria-multiselectable="true">
+		</div>
+
+		<div class="fm-drop-hint" id="fm-drop-hint" aria-hidden="true">
+			Drop images here to upload
+		</div>
+		<div class="fm-upload-progress"></div>
+	</div>
+
+</div>
+
+<!-- New folder dialog -->
+<div class="fm-modal-overlay" id="fm-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="fm-modal-title" style="display:none">
+	<div class="fm-modal">
+		<h2 class="fm-modal-title" id="fm-modal-title">New Folder</h2>
+		<p class="fm-modal-desc">Folder name (letters, numbers, hyphens, underscores)</p>
+		<input type="text" id="fm-folder-name" class="fm-modal-input" maxlength="64"
+		       aria-label="Folder name" placeholder="e.g. seasonal">
+		<div class="fm-modal-actions">
+			<button class="btn btn-primary" id="btn-fm-mkdir-confirm" aria-label="Create folder">Create</button>
+			<button class="btn btn-secondary" id="btn-fm-mkdir-cancel" aria-label="Cancel">Cancel</button>
+		</div>
+	</div>
+</div>
+{/block}
+
+{block name="scripts"}
+<script>
+Object.assign(NC, {
+	adminUrl:    '{$url_admin}',
+	rootUrl:     '{$url_root}',
+	fmThumbSize: {$fm_thumb_size},
+	fm: { mode: 'page' }
+});
+</script>
+<script src="{$url_admin_real}js/filemanager.js?v={$fm_js_v}"></script>
+{/block}

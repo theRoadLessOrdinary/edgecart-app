@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="csrf-token" content="{$csrf_token|escape}">
+	<title>{block name="title"}{$site_name}{/block}</title>
+	{if isset($meta_description) && $meta_description}<meta name="description" content="{$meta_description|escape}">{/if}
+	{if isset($meta_keywords) && $meta_keywords}<meta name="keywords" content="{$meta_keywords|escape}">{/if}
+	{if isset($canonical_url) && $canonical_url}<link rel="canonical" href="{$canonical_url|escape}">{/if}
+	{if isset($org_json_ld) && $org_json_ld}<script type="application/ld+json">{$org_json_ld nofilter}</script>{/if}
+
+	{* Open Graph for social sharing *}
+	<meta property="og:site_name" content="{$site_name|escape}">
+	<meta property="og:title" content="{block name="og_title"}{block name="title"}{$site_name}{/block}{/block}">
+	<meta property="og:description" content="{if isset($meta_description) && $meta_description}{$meta_description|escape}{else}{$site_name}{/if}">
+	<meta property="og:url" content="{block name="og_url"}{$url_root}{/block}">
+	{if isset($og_image) && $og_image}<meta property="og:image" content="{$og_image|escape}">{/if}
+	<meta property="og:type" content="{block name="og_type"}website{/block}">
+
+	{if $site_favicon}<link rel="icon" href="{$site_favicon|escape}" sizes="any">{/if}
+	{if $favicon_svg_url}<link rel="icon" type="image/svg+xml" href="{$favicon_svg_url|escape}">{/if}
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="/css/vars.css?v={$nowstr}">
+	{if $theme_head}{$theme_head nofilter}{/if}
+	<link rel="stylesheet" href="/css/catalog.css?v={$nowstr}">
+	<link rel="stylesheet" href="/js/vendor/SimpleNotification/simpleNotification.min.css">
+	<style>
+		@font-face {
+			font-family: 'TeX Gyre Chorus';
+			src: url('/fonts/texgyrechorus-mediumitalic.otf') format('opentype');
+			font-weight: 500;
+			font-style: italic;
+		}
+	</style>
+	{block name="head"}{/block}
+</head>
+<body>
+
+{* ── Skip to main content (accessibility) ── *}
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+{* ── Sticky utility bar ──────────────────────────────────────────────────── *}
+<div id="utility-bar" role="navigation" aria-label="Utility navigation">
+	<div class="utility-bar-inner">
+		{if $customer_first_name}
+		<div>Hello, {$customer_first_name|escape}!</div>
+		{/if}
+		<a href="{$store_logo_link|default:$url_root}" id="mini-logo" aria-label="{$site_name} home" style="display:none">
+			{if $store_logo_url}
+			<img src="{$store_logo_url|escape}" alt="{$site_name|escape}" title="{$site_name|escape}"
+			     style="max-height:28px;width:auto;display:block">
+			{else}
+			<span class="mini-logo-text">{$site_name}</span>
+			{/if}
+		</a>
+		<div class="utility-bar-right">
+			{if $store_phone}
+			<span class="utility-phone">☎ {$store_phone|escape}</span>
+			{/if}
+			{if $utility_links}{foreach $utility_links as $_ul}{$_ul nofilter}{/foreach}{/if}
+			{if $is_logged_in}
+			<a href="{$url_root}account">My Account</a>
+			{else}
+			<a href="{$url_root}?route=login">My Account</a>
+			{/if}
+		</div>
+	</div>
+</div>
+
+{* ── Masthead (scrolls with page) ───────────────────────────────────────── *}
+<header id="masthead">
+	<div class="masthead-inner">
+		{* Hamburger (mobile) *}
+		<button id="nav-hamburger" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-nav">
+			<span class="ham-line"></span><span class="ham-line"></span><span class="ham-line"></span>
+		</button>
+
+		{* Logo — observed for mini-logo trigger. Not an <h1>: this renders on
+		   every page as site-wide branding, not page content — an H1 here
+		   competes with the page's own actual topic heading for the "what is
+		   this page about" signal search engines use H1 for (found via SEO
+		   audit: every page had 2 identical H1s, this one plus the real
+		   content heading). *}
+		<div id="store-logo">
+			<a href="{$store_logo_link|default:$url_root}"{if $store_logo_url} style="background-image:url('{$store_logo_url|escape}');font-size:0"{/if}>{$site_name|escape}</a>
+		</div>
+
+		{* Search *}
+		<div id="store-search">
+			<form action="{$url_root}" method="get" role="search">
+				<input type="hidden" name="route" value="search">
+				<input type="text" name="q" placeholder="Search…"
+				       value="{$q|default:''|escape}" aria-label="Search products">
+				<button type="submit" class="btn btn-primary btn-sm">Search</button>
+			</form>
+		</div>
+
+		{* Cart *}
+		<a href="{$url_root}cart" id="store-cart" aria-label="Cart: {if $cart_count > 0}{$cart_count} item{if $cart_count > 1}s{/if} — {$site_currency}{$cart_subtotal|string_format:"%.2f"}{else}0 Items — {$site_currency}0.00{/if}">
+			<span class="cart-icon">&#128722;</span>
+			<span class="cart-label">
+				Cart:
+				{if $cart_count > 0}
+				<span class="cart-count">{$cart_count} item{if $cart_count > 1}s{/if}</span>
+				— <span class="cart-subtotal">{$site_currency}{$cart_subtotal|string_format:"%.2f"}</span>
+				{else}
+				0 Items — {$site_currency}0.00
+				{/if}
+			</span>
+		</a>
+	</div>
+</header>
+
+{* ── Top-level categories nav ───────────────────────────────────────────── *}
+{if isset($cat_nav) && $cat_nav}
+<nav id="menu-cats" aria-label="Shop by category">
+	<div class="menu-cats-inner">
+		{foreach $cat_nav as $cat}
+		<a href="{$url_root}category/{$cat.slug|escape}"
+		   class="menu-cat-item{if isset($current_category) && $current_category.slug === $cat.slug} active{/if}">
+			{$cat.name|escape}
+		</a>
+		{/foreach}
+	</div>
+</nav>
+{/if}
+
+{* ── Sub-categories nav (set by category/product controllers) ───────────── *}
+{if isset($cat_subnav) && $cat_subnav}
+<nav id="menu-subcats" aria-label="Sub-categories">
+	<div class="menu-subcats-inner">
+		{foreach $cat_subnav as $sub}
+		<a href="{$url_root}category/{$sub.slug|escape}" class="menu-subcat-item">{$sub.name|escape}</a>
+		{/foreach}
+	</div>
+</nav>
+{/if}
+
+{* ── Page body ───────────────────────────────────────────────────────────── *}
+<div id="page-body"{if !isset($sidebar_blocks) || !$sidebar_blocks} class="no-sidebar"{/if}{if isset($sidebar_position)} data-sidebar-position="{$sidebar_position|escape}"{/if}{if isset($page_type) && $page_type === 'product'} data-page-slug="product"{elseif isset($page.slug)} data-page-slug="{$page.slug|escape}"{/if}>
+
+	{* Col1 — Sidebar (user content blocks) *}
+	{if isset($sidebar_blocks) && $sidebar_blocks}
+	<aside id="sidebar-col" aria-label="Sidebar">
+		{if $is_admin_user}
+		<div style="display: flex; justify-content: flex-end; margin-bottom: 0.5rem;">
+			<button id="sidebar-toggle" aria-label="Move sidebar to opposite side" title="Toggle sidebar position" style="background: none; border: none; cursor: pointer; font-size: 0.9rem; padding: 0; color: var(--nc-text); display: flex; align-items: center; gap: 0.3rem;">← Move Sidebar</button>
+		</div>
+		{/if}
+		{include file="_blocks.html" blocks=$sidebar_blocks}
+	</aside>
+	{/if}
+
+	{* Main content + optional below-content blocks *}
+	<div id="main-col">
+		<main id="main-content" role="main">
+			{block name="content"}{/block}
+		</main>
+		{if isset($below_blocks) && $below_blocks}
+		<div id="below-content">
+			{include file="_blocks.html" blocks=$below_blocks}
+		</div>
+		{/if}
+	</div>
+
+</div>
+
+{* ── Footer ─────────────────────────────────────────────────────────────── *}
+<footer id="site-footer">
+	<div class="footer-inner">
+		<div class="footer-cols">
+			{if isset($menu1) && $menu1}
+			<div class="footer-links">
+				{foreach $menu1 as $item}{if $item.enabled}<a href="{if $item.item_type === 'page' && $item.page_slug}{$url_root}page/{$item.page_slug|escape}{elseif $item.item_type === 'category' && $item.category_slug}{$url_root}category/{$item.category_slug|escape}{else}{$item.url|default:'#'|escape}{/if}">{$item.label|escape}</a>{/if}{/foreach}
+			</div>
+			{/if}
+			<div class="footer-copy">&copy; {$smarty.now|date_format:'%Y'} {$site_name|escape}</div>
+		</div>
+	</div>
+</footer>
+
+{* ── Mobile nav drawer ───────────────────────────────────────────────────── *}
+<nav id="mobile-nav" aria-label="Mobile navigation" aria-hidden="true">
+	<button id="mobile-nav-close" aria-label="Close navigation" tabindex="-1">&times;</button>
+	<ul>
+		<li><a href="{$url_root}" tabindex="-1">Home</a></li>
+		{if isset($cat_nav) && $cat_nav}
+		{foreach $cat_nav as $cat}
+		<li><a href="{$url_root}category/{$cat.slug|escape}" tabindex="-1">{$cat.name|escape}</a></li>
+		{/foreach}
+		{/if}
+		<li><a href="{$url_root}cart" tabindex="-1">Cart{if $cart_count > 0} ({$cart_count}){/if}</a></li>
+	</ul>
+</nav>
+<div id="mobile-nav-backdrop"></div>
+
+{* ── Scripts ─────────────────────────────────────────────────────────────── *}
+<script src="/js/vendor/SimpleNotification/simpleNotification.min.js?v={$nowstr}"></script>
+<script src="/js/vendor/jquery.min.js?v={$nowstr}"></script>
+<script src="/js/vendor/ios-toggle.js?v={$nowstr}"></script>
+<script src="/js/vendor/delete-in-place.js?v={$nowstr}"></script>
+<script src="/js/vendor/debounce-button.js?v={$nowstr}"></script>
+<script src="/js/vendor/password-field.js?v={$nowstr}"></script>
+<script src="/js/catalog.js?v={$nowstr}"></script>
+<script src="/js/contact-form.js?v={$nowstr}"></script>
+<script>
+{literal}
+// ── Mini logo via IntersectionObserver ────────────────────────────────────
+(function() {
+	var logo     = document.getElementById('store-logo');
+	var miniLogo = document.getElementById('mini-logo');
+	if (!logo || !miniLogo) return;
+	var obs = new IntersectionObserver(function(entries) {
+		miniLogo.style.display = entries[0].isIntersecting ? 'none' : '';
+	}, { threshold: 0 });
+	obs.observe(logo);
+}());
+
+// ── Category nav overflow → auto-collapse to hamburger ───────────────────
+(function() {
+	var menuCats = document.getElementById('menu-cats');
+	if (!menuCats) return;
+	var inner = menuCats.querySelector('.menu-cats-inner');
+	if (!inner) return;
+	function checkCatNav() {
+		// Check for horizontal overflow (menu too wide for viewport)
+		var overflows = inner.scrollWidth > inner.clientWidth;
+		document.body.classList.toggle('cat-nav-overflow', overflows);
+	}
+	if (window.ResizeObserver) {
+		new ResizeObserver(checkCatNav).observe(inner);
+	} else {
+		window.addEventListener('resize', checkCatNav);
+	}
+	checkCatNav();
+}());
+
+// ── Hamburger ────────────────────────────────────────────────────────────
+(function() {
+	var ham  = document.getElementById('nav-hamburger');
+	var nav  = document.getElementById('mobile-nav');
+	var back = document.getElementById('mobile-nav-backdrop');
+	var cls  = document.getElementById('mobile-nav-close');
+	if (!ham) return;
+	var navFocusable = nav.querySelectorAll('a, button');
+	function openNav()  {
+		nav.classList.add('open'); back.classList.add('show');
+		ham.setAttribute('aria-expanded','true'); nav.setAttribute('aria-hidden','false');
+		document.body.style.overflow='hidden';
+		navFocusable.forEach(function(el) { el.setAttribute('tabindex','0'); });
+		cls.focus();
+	}
+	function closeNav() {
+		nav.classList.remove('open'); back.classList.remove('show');
+		ham.setAttribute('aria-expanded','false'); nav.setAttribute('aria-hidden','true');
+		document.body.style.overflow='';
+		navFocusable.forEach(function(el) { el.setAttribute('tabindex','-1'); });
+		ham.focus();
+	}
+	ham.addEventListener('click', openNav);
+	cls.addEventListener('click', closeNav);
+	back.addEventListener('click', closeNav);
+	document.addEventListener('keydown', function(e) { if (e.key==='Escape') closeNav(); });
+}());
+{/literal}
+</script>
+<script>
+window.updateCartLabel = function(count, subtotal) {
+	var label = document.querySelector('.cart-label');
+	var currency = '{$site_currency}';
+	if (!label) return;
+	if (count > 0) {
+		label.innerHTML = 'Cart: <span class="cart-count">' + count + ' item' + (count !== 1 ? 's' : '') + '</span> &mdash; ' + currency + parseFloat(subtotal).toFixed(2);
+	} else {
+		label.innerHTML = '0 Items &mdash; ' + currency + '0.00';
+	}
+	var link = document.getElementById('store-cart');
+	if (link) link.setAttribute('aria-label', count > 0 ? 'Cart, ' + count + ' item(s)' : 'Cart');
+};
+</script>
+	<script src="/js/cart-persistence.js?v={$nowstr}"></script>
+<script>
+{literal}
+// Sidebar toggle: restore saved position and handle toggle clicks
+(function() {
+	var pageBody = document.getElementById('page-body');
+	var toggleBtn = document.getElementById('sidebar-toggle');
+	if (!pageBody || !toggleBtn) return;
+
+	function updateToggleButton() {
+		var isRight = pageBody.classList.contains('sidebar-right');
+		toggleBtn.textContent = isRight ? '← Move Sidebar' : 'Move Sidebar →';
+	}
+
+	function getCsrfToken() {
+		return document.querySelector('meta[name="csrf-token"]')?.content || '';
+	}
+
+	// Apply saved sidebar position from page data attribute if present
+	var sidebarPos = pageBody.getAttribute('data-sidebar-position');
+	if (sidebarPos === 'right') {
+		pageBody.classList.add('sidebar-right');
+	}
+	updateToggleButton();
+
+	// Toggle sidebar position on button click
+	toggleBtn.addEventListener('click', async function(e) {
+		e.preventDefault();
+		pageBody.classList.toggle('sidebar-right');
+		var isRight = pageBody.classList.contains('sidebar-right');
+		var position = isRight ? 'right' : 'left';
+		var pageSlug = pageBody.getAttribute('data-page-slug');
+
+		if (!pageSlug) {
+			// Revert if page slug not available
+			pageBody.classList.toggle('sidebar-right');
+			return;
+		}
+
+		// Save to database
+		try {
+			var fd = new FormData();
+			fd.append('action', 'set_position');
+			fd.append('page_slug', pageSlug);
+			fd.append('position', position);
+			fd.append('csrf_token', getCsrfToken());
+			var res = await fetch('{/literal}{$url_root}{literal}?route=sidebar', { method:'POST', body:fd }).then(r => r.json());
+			if (!res.ok) {
+				// Revert toggle on error
+				pageBody.classList.toggle('sidebar-right');
+			}
+		} catch (err) {
+			// Revert toggle on error
+			pageBody.classList.toggle('sidebar-right');
+		}
+
+		updateToggleButton();
+	});
+}());
+{/literal}
+</script>
+{block name="scripts"}{/block}
+{if $catalog_foot}{$catalog_foot nofilter}{/if}
+{if $ga4_measurement_id}
+<script async src="https://www.googletagmanager.com/gtag/js?id={$ga4_measurement_id|escape}"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){ldelim}dataLayer.push(arguments);{rdelim}gtag('js',new Date());gtag('config','{$ga4_measurement_id|escape}');</script>
+{/if}
+</body>
+</html>

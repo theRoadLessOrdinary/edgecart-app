@@ -1,0 +1,342 @@
+{extends file="layout.html"}
+{block name="title"}My Account — {$site_name}{/block}
+
+{block name="content"}
+{if $content_before}<div class="page-content">{$content_before nofilter}</div>{/if}
+<div class="page-head" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+	<h1>My Account</h1>
+	<a href="{$url_root}?route=logout" class="btn btn-secondary btn-sm" style="white-space: nowrap;">Log Out</a>
+</div>
+
+<div class="page-content">
+	{if $message}
+	<div style="background: #dcfce7; color: #166534; border-radius: 0.375rem; padding: 0.75rem 1rem; margin-bottom: 1.5rem; border-left: 4px solid #22c55e;">
+		{$message|escape}
+	</div>
+	{/if}
+
+	{if $error}
+	<div style="background: #fee2e2; color: #7f1d1d; border-radius: 0.375rem; padding: 0.75rem 1rem; margin-bottom: 1.5rem; border-left: 4px solid #dc2626;">
+		{$error|escape}
+	</div>
+	{/if}
+
+	{* ── Order History Section (MOVED TO TOP) ── *}
+	{if $orders && count($orders) > 0}
+	<div style="background: var(--nc-bg-alt); border: 1px solid var(--nc-border-light); border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 2rem;">
+		<h2 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--nc-text);">Order History</h2>
+		<div style="overflow-x: auto;">
+			<table style="width: 100%; border-collapse: collapse;">
+				<thead>
+					<tr style="border-bottom: 2px solid var(--nc-border);">
+						<th style="text-align: left; padding: 0.75rem 0; font-weight: 600; color: var(--nc-text);">Order #</th>
+						<th style="text-align: left; padding: 0.75rem 0; font-weight: 600; color: var(--nc-text);">Date</th>
+						<th style="text-align: left; padding: 0.75rem 0; font-weight: 600; color: var(--nc-text);">Total</th>
+						<th style="text-align: left; padding: 0.75rem 0; font-weight: 600; color: var(--nc-text);">Status</th>
+						<th style="text-align: left; padding: 0.75rem 0; font-weight: 600; color: var(--nc-text);"></th>
+					</tr>
+				</thead>
+				<tbody>
+					{foreach $orders as $order}
+					<tr style="border-bottom: 1px solid var(--nc-border-light);">
+						<td style="padding: 0.75rem 0; color: var(--nc-text);"><strong>#{$order.id|escape}</strong></td>
+						<td style="padding: 0.75rem 0; color: var(--nc-text-dim);">{$order.created_at|date_format:'%b %d, %Y'}</td>
+						<td style="padding: 0.75rem 0; color: var(--nc-text); font-weight: 500;">{$site_currency}{$order.total|string_format:"%.2f"}</td>
+						<td style="padding: 0.75rem 0;">
+							<span style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-size: 0.8rem; font-weight: 600;
+							{if $order.status === 'pending'}background: #fef3c7; color: #92400e;
+							{elseif $order.status === 'processing'}background: #dbeafe; color: #0c4a6e;
+							{elseif $order.status === 'shipped'}background: #dcfce7; color: #166534;
+							{elseif $order.status === 'delivered'}background: #dcfce7; color: #166534;
+							{else}background: #f3f4f6; color: #4b5563;{/if}">
+								{$order.status|escape}
+							</span>
+						</td>
+						<td style="padding: 0.75rem 0; text-align: right;">
+							<a href="{$url_root}order-details/{$order.id|escape}" style="color: var(--nc-border-focus); text-decoration: none; font-size: 0.9rem;">View Details</a>
+						</td>
+					</tr>
+					{if isset($downloads_by_order[$order.id])}
+					<tr style="border-bottom: 1px solid var(--nc-border-light);">
+						<td colspan="5" style="padding: 0 0 0.75rem 0;">
+							<div style="font-size: 0.8rem; color: var(--nc-text-dim); margin-bottom: 0.35rem;">Downloads</div>
+							<ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+								{foreach $downloads_by_order[$order.id] as $dl}
+								<li style="display: flex; align-items: center; gap: 0.6rem;" data-download-row="{$dl.id|escape}">
+									<span style="color: var(--nc-text); font-size: 0.9rem;">{$dl.label|default:$dl.filename|escape}</span>
+									{if $dl.is_valid}
+									<a href="{$url_root}?route=digital-download/download&amp;token={$dl.token|escape}" class="btn btn-secondary btn-sm">Download</a>
+									{else}
+									<button type="button" class="btn btn-secondary btn-sm" data-regen-download="{$dl.id|escape}">Get New Link</button>
+									{/if}
+								</li>
+								{/foreach}
+							</ul>
+						</td>
+					</tr>
+					{/if}
+					{/foreach}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	{/if}
+
+	{* ── Two-column layout: Profile (left) + Password (right) ── *}
+	<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+		{* LEFT COLUMN: Account Information + Email Edit *}
+		<div>
+			{* Account Information *}
+			<div style="background: var(--nc-bg-alt); border: 1px solid var(--nc-border-light); border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 1.5rem;">
+				<h2 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--nc-text);">Account Information</h2>
+				<div style="display: flex; flex-direction: column; gap: 1rem;">
+					<div>
+						<div style="font-size: 0.85rem; color: var(--nc-text-dim); margin-bottom: 0.25rem;">Name</div>
+						<div style="font-weight: 500;">{$customer.first_name|escape} {$customer.last_name|escape}</div>
+					</div>
+					<div>
+						<div style="font-size: 0.85rem; color: var(--nc-text-dim); margin-bottom: 0.25rem;">Member Since</div>
+						<div style="font-weight: 500;">{$customer.created_at|date_format:'%B %d, %Y'}</div>
+					</div>
+					{if $customer.address1}
+					<div>
+						<div style="font-size: 0.85rem; color: var(--nc-text-dim); margin-bottom: 0.25rem;">Address</div>
+						<div style="font-weight: 500;">
+							{$customer.address1|escape}<br>
+							{$customer.city|escape}{if $customer.state}, {$customer.state|escape}{/if} {$customer.zip|escape}<br>
+							{$customer.country|escape}
+						</div>
+					</div>
+					{/if}
+				</div>
+			</div>
+
+			{* Email Edit Form *}
+			<div style="background: var(--nc-bg-alt); border: 1px solid var(--nc-border-light); border-radius: 0.5rem; padding: 1.5rem;">
+				<h2 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--nc-text);">Email Address</h2>
+				<div style="margin-bottom: 1rem;">
+					<div style="font-size: 0.9rem; color: var(--nc-text-dim); margin-bottom: 0.5rem;">Current Email</div>
+					<div style="font-weight: 500; word-break: break-all;">{$customer.email|escape}</div>
+				</div>
+
+				<form id="email-form" method="post" style="display: none;">
+					<input type="hidden" name="csrf_token" value="{$csrf_token|escape}">
+					<input type="hidden" name="action" value="update_email">
+					<div style="margin-bottom: 1rem;">
+						<label for="new-email" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--nc-text); font-size: 0.9rem;">New Email Address</label>
+						<input type="email" id="new-email" name="email" required
+						       style="width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--nc-border); border-radius: 0.375rem; font-size: 1rem; color: var(--nc-text);">
+					</div>
+					<div style="display: flex; gap: 0.75rem;">
+						<button type="submit" style="padding: 0.6rem 1.25rem; background: var(--nc-border-focus); color: white; border: none; border-radius: 0.375rem; font-size: 0.95rem; font-weight: 600; cursor: pointer;">
+							Update Email
+						</button>
+						<button type="button" id="cancel-email" style="padding: 0.6rem 1.25rem; background: var(--nc-hover); color: var(--nc-text); border: none; border-radius: 0.375rem; font-size: 0.95rem; font-weight: 600; cursor: pointer;">
+							Cancel
+						</button>
+					</div>
+				</form>
+
+				<button id="edit-email" type="button" style="padding: 0.6rem 1.25rem; background: var(--nc-hover); color: var(--nc-text); border: none; border-radius: 0.375rem; font-size: 0.95rem; font-weight: 600; cursor: pointer;">
+					Change Email
+				</button>
+			</div>
+
+			{* Linked Accounts *}
+			<div style="background: var(--nc-bg-alt); border: 1px solid var(--nc-border-light); border-radius: 0.5rem; padding: 1.5rem; margin-top: 1.5rem;">
+				<h2 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--nc-text);">Connected Login Methods</h2>
+				<div style="display: flex; flex-direction: column; gap: 1rem;">
+					{* Google Account — only when the google-oauth plugin is actually installed *}
+					{if $google_oauth_enabled}
+					<div style="border: 1px solid var(--nc-border-light); border-radius: 0.375rem; padding: 1rem; background: var(--nc-bg);">
+						<div style="display: flex; align-items: center; justify-content: space-between;">
+							<div style="display: flex; align-items: center; gap: 0.75rem;">
+								<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+									<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+									<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+									<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+									<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+								</svg>
+								<div>
+									<div style="font-weight: 600;">Google Account</div>
+									<div style="font-size: 0.85rem; color: var(--nc-text-dim);">{if $customer.google_id}Connected{else}Not connected{/if}</div>
+								</div>
+							</div>
+							{if $customer.google_id}
+							<button type="button" class="unlink-google" style="padding: 0.5rem 1rem; background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; border-radius: 0.375rem; font-size: 0.9rem; font-weight: 600; cursor: pointer;">
+								Unlink
+							</button>
+							{else}
+							<a href="?route=google-oauth" style="padding: 0.5rem 1rem; background: var(--nc-hover); color: var(--nc-text); border: 1px solid var(--nc-border); border-radius: 0.375rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block;">
+								Link Account
+							</a>
+							{/if}
+						</div>
+					</div>
+					{/if}
+
+					{* Email/Password Account *}
+					<div style="border: 1px solid var(--nc-border-light); border-radius: 0.375rem; padding: 1rem; background: var(--nc-bg);">
+						<div style="display: flex; align-items: center; justify-content: space-between;">
+							<div style="display: flex; align-items: center; gap: 0.75rem;">
+								<span style="font-size: 1.5rem;">🔐</span>
+								<div>
+									<div style="font-weight: 600;">Email + Password</div>
+									<div style="font-size: 0.85rem; color: var(--nc-text-dim);">{if $customer.password}Password set{else}Not configured{/if}</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		{* RIGHT COLUMN: Change Password *}
+		<div>
+			<div style="background: var(--nc-bg-alt); border: 1px solid var(--nc-border-light); border-radius: 0.5rem; padding: 1.5rem;">
+				<h2 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--nc-text);">Change Password</h2>
+				<form method="post" action="{$url_root}account" style="display: flex; flex-direction: column; gap: 1rem;">
+					<input type="hidden" name="csrf_token" value="{$csrf_token|escape}">
+
+					<div>
+						<label for="new_password" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--nc-text); font-size: 0.9rem;">New Password</label>
+						<input type="text" id="new_password" name="new_password" autocomplete="new-password" placeholder="Leave blank to keep current password"
+						       style="width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--nc-border); border-radius: 0.375rem; font-size: 1rem; color: var(--nc-text);">
+						<small style="color: var(--nc-text-dim); display: block; margin-top: 0.25rem;">Minimum 8 characters. Leave blank if you don't want to change.</small>
+					</div>
+
+					<div>
+						<label for="new_password_confirm" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--nc-text); font-size: 0.9rem;">Confirm Password</label>
+						<input type="text" id="new_password_confirm" name="new_password_confirm" autocomplete="new-password"
+						       style="width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--nc-border); border-radius: 0.375rem; font-size: 1rem; color: var(--nc-text);">
+					</div>
+
+					<button type="submit" style="align-self: flex-start; padding: 0.6rem 1.25rem; background: var(--nc-border-focus); color: white; border: none; border-radius: 0.375rem; font-size: 0.95rem; font-weight: 600; cursor: pointer;">
+						Update Password
+					</button>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	{if !$orders || count($orders) === 0}
+	<div style="background: var(--nc-bg-alt); border: 1px solid var(--nc-border-light); border-radius: 0.5rem; padding: 1.5rem; text-align: center;">
+		<p style="color: var(--nc-text-dim);">You haven't placed any orders yet.</p>
+		<a href="{$url_root}" style="color: var(--nc-border-focus); text-decoration: none; margin-top: 0.5rem; display: inline-block;">Continue Shopping</a>
+	</div>
+	{/if}
+</div>
+{if $content_after}<div class="page-content">{$content_after nofilter}</div>{/if}
+
+{block name="scripts"}
+<script>
+(function() {
+	const editBtn = document.getElementById('edit-email');
+	const cancelBtn = document.getElementById('cancel-email');
+	const form = document.getElementById('email-form');
+	const emailInput = document.getElementById('new-email');
+
+	editBtn.addEventListener('click', function() {
+		form.style.display = 'block';
+		editBtn.style.display = 'none';
+		emailInput.focus();
+	});
+
+	cancelBtn.addEventListener('click', function() {
+		form.style.display = 'none';
+		editBtn.style.display = 'block';
+		emailInput.value = '';
+	});
+
+	form.addEventListener('submit', async function(e) {
+		e.preventDefault();
+		const fd = new FormData(form);
+		const submitBtn = form.querySelector('button[type="submit"]');
+		submitBtn.disabled = true;
+		submitBtn.textContent = 'Updating...';
+
+		try {
+			const res = await fetch('{$url_root}account', { method: 'POST', body: fd });
+			const data = await res.json();
+			if (data.ok) {
+				location.reload();
+			} else {
+				SimpleNotification.error({ text: data.message || 'Failed to update email.' });
+				submitBtn.disabled = false;
+				submitBtn.textContent = 'Update Email';
+			}
+		} catch(err) {
+			SimpleNotification.error({ text: 'Network error. Please try again.' });
+			submitBtn.disabled = false;
+			submitBtn.textContent = 'Update Email';
+		}
+	});
+
+	// Unlink Google account
+	const unlinkBtn = document.querySelector('.unlink-google');
+	if (unlinkBtn) {
+		unlinkBtn.addEventListener('click', async function() {
+			if (!confirm('Are you sure? You\'ll need to log in with email + password after this.')) return;
+
+			const fd = new FormData();
+			fd.append('action', 'unlink_google');
+			fd.append('csrf_token', document.querySelector('input[name="csrf_token"]').value);
+			unlinkBtn.disabled = true;
+			unlinkBtn.textContent = 'Unlinking...';
+
+			try {
+				const res = await fetch('{$url_root}account', { method: 'POST', body: fd });
+				const data = await res.json();
+				if (data.ok) {
+					SimpleNotification.success({ text: data.message });
+					setTimeout(() => location.reload(), 1000);
+				} else {
+					SimpleNotification.error({ text: data.message || 'Failed to unlink Google.' });
+					unlinkBtn.disabled = false;
+					unlinkBtn.textContent = 'Unlink';
+				}
+			} catch(err) {
+				SimpleNotification.error({ text: 'Network error. Please try again.' });
+				unlinkBtn.disabled = false;
+				unlinkBtn.textContent = 'Unlink';
+			}
+		});
+	}
+
+	// Regenerate an expired/exhausted download link
+	document.querySelectorAll('[data-regen-download]').forEach(function(btn) {
+		btn.addEventListener('click', async function() {
+			const tokenId = btn.getAttribute('data-regen-download');
+			const fd = new FormData();
+			fd.append('action', 'regenerate_download');
+			fd.append('token_id', tokenId);
+			fd.append('csrf_token', document.querySelector('input[name="csrf_token"]').value);
+			btn.disabled = true;
+			btn.textContent = 'Requesting...';
+
+			try {
+				const res = await fetch('{$url_root}account', { method: 'POST', body: fd });
+				const data = await res.json();
+				if (data.ok) {
+					const link = document.createElement('a');
+					link.href = data.url;
+					link.className = 'btn btn-secondary btn-sm';
+					link.textContent = 'Download';
+					btn.replaceWith(link);
+				} else {
+					SimpleNotification.error({ text: data.message || 'Failed to get a new link.' });
+					btn.disabled = false;
+					btn.textContent = 'Get New Link';
+				}
+			} catch(err) {
+				SimpleNotification.error({ text: 'Network error. Please try again.' });
+				btn.disabled = false;
+				btn.textContent = 'Get New Link';
+			}
+		});
+	});
+})();
+</script>
+{/block}
+
+{/block}

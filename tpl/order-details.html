@@ -1,0 +1,112 @@
+{extends file="layout.html"}
+{block name="title"}Order #{$order.id} — {$site_name}{/block}
+
+{block name="content"}
+<div class="page-head">
+	<h1>Order #{$order.id}</h1>
+	<a href="{$url_root}account" style="color: var(--nc-border-focus); text-decoration: none;">← Back to Account</a>
+</div>
+
+<div class="page-content">
+	{* Order meta information *}
+	<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+		<div>
+			<div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--nc-text-dim); margin-bottom: 0.5rem;">Date</div>
+			<div>{$order.created_at|date_format:'%B %d, %Y'}</div>
+		</div>
+		<div>
+			<div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--nc-text-dim); margin-bottom: 0.5rem;">Status</div>
+			<div>
+				<span style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-size: 0.8rem; font-weight: 600;
+				{if $order.status === 'pending'}background: #fef3c7; color: #92400e;
+				{elseif $order.status === 'processing'}background: #dbeafe; color: #0c4a6e;
+				{elseif $order.status === 'shipped'}background: #dcfce7; color: #166534;
+				{elseif $order.status === 'delivered'}background: #dcfce7; color: #166534;
+				{else}background: #f3f4f6; color: #4b5563;{/if}">
+					{$order.status|escape}
+				</span>
+			</div>
+		</div>
+		{if $order.tracking_number}
+		<div>
+			<div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--nc-text-dim); margin-bottom: 0.5rem;">Tracking</div>
+			<div>{$order.tracking_number|escape}</div>
+		</div>
+		{/if}
+	</div>
+
+	{* Shipping address *}
+	<div style="background: var(--nc-bg-alt); border: 1px solid var(--nc-border-light); border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 2rem;">
+		<h2 style="font-size: 1rem; margin-bottom: 1rem; color: var(--nc-text);">Shipped To</h2>
+		<div style="line-height: 1.8; color: var(--nc-text-secondary);">
+			{if $order.ship_firstname || $order.ship_lastname}
+				{$order.ship_firstname|escape} {$order.ship_lastname|escape}<br>
+			{/if}
+			{if $order.ship_address1}{$order.ship_address1|escape}<br>{/if}
+			{if $order.ship_address2}{$order.ship_address2|escape}<br>{/if}
+			{if $order.ship_city || $order.ship_state || $order.ship_zip}
+				{$order.ship_city|escape}{if $order.ship_city && $order.ship_state}, {/if}{$order.ship_state|escape} {$order.ship_zip|escape}<br>
+			{/if}
+			{if $order.ship_country}{$order.ship_country|escape}{/if}
+		</div>
+	</div>
+
+	{* Items table *}
+	<div style="background: var(--nc-bg-alt); border: 1px solid var(--nc-border-light); border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 2rem; overflow-x: auto;">
+		<h2 style="font-size: 1rem; margin-bottom: 1rem; color: var(--nc-text);">Order Items</h2>
+		<table style="width: 100%; border-collapse: collapse;">
+			<thead>
+				<tr style="border-bottom: 2px solid var(--nc-border);">
+					<th style="text-align: left; padding: 0.75rem 0; font-weight: 600; color: var(--nc-text); font-size: 0.85rem;">Item</th>
+					<th style="text-align: center; padding: 0.75rem 0; font-weight: 600; color: var(--nc-text); font-size: 0.85rem;">Qty</th>
+					<th style="text-align: right; padding: 0.75rem 0; font-weight: 600; color: var(--nc-text); font-size: 0.85rem;">Price</th>
+					<th style="text-align: right; padding: 0.75rem 0; font-weight: 600; color: var(--nc-text); font-size: 0.85rem;">Total</th>
+				</tr>
+			</thead>
+			<tbody>
+				{foreach $items as $item}
+				<tr style="border-bottom: 1px solid var(--nc-border-light);">
+					<td style="padding: 0.75rem 0; color: var(--nc-text);">
+						{$item.name|escape}
+						{if $item.options_summary}
+							<div style="font-size: 0.8rem; color: var(--nc-text-dim); margin-top: 0.25rem;">{$item.options_summary|escape}</div>
+						{/if}
+					</td>
+					<td style="padding: 0.75rem 0; text-align: center; color: var(--nc-text-dim);">{$item.qty|escape}</td>
+					<td style="padding: 0.75rem 0; text-align: right; color: var(--nc-text);">{$site_currency}{$item.price|string_format:"%.2f"}</td>
+					<td style="padding: 0.75rem 0; text-align: right; color: var(--nc-text); font-weight: 500;">{$site_currency}{($item.price * $item.qty)|string_format:"%.2f"}</td>
+				</tr>
+				{/foreach}
+			</tbody>
+		</table>
+	</div>
+
+	{* Totals *}
+	<div style="background: var(--nc-bg-alt); border: 1px solid var(--nc-border-light); border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 2rem;">
+		<div style="display: grid; grid-template-columns: 1fr auto; gap: 1rem; row-gap: 0.75rem;">
+			<div style="text-align: right; color: var(--nc-text-dim);">Subtotal</div>
+			<div style="text-align: right; color: var(--nc-text); font-weight: 500;">{$site_currency}{$order.subtotal|string_format:"%.2f"}</div>
+
+			{if $order.shipping > 0}
+			<div style="text-align: right; color: var(--nc-text-dim);">Shipping</div>
+			<div style="text-align: right; color: var(--nc-text); font-weight: 500;">{$site_currency}{$order.shipping|string_format:"%.2f"}</div>
+			{/if}
+
+			{if $order.tax > 0}
+			<div style="text-align: right; color: var(--nc-text-dim);">Tax</div>
+			<div style="text-align: right; color: var(--nc-text); font-weight: 500;">{$site_currency}{$order.tax|string_format:"%.2f"}</div>
+			{/if}
+
+			{if $order.discount_amount > 0}
+			<div style="text-align: right; color: var(--nc-text-dim);">Discount</div>
+			<div style="text-align: right; color: var(--nc-text); font-weight: 500;">-{$site_currency}{$order.discount_amount|string_format:"%.2f"}</div>
+			{/if}
+
+			<div style="border-top: 2px solid var(--nc-border); padding-top: 0.75rem; text-align: right; font-size: 1.1rem; font-weight: 700; color: var(--nc-text);">Total</div>
+			<div style="border-top: 2px solid var(--nc-border); padding-top: 0.75rem; text-align: right; font-size: 1.1rem; font-weight: 700; color: var(--nc-text);">{$site_currency}{$order.total|string_format:"%.2f"}</div>
+		</div>
+	</div>
+
+	<a href="{$url_root}account" class="btn btn-primary" style="display: inline-block;">← Back to Account</a>
+</div>
+{/block}

@@ -1,0 +1,140 @@
+{extends file="layout.html"}
+
+{block name="head"}
+{if $editor_head}{$editor_head nofilter}{/if}
+{if !$editor_html}
+<link rel="stylesheet" href="{$url_root}js/vendor/save-button.css?v={$nowstr}">
+<style>
+#pe-basic-head { padding-bottom:.75rem; }
+#pe-basic-head select { display:inline-block; width:240px; padding:.28rem .5rem; border:1px solid var(--nc-border); border-radius:var(--nc-radius); font-size:.85rem; background:var(--nc-bg); color:var(--nc-text); vertical-align:middle; margin-right:.5rem; }
+#pe-basic-head save-button { vertical-align:middle; }
+.pe-core-placeholder { padding:.75rem 1rem; margin:1.25rem 0; background:var(--nc-bg-alt); border:2px dashed var(--nc-primary); border-radius:var(--nc-radius); text-align:center; }
+.pe-core-placeholder strong { display:block; color:var(--nc-primary); margin-bottom:.2rem; }
+.pe-core-placeholder span { font-size:.8rem; color:var(--nc-text-dim); }
+.pe-section-label { font-weight:600; display:block; margin-bottom:.4rem; font-size:.88rem; }
+</style>
+{/if}
+{/block}
+
+{block name="content"}
+{if $editor_html}
+{$editor_html nofilter}
+{else}
+<div class="settings-card" style="max-width:900px">
+	<div class="card-head" id="pe-basic-head">
+		<select id="pe-page-switcher" title="Switch page">
+			<option value="">— Switch page —</option>
+			{foreach $all_pages as $pg}
+			<option value="{$pg.id}"{if $pg.id == $edit_page_id} selected{/if}>{$pg.title|escape}</option>
+			{/foreach}
+		</select>
+		<save-button id="pe-save-btn" class="btn btn-primary" data-label="Save">Save</save-button>
+	</div>
+	<div class="card-body">
+		<label class="pe-section-label" for="pe-content-before">Before {$core_label|escape}</label>
+		<textarea id="pe-content-before">{$content_before|default:''|escape}</textarea>
+
+		<div class="pe-core-placeholder">
+			{if $is_system}
+			<strong>{$core_label|escape}</strong>
+			<span>Rendered here on the live page. Content above appears before; content below appears after.</span>
+			{else}
+			<strong>Page Content</strong>
+			<span>The main page content appears here.</span>
+			<textarea id="pe-content" style="display:block;width:100%;margin-top:.75rem">{$edit_page.content|default:''|escape}</textarea>
+			{/if}
+		</div>
+
+		<label class="pe-section-label" for="pe-content-after">After {$core_label|escape}</label>
+		<textarea id="pe-content-after">{$content_after|default:''|escape}</textarea>
+	</div>
+</div>
+{/if}
+{/block}
+
+{block name="scripts"}
+{if $admin_page_scripts}{$admin_page_scripts nofilter}{/if}
+{if !$editor_html}
+<script src="{$url_root}js/vendor/save-button.js?v={$nowstr}"></script>
+<script>
+(function() {
+'use strict';
+
+const AJAX     = NC.adminUrl + '?route=pages/ajax';
+const pageId   = {$edit_page_id|default:0};
+const isSystem = {if $is_system}true{else}false{/if};
+
+function tbwGet(id) {
+	if (window.jQuery && jQuery.fn.trumbowyg) return jQuery('#' + id).trumbowyg('html');
+	return document.getElementById(id)?.value || '';
+}
+
+var NC_TBW_CONFIG = null;
+function getTbwConfig() {
+	if (NC_TBW_CONFIG) return NC_TBW_CONFIG;
+	{literal}
+	NC_TBW_CONFIG = {
+		svgPath: NC.rootUrl + 'js/vendor/trumbowyg/src/ui/icons.svg',
+		semantic: false,
+		btns: [
+			['bold','italic','underline'],
+			['link'],
+			['unorderedList','orderedList'],
+			['indent','outdent'],
+			['fontsize','fontfamily'],
+			['viewHTML'],
+		],
+		plugins: {
+			fontsize: {
+				sizeList: ['x-small','small','medium','large','x-large'],
+				allowCustomSize: true
+			},
+			fontfamily: {
+				fontList: [
+					{name:'Inter',       family:"'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"},
+					{name:'Montserrat',  family:"'Montserrat',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"}
+				]
+			}
+		}
+	};
+	{/literal}
+	return NC_TBW_CONFIG;
+}
+
+function initTrumbowyg(id) {
+	if (!window.jQuery || !jQuery.fn.trumbowyg) return;
+	jQuery('#' + id).trumbowyg(getTbwConfig());
+}
+
+initTrumbowyg('pe-content-before');
+initTrumbowyg('pe-content-after');
+if (!isSystem) {
+	initTrumbowyg('pe-content');
+}
+
+document.getElementById('pe-page-switcher')?.addEventListener('change', function() {
+	if (this.value) window.location.href = NC.adminUrl + '?route=page-edit&id=' + this.value;
+});
+
+document.getElementById('pe-save-btn')?.addEventListener('save', async () => {
+	const fd = new FormData();
+	fd.append('csrf_token', getCsrfToken());
+	fd.append('action', 'save_content');
+	fd.append('id', pageId);
+	fd.append('content_before', tbwGet('pe-content-before'));
+	fd.append('content_after',  tbwGet('pe-content-after'));
+	if (!isSystem) {
+		fd.append('content', tbwGet('pe-content'));
+	}
+	const res = await fetch(AJAX, { method:'POST', body:fd }).then(r => r.json());
+	if (res.ok) {
+		document.getElementById('pe-save-btn').showSuccess();
+	} else {
+		SimpleNotification.error({ text: res.message || 'Save failed.' });
+	}
+});
+
+}());
+</script>
+{/if}
+{/block}

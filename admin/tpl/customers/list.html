@@ -1,0 +1,247 @@
+{extends file="../layout.html"}
+
+{block name="title"}Customers — {$site_name|escape}{/block}
+
+{block name="head"}
+<style>
+/* ── DataTables footer ── */
+.cust-dt-bottom {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: .5rem;
+	margin-top: .75rem;
+}
+.dataTables_info {
+	font-size: .82rem;
+	color: var(--nc-text-dim);
+}
+.dataTables_paginate {
+	display: flex;
+	align-items: center;
+	gap: .25rem;
+}
+.dataTables_paginate span { display: contents; }
+.dataTables_paginate .paginate_button {
+	display: inline-block;
+	padding: .3rem .65rem;
+	border: 1px solid var(--nc-border, #d1d5db);
+	border-radius: .375rem;
+	font-size: .82rem;
+	cursor: pointer;
+	background: var(--nc-bg, #fff);
+	color: var(--nc-text, #111) !important;
+	text-decoration: none;
+	user-select: none;
+	transition: background .15s;
+}
+.dataTables_paginate .paginate_button:hover:not(.disabled) {
+	background: var(--nc-bg-alt, #f3f4f6);
+}
+.dataTables_paginate .paginate_button.current,
+.dataTables_paginate .paginate_button.current:hover {
+	background: var(--nc-primary, #2563eb) !important;
+	color: #fff !important;
+	border-color: var(--nc-primary, #2563eb);
+}
+.dataTables_paginate .paginate_button.disabled,
+.dataTables_paginate .paginate_button.disabled:hover {
+	opacity: .4;
+	cursor: default;
+	background: var(--nc-bg, #fff);
+}
+/* ── Sortable header arrows ── */
+table.dataTable thead th.sorting        { cursor: pointer; }
+table.dataTable thead th.sorting::after        { content: ' ⇅'; opacity: .35; font-size: .7em; }
+table.dataTable thead th.sorting_asc::after    { content: ' ↑'; opacity: .7;  font-size: .7em; }
+table.dataTable thead th.sorting_desc::after   { content: ' ↓'; opacity: .7;  font-size: .7em; }
+/* ── Search input in toolbar ── */
+.cust-search-input {
+	padding: .43rem .7rem;
+	border: 1px solid var(--nc-border, #d1d5db);
+	border-radius: .375rem;
+	font-size: .87rem;
+	color: var(--nc-text);
+	background: var(--nc-bg);
+	outline: none;
+	width: 230px;
+	transition: border-color .15s, box-shadow .15s;
+}
+.cust-search-input:focus {
+	border-color: var(--nc-primary, #2563eb);
+	box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+}
+/* ── Clickable name link ── */
+.cust-name-link {
+	color: var(--nc-primary); font-weight: 500; font-size: 1rem;
+	text-decoration: none; background: none; border: none;
+	padding: 0; font-family: var(--nc-font); cursor: pointer;
+}
+.cust-name-link:hover { text-decoration: underline; color: var(--nc-primary); }
+</style>
+{/block}
+
+{block name="content"}
+
+<div class="nc-toolbar">
+	<div style="display:flex;gap:.75rem;align-items:center">
+		<button class="btn btn-primary" id="btn-add-customer">+ Add Customer</button>
+	</div>
+	<button class="btn btn-danger" id="btn-bulk-delete" disabled style="float: right">Delete Selected</button>
+	<input type="search" id="cust-search" class="cust-search-input" placeholder="Search name or email…" aria-label="Search customers">
+</div>
+
+<table class="nc-table" id="cust-table">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Email / Username</th>
+			<th class="col-status">Status</th>
+			<th>Registered</th>
+			<th class="col-delete"></th>
+			<th class="col-check"><input type="checkbox" id="chk-all" title="Select all"></th>
+		</tr>
+	</thead>
+	<tbody id="cust-tbody"></tbody>
+</table>
+
+<div id="drawer-overlay"></div>
+
+<me-drawer id="cust-drawer">
+	<drawer-head>
+		<h2 id="drawer-title">Add Customer</h2>
+		<button class="drawer-close" id="drawer-close">&times;</button>
+	</drawer-head>
+
+	<drawer-content id="cust-drawer-content">
+		<input type="hidden" id="cust-id" value="">
+
+		<div class="drawer-tabs" role="tablist" aria-label="Customer sections">
+			<button class="drawer-tab active" data-panel="details"  role="tab" aria-selected="true"  aria-controls="cust-panel-details">Details</button>
+			<button class="drawer-tab"        data-panel="orders"   role="tab" aria-selected="false" aria-controls="cust-panel-orders">Orders</button>
+			<button class="drawer-tab"        data-panel="message"  role="tab" aria-selected="false" aria-controls="cust-panel-message">Message</button>
+			{if $plugin_customer_tabs}{foreach $plugin_customer_tabs as $_t}{$_t nofilter}{/foreach}{/if}
+		</div>
+
+		{* ── Details tab ── *}
+		<div class="drawer-tab-panel active" id="cust-panel-details" role="tabpanel">
+
+			<div class="df-row">
+				<div class="df">
+					<label for="cust-first-name">First Name</label>
+					<input type="text" id="cust-first-name" maxlength="64" autocomplete="off">
+				</div>
+				<div class="df">
+					<label for="cust-last-name">Last Name</label>
+					<input type="text" id="cust-last-name" maxlength="64" autocomplete="off">
+				</div>
+			</div>
+
+			<div class="df">
+				<label for="cust-email">Email / Username <span class="field-required" aria-hidden="true">*</span></label>
+				<input type="email" id="cust-email" maxlength="128" required aria-required="true" autocomplete="off">
+			</div>
+
+			<div class="df">
+				<label for="cust-password" id="cust-password-label">Password <span class="field-required" id="cust-pw-star" aria-hidden="true">*</span></label>
+				<input type="text" id="cust-password" maxlength="255" autocomplete="new-password">
+			</div>
+
+			<div class="df-section">Address</div>
+
+			<div class="df">
+				<label for="cust-address1">Address Line 1</label>
+				<input type="text" id="cust-address1" maxlength="255" autocomplete="off">
+			</div>
+
+			<div class="df">
+				<label for="cust-address2">Address Line 2</label>
+				<input type="text" id="cust-address2" maxlength="255" autocomplete="off" placeholder="Apt, suite, unit, building, etc.">
+			</div>
+
+			<div class="df-row">
+				<div class="df" style="flex:2">
+					<label for="cust-city">City</label>
+					<input type="text" id="cust-city" maxlength="128" autocomplete="off">
+				</div>
+				<div class="df" style="flex:1">
+					<label for="cust-state">State / Province</label>
+					<input type="text" id="cust-state" maxlength="128" autocomplete="off">
+				</div>
+			</div>
+
+			<div class="df-row">
+				<div class="df" style="flex:1">
+					<label for="cust-zip">Postal / ZIP</label>
+					<input type="text" id="cust-zip" maxlength="20" autocomplete="off">
+				</div>
+				<div class="df" style="flex:2">
+					<label for="cust-country">Country</label>
+					<input type="text" id="cust-country" maxlength="64" autocomplete="off" placeholder="e.g. US, Canada, UK">
+				</div>
+			</div>
+
+			<div class="df">
+				<label for="cust-notes">Notes</label>
+				<textarea id="cust-notes" rows="3" placeholder="Internal notes — not visible to the customer"></textarea>
+			</div>
+
+			<div class="df-toggle">
+				<ios-toggle id="cust-status" name="cust-status" size="sm" aria-label="Active"></ios-toggle>
+				<label for="cust-status">Active</label>
+			</div>
+
+		</div>{* /cust-panel-details *}
+
+		{* ── Orders tab ── *}
+		<div class="drawer-tab-panel" id="cust-panel-orders" role="tabpanel">
+			<div id="cust-orders-loading" style="color:var(--nc-text-dim);padding:.5rem 0">Loading…</div>
+			<table class="nc-table" id="cust-orders-table" style="display:none">
+				<thead>
+					<tr>
+						<th>Order #</th>
+						<th>Date</th>
+						<th>Status</th>
+						<th style="text-align:right">Total</th>
+					</tr>
+				</thead>
+				<tbody id="cust-orders-tbody"></tbody>
+			</table>
+			<p id="cust-orders-empty" style="display:none;color:var(--nc-text-dim);padding:.5rem 0">No orders found.</p>
+		</div>{* /cust-panel-orders *}
+
+		{* ── Message tab ── *}
+		<div class="drawer-tab-panel" id="cust-panel-message" role="tabpanel">
+			<div class="df">
+				<label for="cust-msg-subject">Subject <span class="field-required" aria-hidden="true">*</span></label>
+				<input type="text" id="cust-msg-subject" maxlength="255" autocomplete="off">
+			</div>
+			<div class="df">
+				<label for="cust-msg-body">Message</label>
+				<textarea id="cust-msg-body" rows="8"></textarea>
+			</div>
+		</div>{* /cust-panel-message *}
+
+		{if $plugin_customer_panels}{foreach $plugin_customer_panels as $_p}{$_p nofilter}{/foreach}{/if}
+
+	</drawer-content>
+
+	<drawer-foot>
+		<button class="btn btn-secondary" id="btn-drawer-cancel">Cancel</button>
+		<save-button class="btn btn-primary" id="btn-drawer-save" data-label="Save Customer">Save Customer</save-button>
+	</drawer-foot>
+</me-drawer>
+
+{/block}
+
+{block name="scripts"}
+<script>
+Object.assign(NC, {
+	adminUrl: '{$url_admin}',
+	rootUrl:  '{$url_root}',
+	siteName: '{$site_name|escape:"javascript"}'
+});
+</script>
+<script src="{$url_admin_real}js/customers.js?v={$nowstr}"></script>
+{/block}

@@ -1,0 +1,51 @@
+{extends file="layout.html"}
+
+{block name="title"}Reports — {$site_name|escape}{/block}
+
+{block name="head"}
+<link rel="stylesheet" href="{$url_admin_real}css/reports.css?v={$nowstr}">
+{/block}
+
+{block name="page_title"}Reports{/block}
+
+{block name="content"}
+
+<div class="reports-container">
+	<div class="reports-sidebar" id="reports-sidebar">
+		<div id="reports-accordion" class="reports-accordion"></div>
+	</div>
+
+	<div class="reports-main">
+		<div id="report-empty" class="report-empty">
+			<p>Select a report to view</p>
+		</div>
+
+		<div class="report-header" style="display: none">
+			<h2 id="report-name"></h2>
+			<p id="report-description" class="report-description"></p>
+		</div>
+
+		<div id="report-controls" class="report-controls" style="display: none">
+			<div id="report-params" class="report-params"></div>
+			<button class="btn btn-primary" id="btn-run-report">Run Report</button>
+			<button class="btn btn-secondary" id="btn-export-csv">Export CSV</button>
+		</div>
+
+		<div id="report-loading" class="report-loading" style="display: none">
+			<div class="spinner"></div>
+			<p>Loading report data...</p>
+		</div>
+
+		<div id="report-content" class="report-content"></div>
+	</div>
+</div>
+
+{/block}
+
+{block name="scripts"}
+<script>
+window.NC = window.NC || {};
+NC.ajaxUrl = '{$url_admin_real}?route=reports';
+</script>
+<script src="{$url_admin_real}js/reports.js?v={$nowstr}"></script>
+{/block}

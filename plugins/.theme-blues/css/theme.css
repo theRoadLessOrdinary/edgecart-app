@@ -1,0 +1,20 @@
+/* Theme: Blues — cool royal blue */
+:root {
+    --nc-primary:        #1a56db;
+    --nc-primary-hover:  #1447c0;
+    --nc-primary-muted:  #eff6ff;
+    --nc-border-focus:   #1a56db;
+    --nc-utility-text:       #ffffff;
+    --nc-utility-text-hover: #ffffff;
+
+    --nc-footer-bg:      #1447c0;
+    --nc-footer-text:    #ffffff;
+    --nc-sidebar-bg:     #0f1f3d;
+    --nc-sidebar-hover:  #1e3a6e;
+    --nc-sidebar-open:   linear-gradient(to bottom, #233242, #1a2531);
+    --nc-sidebar-active: #3b82f6;
+    --nc-sidebar-text:   #c8d4e8;
+    --nc-sidebar-dim:    #7a8aaa;
+    --nc-topbar-bg:      #1e3a6e;
+    --nc-topbar-text:    #ffffff;
+}

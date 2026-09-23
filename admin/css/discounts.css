@@ -1,0 +1,124 @@
+/* Discount codes admin page */
+
+.code-col code {
+	background: var(--nc-bg-alt);
+	padding: 0.25rem 0.5rem;
+	border-radius: 3px;
+	font-family: monospace;
+	font-size: 0.9rem;
+	letter-spacing: 1px;
+}
+
+#btn-add-code {
+	margin-bottom: 1rem;
+}
+
+#code-drawer-content {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+
+.df {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.df-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1rem;
+}
+
+.df input,
+.df select {
+	padding: 0.5rem;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 1rem;
+}
+
+.df label {
+	font-weight: 500;
+	color: var(--nc-text);
+}
+
+.field-required {
+	color: var(--nc-danger);
+}
+
+.hint {
+	font-size: 0.85rem;
+	color: var(--nc-text-dim);
+	margin-top: -0.25rem;
+}
+
+.df-toggle {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.75rem 0;
+}
+
+.df-toggle label {
+	margin: 0;
+	font-weight: normal;
+}
+
+#btn-bulk-delete {
+	margin-left: auto;
+}
+
+.nc-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.95rem;
+}
+
+.nc-table thead {
+	background: var(--nc-bg-alt);
+	border-bottom: 2px solid #ddd;
+}
+
+.nc-table th {
+	padding: 0.75rem;
+	text-align: left;
+	font-weight: 600;
+	color: var(--nc-text);
+}
+
+.nc-table td {
+	padding: 0.75rem;
+	border-bottom: 1px solid #eee;
+}
+
+.nc-table tr:hover {
+	background: var(--nc-bg-alt);
+}
+
+.col-toggle {
+	text-align: center;
+}
+
+.col-delete {
+	text-align: center;
+	width: 40px;
+}
+
+.checkbox-col {
+	text-align: center;
+	width: 40px;
+}
+
+.nc-empty {
+	text-align: center;
+	padding: 2rem;
+	color: var(--nc-text-dim);
+}
+
+@media (max-width: 768px) {
+	.df-row {
+		grid-template-columns: 1fr;
+	}
+}

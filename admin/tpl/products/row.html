@@ -1,0 +1,40 @@
+<td class="col-drag"><span class="drag-handle">&#8942;</span></td>
+<td>
+	<button class="prod-name-link" data-id="{{id}}">{{name}}</button>
+	{{sku_html}}
+</td>
+<td><div class="prod-cats">{{categories}}</div></td>
+<td class="col-price">
+	<span class="price-cell price-display" data-id="{{id}}" data-field="price" title="Click to edit">{{price}}</span><!--
+	--><span class="price-sep"> / </span><!--
+	--><span class="price-cell list-price-display" data-id="{{id}}" data-field="list_price" title="Click to edit">{{list_price}}</span>
+	<input type="number" min="0" step="0.01" class="price-input eip-input" data-field="price" data-id="{{id}}" value="{{price_raw}}" placeholder="Price" id="price-edit-{{id}}" style="display:none">
+	<input type="number" min="0" step="0.01" class="price-input eip-input" data-field="list_price" data-id="{{id}}" value="{{list_price_raw}}" placeholder="List" id="list-price-edit-{{id}}" style="display:none">
+</td>
+<td class="col-stock">
+	<span class="stock-display {{stock_class}}" data-id="{{id}}" title="Click to edit">{{stock}}</span><!--
+	--><input type="number" min="-1" step="1" class="stock-input eip-input" data-id="{{id}}" value="{{stock_raw}}" id="stock-edit-{{id}}" style="display:none">
+</td>
+<td class="col-active">
+	<ios-toggle {{status_checked}} size="sm" data-id="{{id}}" data-field="status"></ios-toggle>
+</td>
+<td class="col-toggle">
+	<ios-toggle {{featured_checked}} size="sm" data-id="{{id}}" data-field="featured"></ios-toggle>
+</td>
+<td class="col-delete">
+	<span class="delete-fade {{delete_show}}" id="prod-del-{{id}}">
+		<delete-in-place caption="&#128465;" confirm="Delete?" data-id="{{id}}"></delete-in-place>
+	</span>
+</td>
+<td class="col-menu">
+	<div class="row-menu" data-id="{{id}}">
+		<button class="row-menu-btn" title="More actions">&#8942;</button>
+		<div class="row-menu-drop" style="display:none">
+			<button class="row-menu-item clone-btn" data-id="{{id}}">&#128203; Clone</button>
+			<a class="row-menu-item" href="{{catalog_url}}" target="_blank" rel="noopener">&#8599; View in Catalog</a>
+		</div>
+	</div>
+</td>
+<td class="col-check">
+	<input type="checkbox" class="row-chk" data-id="{{id}}" {{chk_disabled}}>
+</td>

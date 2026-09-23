@@ -1,0 +1,42 @@
+{extends file="layout.html"}
+
+{block name="title"}Order Confirmed — {$site_name}{/block}
+
+{block name="content"}
+<div class="order-complete">
+
+	<div class="order-complete-icon">&#9989;</div>
+	<h1>Thank you for your order!</h1>
+
+	{if $order}
+	<p>
+		Your order #{$order.id} has been placed.<br>
+		A confirmation will be sent to <strong>{$order.ship_email|escape}</strong>.
+	</p>
+	{if $order.payment_method === 'check'}
+	<div class="checkout-section" style="margin-top:1.5rem">
+		<div class="checkout-section-head"><h3>Payment by Check or Money Order</h3></div>
+		<p>
+			{if $store_address}
+			Please send your payment to:<br>
+			<strong>{$store_address|escape|nl2br}</strong>
+			{else}
+			We'll follow up shortly with a mailing address for your payment.
+			{/if}
+		</p>
+		<p>Your download link will be emailed once payment is received.</p>
+	</div>
+	{/if}
+	{else}
+	<p>Your order has been placed. Thank you for shopping with us.</p>
+	{/if}
+
+	<p>
+		<a class="btn btn-primary" href="{$url_root}">Continue Shopping</a>
+	</p>
+
+
+</div>
+{/block}
+
+{block name="scripts"}{/block}

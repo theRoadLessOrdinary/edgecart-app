@@ -1,0 +1,62 @@
+{extends file="layout.html"}
+
+{block name="title"}{if $homepage_title}{$homepage_title|escape}{else}Shop — {$site_name}{/if}{/block}
+
+{block name="content"}
+{if $hero_images}
+<div class="store-hero">
+	{foreach $hero_images as $hi}
+	<div class="store-hero-slide" style="background-image:url('{$hi.src|escape}')">
+		{if $hi.label}<span class="store-hero-label">{$hi.label|escape}</span>{/if}
+	</div>
+	{/foreach}
+</div>
+{/if}
+
+{if $categories}
+<div class="category-shelf">
+	{foreach $categories as $cat}
+	<a class="category-card" href="{$url_root}category/{$cat.slug|escape}">
+		<img src="{if $cat.image}{$cat.image|escape}{else}/img/categories/edgecart-category-placeholder.webp{/if}"
+		     alt="{$cat.name|escape}" loading="lazy">
+		<span class="category-card-name">{$cat.name|escape}</span>
+	</a>
+	{/foreach}
+</div>
+{/if}
+
+<div class="page-head">
+	<h1>{if $homepage_title}{$homepage_title|escape}{else}All Products{/if}</h1>
+</div>
+
+{if $products}
+<div class="product-grid">
+	{foreach $products as $prod}
+	<a class="product-card" href="{$url_root}product/{$prod.slug|escape}" aria-label="{$prod.name|escape}">
+		<div class="product-card-img">
+			{if $prod.image}
+				<img src="{$prod.image|escape}" alt="{$prod.name|escape}" loading="lazy">
+			{else}
+				<div class="product-card-no-image" aria-hidden="true">&#128247;</div>
+			{/if}
+		</div>
+		<div class="product-card-body">
+			<div class="product-card-name">{$prod.name|escape}</div>
+			<div class="product-card-price">
+				{if $prod.list_price && $prod.list_price > $prod.price}
+					<span class="product-card-list-price">{$site_currency}{$prod.list_price|string_format:"%.2f"}</span>
+				{/if}
+				{$site_currency}{$prod.price|string_format:"%.2f"}
+			</div>
+		</div>
+	</a>
+	{/foreach}
+</div>
+{else}
+<div class="empty-state">
+	<div class="empty-state-icon">&#128247;</div>
+	<h2>No products yet</h2>
+	<p>Check back soon.</p>
+</div>
+{/if}
+{/block}

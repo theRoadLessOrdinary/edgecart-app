@@ -1,0 +1,7 @@
+{if isset($sidebar_new) && $sidebar_new}
+<ul>
+{foreach $sidebar_new as $prod}
+	<li><a href="{$url_root}product/{$prod.slug|escape}">{$prod.name|escape}</a></li>
+{/foreach}
+</ul>
+{/if}

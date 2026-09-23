@@ -1,0 +1,37 @@
+{extends file="layout.html"}
+
+{block name="title"}{$dd_message|escape} — {$site_name}{/block}
+{block name="meta_desc"}{$dd_detail|escape}{/block}
+
+{block name="content"}
+<div class="page-head">
+	<h1>{$dd_message|escape}</h1>
+	<p>{$dd_detail|escape}</p>
+</div>
+
+{if $products}
+<h2 style="margin-top:2.5rem">You might also like</h2>
+<div class="product-grid" style="margin-top:1.5rem">
+	{foreach $products as $prod}
+	<a class="product-card" href="{$url_root}product/{$prod.slug|escape}" aria-label="{$prod.name|escape}">
+		<div class="product-card-img">
+			{if $prod.image}
+				<img src="{$prod.image|escape}" alt="{$prod.name|escape}" loading="lazy">
+			{else}
+				<div class="product-card-no-image" aria-hidden="true">&#128247;</div>
+			{/if}
+		</div>
+		<div class="product-card-body">
+			<div class="product-card-name">{$prod.name|escape}</div>
+			<div class="product-card-price">
+				{if $prod.list_price && $prod.list_price > $prod.price}
+					<span class="product-card-list-price">{$site_currency}{$prod.list_price|string_format:"%.2f"}</span>
+				{/if}
+				{$site_currency}{$prod.price|string_format:"%.2f"}
+			</div>
+		</div>
+	</a>
+	{/foreach}
+</div>
+{/if}
+{/block}

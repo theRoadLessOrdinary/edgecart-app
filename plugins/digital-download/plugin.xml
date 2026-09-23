@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+    <code>digital-download</code>
+    <name>Digital Downloads</name>
+    <version>1.0.0</version>
+    <type>fulfillment</type>
+    <icon>⬇️</icon>
+    <author>EdgeCart</author>
+    <description>Attach downloadable files to products. Customers receive secure, expiring download links by email after purchase.</description>
+    <hooks>
+        <hook>app.boot</hook>
+        <hook>catalog.order.payment_complete</hook>
+        <hook>admin.product.drawer.tabs</hook>
+        <hook>admin.product.drawer.panels</hook>
+        <hook>admin.page.scripts</hook>
+    </hooks>
+<settings origin="digital-download">
+        <key>dd_expiry_days</key>
+        <key>dd_max_downloads</key>
+    </settings>
+</plugin>

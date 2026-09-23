@@ -1,0 +1,160 @@
+/* ── Settings admin ── */
+
+/* ── Save bar ── */
+.settings-save-bar {
+	position: sticky; top: var(--nc-topbar-h); z-index: 50;
+	background: var(--nc-bg-alt); border-bottom: 1px solid var(--nc-border);
+	padding: .6rem 0; margin: -1.5rem 0 1.5rem;
+	display: flex; align-items: center; gap: 1rem;
+}
+#save-status { font-size: .82rem; color: var(--nc-text-dim); }
+
+/* ── Card grid ── */
+.card-grid {
+	display: flex; flex-wrap: wrap; gap: 1.25rem;
+	margin-bottom: 1.25rem; align-items: flex-start;
+}
+.settings-card {
+	flex: 1 1 280px; background: var(--nc-bg);
+	border: 1px solid var(--nc-border); border-radius: var(--nc-radius-lg);
+	overflow: hidden; min-width: 0;
+}
+.settings-card.full-width { flex: 1 1 100%; }
+
+.card-head {
+	background: var(--nc-bg-alt); border-bottom: 2px solid var(--nc-border);
+	padding: .65rem 1.25rem; font-size: .78rem; font-weight: 700;
+	text-transform: uppercase; letter-spacing: .06em; color: var(--nc-text-secondary);
+}
+.card-body { padding: 1.25rem; }
+
+/* ── Form fields (settings-specific overrides) ── */
+.df { margin-bottom: .9rem; }
+.df-toggle { margin-bottom: .9rem; }
+.df textarea { min-height: 70px; }
+.df .hint { line-height: 1.4; }
+.df input.field-error { border-color: var(--nc-danger); }
+
+/* Responsive field rows */
+.df-row { display: flex; flex-wrap: wrap; gap: .75rem; }
+.df-row .df { flex: 1 1 140px; min-width: 0; }
+.df-row .df.narrow { flex: 0 0 100px; }
+
+.section-hint { font-size: .83rem; color: var(--nc-text-dim); margin-bottom: 1rem; line-height: 1.5; }
+
+/* ── Avatar upload ── */
+.avatar-upload-area {
+	width: 80px; height: 80px; border-radius: 50%;
+	border: 2px dashed var(--nc-border); cursor: pointer;
+	position: relative; overflow: hidden; transition: border-color .2s; flex-shrink: 0;
+}
+.avatar-upload-area:hover,
+.avatar-upload-area.drag-over { border-color: var(--nc-primary); }
+.avatar-upload-area img {
+	width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: none;
+}
+.avatar-upload-area img.show { display: block; }
+.avatar-upload-placeholder {
+	width: 100%; height: 100%;
+	display: flex; align-items: center; justify-content: center;
+	font-size: 1.4rem; color: var(--nc-text-dim);
+}
+.avatar-delete-btn {
+	position: absolute; inset: 0; background: rgba(0,0,0,.5);
+	color: #fff; border: none; cursor: pointer; font-size: .75rem; font-weight: 600;
+	display: none; align-items: center; justify-content: center; border-radius: 50%;
+}
+.avatar-upload-area:hover .avatar-delete-btn.has-image { display: flex; }
+.avatar-upload-hint { font-size: .78rem; color: var(--nc-text-dim); line-height: 1.5; }
+
+/* ── Image upload (logo/favicon) ── */
+.img-upload-row { align-items: center; gap: 1rem; margin-bottom: .9rem; flex-wrap: wrap; }
+.img-preview {
+	height: 48px; max-width: 160px; background: var(--nc-bg-alt);
+	display: none; box-shadow: var(--nc_box_shadow); margin-top: 1rem;
+}
+.img-preview.show { display: block; }
+.img-upload-btn {
+	padding: .4rem .85rem; font-size: .83rem; font-weight: 600;
+	border: 1px solid var(--nc-border); border-radius: var(--nc-radius);
+	background: var(--nc-bg-alt); cursor: pointer; font-family: var(--nc-font);
+	color: var(--nc-text); transition: border-color .15s;
+}
+.img-upload-btn:hover { border-color: var(--nc-primary); color: var(--nc-primary); }
+
+/* ── Error log ── */
+#error-log {
+	width: 100%; height: 320px; resize: vertical;
+	font-family: monospace; font-size: .78rem;
+	color: var(--nc-text); background: var(--nc-bg);
+	border: 1px solid var(--nc-border); border-radius: var(--nc-radius);
+	padding: .65rem; outline: none;
+}
+.log-toolbar { display: flex; gap: .65rem; margin-top: .75rem; }
+
+/* ── Users table ── */
+.nc-table th.col-toggle, .nc-table td.col-toggle { width: 70px; text-align: center; }
+.nc-table th.delete-col, .nc-table td.delete-col { width: 50px; text-align: center; }
+
+.user-name-link {
+	background: none; border: none; padding: 0; cursor: pointer;
+	color: var(--nc-primary); font-weight: 600; font-size: inherit;
+	font-family: var(--nc-font);
+}
+.user-name-link:hover { text-decoration: underline; }
+
+.user-avatar-sm {
+	width: 26px; height: 26px; border-radius: 50%;
+	object-fit: cover; vertical-align: middle;
+	border: 1px solid var(--nc-border); margin-right: .4rem; flex-shrink: 0;
+}
+.user-initials-sm {
+	width: 26px; height: 26px; border-radius: 50%;
+	background: var(--nc-primary); color: #fff;
+	font-size: .65rem; font-weight: 700;
+	display: inline-flex; align-items: center; justify-content: center;
+	vertical-align: middle; margin-right: .4rem; flex-shrink: 0;
+}
+
+.access-badge {
+	font-size: .74rem; font-weight: 700;
+	padding: .18rem .45rem; border-radius: 999px;
+	background: var(--nc-bg-alt); color: var(--nc-text-secondary);
+	border: 1px solid var(--nc-border);
+}
+.access-badge.is-admin { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+
+.row-removing { opacity: 0 !important; transition: opacity .3s ease !important; }
+
+/* ── Drawer width (settings-specific) ── */
+me-drawer, edge-drawer { width: 480px; }
+
+/* ── Options sub-tabs ── */
+.sub-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--nc-border); margin-bottom: 1.25rem; }
+.sub-tab {
+	padding: .45rem 1.1rem; font-size: .85rem; font-weight: 600;
+	color: var(--nc-text-dim); background: none; border: none;
+	border-bottom: 3px solid transparent; margin-bottom: -2px;
+	cursor: pointer; transition: color .15s, border-color .15s;
+}
+.sub-tab:hover  { color: var(--nc-primary); }
+.sub-tab.active { color: var(--nc-primary); border-bottom-color: var(--nc-primary); }
+.sub-panel { display: none; }
+.sub-panel.active { display: block; }
+
+/* ── Settings stack ── */
+.settings-stack { display: flex; flex-direction: column; gap: .75rem; }
+.settings-stack .df { margin-bottom: 0; }
+.settings-stack > .settings-card,
+.sub-panel > .settings-card + .settings-card { margin-top: 1rem; }
+
+/* ── Thumbnail settings grid ── */
+.img-thumb-grid {
+	display: grid; grid-template-columns: 130px 90px 90px;
+	gap: .45rem .75rem; align-items: center;
+}
+.img-col-head { font-size: .78rem; font-weight: 700; color: var(--nc-text-dim); text-align: center; }
+.img-row-label { font-size: .85rem; font-weight: 600; }
+.img-thumb-grid input[type="number"] { width: 100%; }
+
+.btn-sm { padding: .3rem .7rem; font-size: .8rem; }

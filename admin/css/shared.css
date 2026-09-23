@@ -1,0 +1,238 @@
+/* ── admin/css/shared.css — shared admin UI components ──────────────────── */
+/* Loaded globally via layout.html. Do not duplicate these rules per-page.   */
+
+/* ── Drawer shell (width set per-page) ── */
+me-drawer, edge-drawer {
+	position: fixed; top: 0; right: 0; bottom: 0;
+	background: var(--nc-bg);
+	box-shadow: var(--nc-drawer-shadow);
+	z-index: 500; display: flex; flex-direction: column;
+	transform: translateX(100%); transition: transform .3s ease;
+}
+me-drawer.open, edge-drawer.open { transform: translateX(0); }
+
+drawer-head {
+	display: flex; align-items: center; justify-content: space-between;
+	padding: var(--nc-drawer-padding);
+	border-bottom: 1px solid var(--nc-border);
+	background: var(--nc-bg-alt); flex-shrink: 0;
+}
+drawer-head h2 { font-size: 1rem; font-weight: 700; color: var(--nc-text); }
+
+.drawer-close {
+	background: none; border: none; font-size: 1.4rem;
+	cursor: pointer; color: var(--nc-text-dim); line-height: 1; padding: 0 .25rem;
+}
+.drawer-close:hover { color: var(--nc-text); }
+
+drawer-content { flex: 1; overflow-y: auto; padding: var(--nc-drawer-content-padding); display: block; }
+
+drawer-foot {
+	display: flex; align-items: center; justify-content: flex-end; gap: .65rem;
+	padding: var(--nc-drawer-padding);
+	border-top: 1px solid var(--nc-border);
+	background: var(--nc-bg-alt); flex-shrink: 0;
+}
+
+/* ── Drawer overlay ── */
+#drawer-overlay {
+	display: none; position: fixed; inset: 0;
+	background: var(--nc-overlay-bg); z-index: 499;
+}
+#drawer-overlay.show { display: block; }
+
+/* ── Drawer scroll indicator ── */
+.drawer-scroll-indicator {
+	position: sticky; bottom: 0; left: 0; right: 0;
+	text-align: center; pointer-events: none;
+	padding: .4rem 0 .2rem;
+	background: linear-gradient(transparent, rgba(255,255,255,.95) 40%);
+	transition: opacity .3s;
+}
+.drawer-scroll-indicator.hidden { opacity: 0; }
+.drawer-scroll-chevron {
+	font-size: 1.4rem;
+	color: var(--nc-primary);
+	animation: bounce-down .9s ease-in-out infinite;
+	display: inline-block;
+}
+@keyframes bounce-down {
+	0%, 100% { transform: translateY(0); }
+	50%       { transform: translateY(5px); }
+}
+
+/* ── AI buttons ── */
+.btn-ai, .btn-ai-seo {
+	font-size: .75rem; padding: .2rem .5rem;
+	background: var(--nc-ai-bg); border: 1px solid var(--nc-ai-border);
+	color: var(--nc-ai-color); border-radius: var(--nc-radius);
+	cursor: pointer; white-space: nowrap;
+}
+.btn-ai:hover, .btn-ai-seo:hover { background: var(--nc-ai-hover); }
+.btn-ai:disabled, .btn-ai-seo:disabled { opacity: .5; cursor: not-allowed; }
+.btn-xs { font-size: .75rem; padding: .2rem .5rem; }
+
+/* ── Delete fade ── */
+.delete-fade { opacity: 0; transition: opacity .3s; pointer-events: none; display: block; height: 24px; }
+.delete-fade.show { opacity: 1; pointer-events: auto; }
+
+/* Visible-but-disabled delete icon, shown instead of .delete-fade when the
+   row can't be deleted yet (e.g. an active category or admin user) — unlike
+   .delete-fade's opacity:0 default state, this stays hoverable so its title
+   tooltip actually explains why, rather than looking like a missing/broken
+   button. */
+.delete-disabled-hint { display: inline-block; height: 24px; opacity: .35; cursor: not-allowed; }
+
+/* ── Drag handle ── */
+.col-drag { cursor: grab; }
+.col-drag:active { cursor: grabbing; }
+.drag-handle {
+	cursor: grab; color: var(--nc-text-dim);
+	font-size: 1rem; padding: 0 .25rem; user-select: none;
+}
+.drag-handle:active { cursor: grabbing; }
+
+/* ── Table base ── */
+.nc-table {
+	width: 100%; border-collapse: collapse;
+	background: var(--nc-bg);
+	border: 1px solid var(--nc-border);
+	border-radius: var(--nc-radius-lg);
+	overflow: hidden;
+}
+.nc-table th {
+	background: var(--nc-bg-alt);
+	font-size: .78rem; font-weight: 700;
+	text-transform: uppercase; letter-spacing: .05em;
+	color: var(--nc-text-secondary);
+	padding: var(--nc-table-th-padding); text-align: left;
+	border-bottom: 2px solid var(--nc-border);
+	white-space: nowrap;
+}
+.nc-table td {
+	padding: var(--nc-table-td-padding);
+	border-bottom: 1px solid var(--nc-border);
+	font-size: .88rem; color: var(--nc-text);
+	vertical-align: middle;
+}
+.nc-table tr:last-child td { border-bottom: none; }
+.nc-table tr.dragging      { opacity: .4; }
+.nc-table tr.drag-over td  { border-top: 2px solid var(--nc-primary); }
+
+/* ── Toolbar ── */
+.nc-toolbar {
+	display: flex; align-items: center; justify-content: space-between;
+	gap: .75rem; margin-bottom: 1rem; flex-wrap: wrap;
+}
+
+/* ── Form fields inside drawers/cards (.df context) ── */
+.df { margin-bottom: 1rem; }
+.df:last-child { margin-bottom: 0; }
+.df label {
+	display: block; font-size: .83rem; font-weight: 600;
+	color: var(--nc-text); margin-bottom: .3rem;
+}
+.df input[type=text],
+.df input[type=email],
+.df input[type=password],
+.df input[type=tel],
+.df input[type=number],
+.df input[type=search],
+.df input[type=date],
+.df select,
+.df textarea {
+	width: 100%; padding: var(--nc-input-padding);
+	border: 1px solid var(--nc-border); border-radius: var(--nc-radius);
+	font-size: .9rem; color: var(--nc-text); font-family: var(--nc-font);
+	outline: none; background: var(--nc-bg);
+	transition: border-color .15s, box-shadow .15s;
+}
+.df input:focus, .df select:focus, .df textarea:focus {
+	border-color: var(--nc-border-focus);
+	box-shadow: var(--nc-focus-shadow);
+}
+.df textarea { resize: vertical; min-height: 80px; }
+.df .hint { font-size: .78rem; color: var(--nc-text-dim); margin-top: .3rem; }
+
+/* ── Page-level text helpers ── */
+.page-desc { color: var(--nc-text-dim); margin-bottom: 2rem; }
+.page-note  { font-size: .85rem; color: var(--nc-text-dim); margin-top: 1.25rem; }
+
+/* ── Upgrade / limit hint ── */
+.ec-limit-hint {
+	display: inline-block;
+	font-size: .8rem;
+	color: var(--nc-text-dim);
+	margin-left: .75rem;
+}
+.ec-limit-hint a { color: var(--nc-accent, #2563eb); text-decoration: underline; }
+.ec-limit-hint a:hover { color: var(--nc-accent-dark, #1d4ed8); }
+
+.df-toggle { display: flex; align-items: center; gap: .65rem; margin-bottom: 1rem; }
+.df-toggle label { font-size: .83rem; font-weight: 600; color: var(--nc-text); margin: 0; cursor: pointer; }
+
+.field-required { color: var(--nc-danger); }
+
+/* ── Trumbowyg ── */
+.trumbowyg-box    { border: 1px solid var(--nc-border) !important; border-radius: var(--nc-radius); }
+.trumbowyg-editor { min-height: 160px; }
+
+/* ── me-monthday — segmented MM/DD control ── */
+.me-monthday {
+    display: inline-flex; align-items: center;
+    border: 1px solid var(--nc-border); border-radius: var(--nc-radius-sm);
+    background: var(--nc-bg); padding: .35rem .45rem; gap: 1px;
+    font-size: .9rem; font-family: var(--nc-font);
+    cursor: text; transition: border-color .15s, box-shadow .15s;
+    width: 90px;
+}
+.me-monthday:focus-within {
+    border-color: var(--nc-border-focus);
+    box-shadow: var(--nc-focus-shadow);
+}
+.me-md-seg {
+    width: 2ch; border: none; outline: none; background: transparent;
+    text-align: center; font-size: inherit; font-family: inherit;
+    color: var(--nc-text); padding: 1px 2px; border-radius: 2px;
+    caret-color: transparent;
+}
+.me-md-seg::placeholder { color: var(--nc-text-dim); }
+.me-md-seg.me-md-active { background: #2563eb; color: #fff; }
+.me-md-sep { color: var(--nc-text-dim); padding: 0 1px; user-select: none; }
+
+/* ── Drawer tabs ── */
+.drawer-tabs {
+	display: flex; border-bottom: 2px solid var(--nc-border);
+	margin-bottom: 1.25rem; flex-shrink: 0;
+}
+.drawer-tab {
+	padding: .55rem 1rem; font-size: .85rem; font-weight: 600;
+	color: var(--nc-text-secondary); cursor: pointer;
+	border-bottom: 3px solid transparent; margin-bottom: -2px;
+	background: none; border-top: none; border-left: none; border-right: none;
+	font-family: var(--nc-font); transition: color .15s;
+}
+.drawer-tab:hover            { color: var(--nc-text); }
+.drawer-tab.active           { color: var(--nc-primary); border-bottom-color: var(--nc-primary); }
+.drawer-tab:disabled         { color: var(--nc-text-dim); opacity: .4; cursor: not-allowed; font-style: italic; }
+.drawer-tab-panel            { display: none; }
+.drawer-tab-panel.active     { display: block; }
+
+/* ── Loading spinner (inline use: <span class="nc-spinner"></span>) ── */
+.nc-spinner {
+	display: inline-block; width: 1.25rem; height: 1.25rem;
+	border: 2px solid var(--nc-border); border-top-color: var(--nc-primary);
+	border-radius: 50%; animation: nc-spin .65s linear infinite; vertical-align: middle;
+}
+@keyframes nc-spin { to { transform: rotate(360deg); } }
+
+/* ── Section headings ── */
+.df-section {
+	font-size: .75rem; font-weight: 700; text-transform: uppercase;
+	letter-spacing: .06em; color: var(--nc-text-secondary);
+	margin: 1.25rem 0 .75rem; padding-bottom: .4rem;
+	border-bottom: 1px solid var(--nc-border);
+}
+
+/* ── File manager picker button ── */
+.btn-fm-picker { display: block; width: 100%; margin-top: .75rem; text-align: center; }

@@ -1,0 +1,154 @@
+{extends file="layout.html"}
+
+{block name="title"}Cart — {$site_name}{/block}
+
+{block name="content"}
+{if $page.title && $page.title !== 'Cart'}
+<div class="page-head">
+	<h1>{$page.title|escape}</h1>
+</div>
+{else}
+<div class="page-head" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+	<h1>Your Cart</h1>
+	{if $items|count > 2}
+	<a class="btn btn-primary btn-lg" href="{$url_root}checkout" style="white-space: nowrap;">Proceed to Checkout</a>
+	{/if}
+</div>
+{/if}
+
+{if $content_before}<div class="page-content">{$content_before nofilter}</div>{/if}
+
+{if $blocks}
+{foreach $blocks as $block}
+<div class="page-block{if $block.is_core} block-core{/if}">
+
+	{if $block.block_type === 'cart_contents'}
+		{* ── Core: Cart Table ── *}
+		{if $items}
+		<table class="cart-table" id="cart-table">
+			<thead>
+				<tr>
+					<th></th>
+					<th>Product</th>
+					<th>Price</th>
+					<th>Qty</th>
+					<th>Total</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				{foreach $items as $i => $item}
+				<tr data-index="{$i}">
+					<td>
+						{if $item.product.image}
+							<img class="cart-item-img"
+							     src="{$item.product.image|escape}"
+							     alt="{$item.product.name|escape}"
+							     style="width:{$img_cart_size}px;height:{$img_cart_size}px">
+						{/if}
+					</td>
+					<td>
+						<div class="cart-item-name">
+							<a href="{$url_root}product/{$item.product.slug|escape}">{$item.product.name|escape}</a>
+						</div>
+						{if $item.options}
+						<div class="cart-item-options">
+							{foreach $item.options as $opt}
+							<span class="cart-item-option">{$opt.option_name|escape}: {if $opt.label}{$opt.label|escape}{else}{$opt.value_text|escape}{/if}</span>
+							{/foreach}
+						</div>
+						{/if}
+					</td>
+					<td>{$site_currency}{$item.unit_price|string_format:"%.2f"}</td>
+					<td>
+						<input class="cart-qty-input" type="number" value="{$item.qty}"
+						       min="1" max="999" data-index="{$i}" aria-label="Quantity">
+					</td>
+					<td class="cart-line-total" data-index="{$i}">{$site_currency}{$item.line_total|string_format:"%.2f"}</td>
+					<td>
+						<delete-in-place index="{$i}" caption="Remove" confirm="Yes, remove"></delete-in-place>
+					</td>
+				</tr>
+				{/foreach}
+			</tbody>
+		</table>
+
+		<div class="cart-summary">
+			<div class="subtotal">
+				<span class="cart-total-label">Subtotal:</span>
+				<span class="cart-total-value" id="cart-subtotal">{$subtotal}</span>
+			</div>
+			<div class="cart-checkout-button">
+				<a class="btn btn-primary btn-lg" href="{$url_root}checkout">Proceed to Checkout</a>
+			</div>
+				<div class="cart-actions" style="margin-top: 1rem;">
+					<button class="btn btn-secondary btn-sm" id="btn-clear-saved-cart" title="Clear cart saved for later">Clear Saved Cart</button>
+				</div>
+		</div>
+
+		{else}
+		<div class="empty-state">
+			<div class="empty-state-icon">&#128722;</div>
+			<h2>Your cart is empty</h2>
+			<p>Add some products to get started.</p>
+			<a class="btn btn-primary" href="{$url_root}" style="margin-top:1rem">Continue Shopping</a>
+		</div>
+		{/if}
+
+	{elseif $block.block_type === 'menu'}
+		{if isset($block.menu_items) && $block.menu_items}
+		<nav class="page-block block-menu">
+			{foreach $block.menu_items as $item}
+			{if $item.enabled}
+			<a href="{if $item.item_type === 'category' && $item.category_slug}{$url_root}category/{$item.category_slug|escape}{elseif $item.item_type === 'page' && $item.page_slug}{$url_root}page/{$item.page_slug|escape}{else}{$item.url|default:'#'|escape}{/if}" class="block-menu-link">
+				{$item.label|escape}
+				{if $item.show_count && isset($item.product_count)}<span class="block-menu-count">({$item.product_count})</span>{/if}
+			</a>
+			{/if}
+			{/foreach}
+		</nav>
+		{/if}
+
+	{elseif $block.block_type === 'rich_text'}
+		<div class="page-block block-rich-text">{$block.settings.content|default:''}</div>
+
+	{elseif $block.block_type === 'html'}
+		<div class="page-block block-html">{$block.settings.html|default:''}</div>
+
+	{elseif in_array($block.block_type, ['featured_products','best_sellers','new_arrivals'])}
+		{if isset($block.products) && $block.products}
+		<div class="page-block block-products">
+			{if $block.heading}<h2 class="block-heading">{$block.heading|escape}</h2>{/if}
+			<div class="product-grid">
+				{foreach $block.products as $prod}
+				<a class="product-card" href="{$url_root}product/{$prod.slug|escape}">
+					<div class="product-card-img">
+						{if $prod.image}<img src="{$prod.image|escape}" alt="{$prod.name|escape}" loading="lazy">
+						{else}<div class="product-card-no-image" aria-hidden="true">&#128247;</div>{/if}
+					</div>
+					<div class="product-card-body">
+						<div class="product-card-name">{$prod.name|escape}</div>
+						<div class="product-card-price">
+							{if $prod.list_price && $prod.list_price > $prod.price}<span class="product-card-list-price">{$site_currency}{$prod.list_price|string_format:"%.2f"}</span>{/if}
+							{$site_currency}{$prod.price|string_format:"%.2f"}
+						</div>
+					</div>
+				</a>
+				{/foreach}
+			</div>
+		</div>
+		{/if}
+	{/if}
+
+</div>{* /page-block *}
+{/foreach}
+{/if}
+
+{if $content_after}<div class="page-content">{$content_after nofilter}</div>{/if}
+{/block}
+
+{block name="scripts"}
+{if $items}
+<script src="{$url_root}js/cart.js?v={$nowstr}"></script>
+{/if}
+{/block}

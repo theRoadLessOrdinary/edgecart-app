@@ -1,0 +1,44 @@
+# Secrets — contains the real (rotated but still live) obscured admin URL path
+.htaccess
+
+# Would contain real DB credentials once installed
+cfg/config.php
+cfg/config.local.php
+
+# Build artifacts
+*.zip
+
+# Runtime-generated
+logs/*.log
+cache/**
+img/uploads/**
+!img/uploads/.gitkeep
+storage/downloads/**
+!storage/downloads/.gitkeep
+install/.installed
+
+# Personal/local Claude Code settings — never shared
+.claude/settings.local.json
+
+# Non-code cruft in bundled vendor libraries (docs, demos, test runners,
+# source maps) — the library's PHP/JS/CSS runtime code and LICENSE stay.
+**/vendor/**/docs/
+**/vendor/**/demo/
+**/vendor/**/changelog/
+**/vendor/**/mkdocs.yml
+**/vendor/**/run-tests*.sh
+*.map
+
+# npm deps if the Playwright suite is ever set up locally
+tests/playwright/node_modules/
+
+# Docs — not code, not necessary for the app to run (covers AUDIT_REPORT.md,
+# instructions.md, edgecart.md — internal planning/audit notes, not for a
+# public repo)
+*.md
+
+# tests/ and tools/ are intentionally NOT excluded here — they belong in
+# version control same as any other source. Keeping them out of what
+# customers receive is handled separately, in tools/build-lib.php's build
+# exclusion list (and the static edgeCart-distribution.zip build) — that's a
+# "what ships" concern, not a "what's tracked" concern.

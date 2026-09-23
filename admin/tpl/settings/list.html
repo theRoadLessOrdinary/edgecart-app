@@ -1,0 +1,729 @@
+{extends file="../layout.html"}
+
+{block name="title"}Setup & Utilities — {$site_name|escape}{/block}
+
+{block name="head"}
+<link rel="stylesheet" href="{$url_admin_real}css/settings.css">
+<style>
+.os-color-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; vertical-align: middle; margin-right: .35rem; flex-shrink: 0; }
+.os-drag-handle { cursor: grab; color: var(--nc-text-dim); font-size: 1.1rem; user-select: none; }
+.os-drag-handle:active { cursor: grabbing; }
+tr.os-dragging { opacity: .35; }
+tr.os-drag-over td { border-top: 2px solid var(--nc-primary); }
+.df input[type=color] { width: 48px; height: 36px; padding: 2px 4px; border: 1px solid #d1d5db; border-radius: .375rem; cursor: pointer; }
+.color-row { display: flex; align-items: center; gap: .75rem; }
+.color-hex { flex: 1; padding: .5rem .7rem; border: 1px solid #d1d5db; border-radius: .375rem; font-size: .9rem; font-family: monospace; }
+#logo-drop-zone.drag-over,
+#favicon-svg-drop-zone.drag-over,
+#favicon-png-drop-zone.drag-over { outline: 2px dashed var(--nc-primary); outline-offset: 4px; border-radius: var(--nc-radius); }
+</style>
+{/block}
+
+{block name="content"}
+
+{* ── Sticky save bar ── *}
+<div class="settings-save-bar">
+	<save-button class="btn btn-primary" id="btn-save-all" data-label="Save Settings">Save Settings</save-button>
+</div>
+
+{* ── Tabs ── *}
+<div data-nc-tabs>
+<ul>
+	<li><a href="#tab-store">Store</a></li>
+	<li><a href="#tab-local">Local</a></li>
+	<li><a href="#tab-mail">Mail</a></li>
+	<li><a href="#tab-server">Server</a></li>
+	<li><a href="#tab-options">Options</a></li>
+	<li><a href="#tab-seo">SEO</a></li>
+	<li><a href="#tab-users">Users</a></li>
+	<li><a href="#tab-analytics">Analytics</a></li>
+	<li><a href="#tab-errors">Error Log</a></li>
+</ul>
+
+{* ── Store tab ── *}
+<div id="tab-store">
+	<div class="card-grid">
+
+		<div class="settings-card">
+			<div class="card-head">Store Details</div>
+			<div class="card-body">
+				<div class="df">
+					<label for="s_site_name">Store Name <span class="field-required">*</span></label>
+					<input type="text" id="s_site_name" maxlength="255" required>
+				</div>
+				<div class="df-row">
+					<div class="df">
+						<label for="s_site_email">Store Email</label>
+						<input type="email" id="s_site_email">
+					</div>
+					<div class="df narrow">
+						<label for="s_site_currency">Currency</label>
+						<input type="text" id="s_site_currency" maxlength="8">
+					</div>
+				</div>
+				<div class="df-row">
+					<div class="df">
+						<label for="s_store_phone">Phone Number</label>
+						<input type="text" id="s_store_phone" maxlength="64"
+						       placeholder="e.g. (800) 555-1234">
+					</div>
+					<div class="df">
+					</div>
+				</div>
+				<div class="df-row">
+					<div class="df" id="logo-drop-zone">
+
+						<label>Store Logo</label>
+						<img id="preview-logo" class="img-preview" alt="Logo"><br>
+						<div style="display:flex;gap:.4rem;align-items:center">
+							<input type="text" id="s_store_logo_url" maxlength="500"
+								placeholder="/img/logo.png or https://…"
+								aria-describedby="logo-hint" style="flex:1">
+							<button type="button" class="btn btn-secondary btn-sm"
+								id="btn-logo-pick" aria-label="Pick logo from file manager"
+								title="Pick from file manager">🖼</button>
+						</div>
+						<div class="hint">JPG, PNG, WebP, or SVG.<br>Leave blank to show store name as text.</div>
+					</div>
+					<div class="df">
+						<label for="s_store_logo_link">Logo Link URL</label>
+						<input type="text" id="s_store_logo_link" maxlength="500"
+						       placeholder="Defaults to store home page">
+						<div class="hint">Where the logo links to. Leave blank to link to the store home page.</div>
+					</div>
+				</div>
+				<div class="df-row">
+					<div class="df" id="favicon-svg-drop-zone">
+						<label>Favicon (SVG)</label>
+						<img id="preview-favicon-svg" class="img-preview" alt="SVG Favicon"><br>
+						<div style="display:flex;gap:.4rem;align-items:center">
+							<input type="text" id="s_favicon_svg_url" maxlength="500"
+								placeholder="/img/favicon.svg or https://…"
+								style="flex:1">
+							<button type="button" class="btn btn-secondary btn-sm"
+								id="btn-favicon-svg-pick" aria-label="Pick SVG favicon from file manager"
+								title="Pick from file manager">🖼</button>
+						</div>
+						<div class="hint">SVG only. Supports light/dark mode. Leave blank to use raster favicon.<br>&nbsp;</div>
+					</div>
+				</div>
+				<div class="df-row">
+					<div class="df" id="favicon-png-drop-zone">
+						<label>Favicon (PNG/ICO fallback)</label>
+						<img id="preview-favicon" class="img-preview" alt="Favicon"><br>
+						<div style="display:flex;gap:.4rem;align-items:center">
+							<input type="text" id="s_site_favicon" maxlength="500"
+							       placeholder="/img/favicon.png or https://…"
+							       style="flex:1">
+							<button type="button" class="btn btn-secondary btn-sm"
+							        id="btn-favicon-png-pick" aria-label="Choose favicon from file manager"
+							        title="Pick from file manager">🖼</button>
+						</div>
+						<div class="hint">JPG, PNG or WebP.</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="settings-card">
+			<div class="card-head">SEO Defaults</div>
+			<div class="card-body">
+				<p class="section-hint">Used when no specific values are set on a page or category.</p>
+				<div class="df">
+					<label for="s_seo_title_default">Default Page Title</label>
+					<input type="text" id="s_seo_title_default" maxlength="300">
+				</div>
+				<div class="df">
+					<label for="s_seo_description_default">Default Meta Description</label>
+					<textarea id="s_seo_description_default" rows="2" maxlength="500"></textarea>
+				</div>
+				<div class="df">
+					<label for="s_seo_keywords_default">Default Keywords</label>
+					<input type="text" id="s_seo_keywords_default" maxlength="500">
+					<div class="hint">Comma separated</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+{* ── Local tab ── *}
+<div id="tab-local">
+	<div class="card-grid">
+
+		<div class="settings-card">
+			<div class="card-head">Contact</div>
+			<div class="card-body">
+				<div class="df">
+					<label for="s_address">Address</label>
+					<textarea id="s_address" rows="3"></textarea>
+				</div>
+				<div class="df">
+					<label for="s_phone">Phone</label>
+					<input type="tel" id="s_phone" maxlength="17" placeholder="1+111-222-3333" data-mask="phone">
+				</div>
+			</div>
+		</div>
+
+		<div class="settings-card">
+			<div class="card-head">Regional</div>
+			<div class="card-body">
+				<div class="df">
+					<label for="s_timezone">Timezone</label>
+					<select id="s_timezone">
+						<option value="America/New_York">Eastern (UTC-5)</option>
+						<option value="America/Chicago">Central (UTC-6)</option>
+						<option value="America/Denver">Mountain (UTC-7)</option>
+						<option value="America/Los_Angeles">Pacific (UTC-8)</option>
+						<option value="America/Anchorage">Alaska (UTC-9)</option>
+						<option value="Pacific/Honolulu">Hawaii (UTC-10)</option>
+						<option value="UTC">UTC</option>
+					</select>
+				</div>
+				<div class="df">
+					<label for="s_date_format">Date Format</label>
+					<select id="s_date_format">
+						<option value="m/d/Y">MM/DD/YYYY</option>
+						<option value="d/m/Y">DD/MM/YYYY</option>
+						<option value="Y-m-d">YYYY-MM-DD</option>
+					</select>
+				</div>
+				<div class="df">
+					<label for="s_currency_position">Currency Symbol Position</label>
+					<select id="s_currency_position">
+						<option value="before">Before amount ($10.00)</option>
+						<option value="after">After amount (10.00$)</option>
+					</select>
+				</div>
+				<div class="df">
+					<label for="s_weight_unit">Weight Unit</label>
+					<select id="s_weight_unit">
+						<option value="lbs">Pounds (lbs)</option>
+						<option value="kg">Kilograms (kg)</option>
+						<option value="oz">Ounces (oz)</option>
+						<option value="g">Grams (g)</option>
+					</select>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+{* ── Mail tab ── *}
+<div id="tab-mail">
+	<div class="card-grid">
+
+		<div class="settings-card">
+			<div class="card-head">SMTP</div>
+			<div class="card-body">
+				<div class="df-row">
+					<div class="df">
+						<label for="s_smtp_host">Hostname</label>
+						<input type="text" id="s_smtp_host" maxlength="255" placeholder="smtp.example.com">
+					</div>
+					<div class="df narrow">
+						<label for="s_smtp_port">Port</label>
+						<input type="number" id="s_smtp_port" min="1" max="65535" placeholder="587">
+					</div>
+				</div>
+				<div class="df">
+					<label for="s_smtp_user">Username</label>
+					<input type="text" id="s_smtp_user" maxlength="255" autocomplete="off">
+				</div>
+				<div class="df">
+					<label for="s_smtp_pass">Password</label>
+					<input type="text" id="s_smtp_pass">
+				</div>
+			</div>
+		</div>
+
+		<div class="settings-card">
+			<div class="card-head">Mail API</div>
+			<div class="card-body">
+				<div class="df">
+					<label for="s_mail_api_key">API Key</label>
+					<input type="text" id="s_mail_api_key" maxlength="255" autocomplete="off">
+					<div class="hint">When set, used instead of SMTP.</div>
+				</div>
+				<div class="df">
+					<label for="s_mail_api_endpoint">Endpoint URL</label>
+					<input type="text" id="s_mail_api_endpoint" maxlength="255" autocomplete="off" placeholder="https://api.resend.com/emails">
+				</div>
+			</div>
+		</div>
+
+		<div class="settings-card">
+			<div class="card-head">Sender</div>
+			<div class="card-body">
+				<div class="df">
+					<label for="s_mail_from">From Address</label>
+					<input type="email" id="s_mail_from" maxlength="255" placeholder="no-reply@example.com">
+					<div class="hint">Used as the From address on all outgoing mail.</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="settings-card">
+			<div class="card-head">Mail Alerts</div>
+			<div class="card-body">
+				<div class="df">
+					<label for="s_mail_alert">Alert Email</label>
+					<input type="email" id="s_mail_alert" maxlength="255" placeholder="alerts@example.com">
+					<div class="hint">New orders and admin notifications are sent here.</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+{* ── Server tab ── *}
+<div id="tab-server">
+	<div class="card-grid">
+
+		<div class="settings-card">
+			<div class="card-head">General</div>
+			<div class="card-body">
+				<div class="df-toggle">
+					<ios-toggle id="s_maintenance_mode" name="s_maintenance_mode" size="sm"></ios-toggle>
+					<label for="s_maintenance_mode">Maintenance Mode</label>
+				</div>
+				<div class="df-toggle">
+					<ios-toggle id="s_use_seo_urls" name="s_use_seo_urls" size="sm" checked></ios-toggle>
+					<label for="s_use_seo_urls">Use SEO URLs</label>
+				</div>
+				<div class="df">
+					<label for="s_admin_path">Admin URL Path</label>
+					<input type="text" id="s_admin_path" maxlength="64">
+					<div class="hint">Change takes effect on next login.</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="settings-card">
+			<div class="card-head">Payment Methods</div>
+			<div class="card-body">
+				<div class="df-toggle">
+					<ios-toggle id="s_enable_check_payment" name="s_enable_check_payment" size="sm" checked></ios-toggle>
+					<label for="s_enable_check_payment">Accept Check / Money Order<span class="help-tip" tabindex="0" data-tip="Shown alongside Stripe/PayPal (if configured) at checkout — no external integration needed, just an order marked pending until you manually confirm payment was received.">?</span></label>
+				</div>
+			</div>
+		</div>
+
+		<div class="settings-card">
+			<div class="card-head">Security</div>
+			<div class="card-body">
+				<div class="df">
+					<label for="s_pw_min_length">Minimum Password Length</label>
+					<input type="number" id="s_pw_min_length" min="6" max="128" value="8">
+				</div>
+				<div class="df-toggle">
+					<ios-toggle id="s_pw_require_upper" name="s_pw_require_upper" size="sm"></ios-toggle>
+					<label for="s_pw_require_upper">Require uppercase letter</label>
+				</div>
+				<div class="df-toggle">
+					<ios-toggle id="s_pw_require_number" name="s_pw_require_number" size="sm"></ios-toggle>
+					<label for="s_pw_require_number">Require number</label>
+				</div>
+				<div class="df-toggle">
+					<ios-toggle id="s_pw_require_symbol" name="s_pw_require_symbol" size="sm"></ios-toggle>
+					<label for="s_pw_require_symbol">Require symbol</label>
+				</div>
+			</div>
+		</div>
+
+		<div class="settings-card">
+			<div class="card-head">Error & Debug</div>
+			<div class="card-body">
+				<div class="df-toggle">
+					<ios-toggle id="s_display_errors" name="s_display_errors" size="sm"></ios-toggle>
+					<label for="s_display_errors">Display Errors</label>
+				</div>
+				<div class="df-toggle">
+					<ios-toggle id="s_log_errors" name="s_log_errors" size="sm" checked></ios-toggle>
+					<label for="s_log_errors">Log Errors</label>
+				</div>
+				<div class="df-toggle">
+					<ios-toggle id="s_smarty_debug" name="s_smarty_debug" size="sm"></ios-toggle>
+					<label for="s_smarty_debug">Smarty Debug Console</label>
+				</div>
+				<div class="df-toggle" style="margin-top:1rem">
+					<ios-toggle id="s_smarty_force_compile" name="s_smarty_force_compile" size="sm" checked></ios-toggle>
+					<label for="s_smarty_force_compile">Force Template Recompile</label>
+					<div class="hint" style="margin-left:2rem">Recompile templates on every request (development mode). Disable in production for better performance.</div>
+				</div>
+				<div class="df-toggle">
+					<ios-toggle id="s_smarty_caching" name="s_smarty_caching" size="sm"></ios-toggle>
+					<label for="s_smarty_caching">Cache Compiled Templates</label>
+					<div class="hint" style="margin-left:2rem">Use cached compiled templates. Disable with force recompile for development.</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+{* ── Options tab ── *}
+<div id="tab-options" class="tab-panel">
+
+	<div class="sub-tabs" role="tablist" aria-label="Options sections">
+		<button class="sub-tab active" data-sub="images" role="tab" aria-selected="true"  aria-controls="sub-images">Images</button>
+		<button class="sub-tab"        data-sub="catalog" role="tab" aria-selected="false" aria-controls="sub-catalog">Catalog</button>
+		<button class="sub-tab"        data-sub="reviews" role="tab" aria-selected="false" aria-controls="sub-reviews">Reviews</button>
+		<button class="sub-tab"        data-sub="ai"     role="tab" aria-selected="false" aria-controls="sub-ai">AI</button>
+		<button class="sub-tab"        data-sub="order-statuses" role="tab" aria-selected="false" aria-controls="sub-order-statuses">Order Statuses</button>
+	</div>
+
+	{* ── Images sub-tab ── *}
+	<div class="sub-panel active" id="sub-images" role="tabpanel" aria-labelledby implied>
+		<div class="settings-card">
+			<div class="card-head">Upload</div>
+			<div class="card-body settings-stack">
+				<div class="df-toggle">
+					<ios-toggle id="s_img_retain_names" size="sm"></ios-toggle>
+					<label for="s_img_retain_names">Retain image names on upload</label>
+				</div>
+				<div class="df-toggle">
+					<ios-toggle id="s_img_resize_on_upload" size="sm" checked></ios-toggle>
+					<label for="s_img_resize_on_upload">Resize on upload to</label>
+					<input type="number" id="s_img_orig_max" min="200" max="4000" value="600"
+					       style="width:80px" aria-label="Max upload width">
+					<span class="hint">px wide (max)</span>
+				</div>
+			</div>
+		</div>
+
+		<div class="settings-card">
+			<div class="card-head">Thumbnails</div>
+			<div class="card-body">
+				<div class="img-thumb-grid">
+					<span></span>
+					<span class="img-col-head">Size (px)</span>
+					<span class="img-col-head">Quality</span>
+
+					<label class="img-row-label">Product Admin</label>
+					<input type="number" id="s_img_admin_size" min="40" max="800" value="160" aria-label="Admin thumbnail size">
+					<input type="number" id="s_img_admin_quality" min="1" max="100" value="75" aria-label="Admin thumbnail quality">
+
+					<label class="img-row-label">File Manager</label>
+					<input type="number" id="s_img_fm_size" min="24" max="200" value="50" aria-label="File manager thumbnail size">
+					<input type="number" id="s_img_fm_quality" min="1" max="100" value="60" aria-label="File manager thumbnail quality">
+
+					<label class="img-row-label">Product Image</label>
+					<input type="number" id="s_img_product_width" min="200" max="2000" value="600" aria-label="Product image width">
+					<input type="number" id="s_img_product_quality" min="1" max="100" value="80" aria-label="Product image quality">
+
+					<label class="img-row-label">Cart Thumbnail</label>
+					<input type="number" id="s_img_cart_size" min="40" max="400" value="100" aria-label="Cart thumbnail size">
+					<span></span>
+
+					<label class="img-row-label">Related Products</label>
+					<input type="number" id="s_img_related_size" min="80" max="600" value="200" aria-label="Related products thumbnail size">
+					<span></span>
+
+					<label class="img-row-label">Second Level</label>
+					<input type="number" id="s_img_second_level_size" min="40" max="600" value="200" aria-label="Second level thumbnail size">
+					<span></span>
+
+					<label class="img-row-label">Sidebar Thumbnails</label>
+					<input type="number" id="s_img_sidebar_size" min="40" max="300" value="120" aria-label="Sidebar thumbnail size">
+					<span></span>
+				</div>
+				<p class="section-hint" style="margin-top:.75rem">Product Admin: shown in admin product list, proportionally scaled. File Manager: cropped square for icon view. Product Image: displayed on the catalog product page. Cart Thumbnail: product image in the cart. Related Products: thumbnail size used in the related products section. Second Level: image height for featured/best-seller product blocks on pages. Sidebar Thumbnails: thumbnail size used in the product page right column.</p>
+			</div>
+		</div>
+
+
+	</div>
+
+	{* ── Catalog sub-tab ── *}
+	<div class="sub-panel" id="sub-catalog" role="tabpanel">
+		<div class="card-grid">
+			<div class="settings-card">
+				<div class="card-head">Category Display</div>
+				<div class="card-body">
+					<div class="df-toggle">
+						<ios-toggle id="s_hide_empty_categories" name="s_hide_empty_categories" size="sm" checked></ios-toggle>
+						<label for="s_hide_empty_categories">Hide empty categories</label>
+						<div class="hint" style="margin-left:2rem">Hide categories with no products from the storefront sidebar.</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	{* ── AI sub-tab ── *}
+
+	{* ── Reviews sub-tab ── *}
+	<div class="sub-panel" id="sub-reviews" role="tabpanel">
+		<div class="card-grid">
+			<div class="settings-card">
+				<div class="card-head">Review Settings</div>
+				<div class="card-body">
+					<div class="df-toggle">
+						<ios-toggle id="s_reviews_auto_approve" name="s_reviews_auto_approve" size="sm"></ios-toggle>
+						<label for="s_reviews_auto_approve">Auto-approve new reviews</label>
+					</div>
+					<div class="hint" style="margin-bottom: 1rem;">When enabled, reviews from verified customers are published immediately. Guest reviews remain pending.</div>
+
+					<div class="df-toggle">
+						<ios-toggle id="s_reviews_verified_only" name="s_reviews_verified_only" size="sm" checked></ios-toggle>
+						<label for="s_reviews_verified_only">Verified purchases only</label>
+					</div>
+					<div class="hint">When enabled, customers must have completed a purchase to submit a review.</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="sub-panel" id="sub-ai" role="tabpanel">
+		<div class="card-grid">
+			<div class="settings-card">
+				<div class="card-head">DeepAI Integration</div>
+				<div class="card-body">
+					<p class="section-hint">
+						Used to generate category and product descriptions and SEO fields.
+						Get your key at <a href="https://deepai.org" target="_blank" rel="noopener">deepai.org</a>.
+					</p>
+					<div class="df">
+						<label for="s_deepai_key">DeepAI API Key</label>
+						<input type="text" id="s_deepai_key" maxlength="255" autocomplete="off"
+						       placeholder="Leave blank to disable AI features"
+						       aria-label="DeepAI API key">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	{* ── Placeholder sub-tab ── *}
+	<div class="sub-panel" id="sub-order-statuses" role="tabpanel">
+		<div class="nc-toolbar">
+			<button class="btn btn-primary" id="btn-add-status">+ Add Status</button>
+		</div>
+		<table class="nc-table" id="os-table">
+			<thead>
+				<tr>
+					<th style="width:28px"></th>
+					<th>Label</th>
+					<th>Slug</th>
+					<th style="width:80px">Color</th>
+					<th style="width:130px">Cancellation?</th>
+					<th style="width:44px"></th>
+				</tr>
+			</thead>
+			<tbody id="os-tbody"></tbody>
+		</table>
+		<div id="drawer-overlay"></div>
+		<me-drawer id="os-drawer">
+			<drawer-head>
+				<h2 id="os-drawer-title">Add Status</h2>
+				<button class="drawer-close" id="os-drawer-close">&times;</button>
+			</drawer-head>
+			<drawer-content>
+				<input type="hidden" id="os-id" value="">
+				<div class="df">
+					<label for="os-label">Label <span class="field-required">*</span></label>
+					<input type="text" id="os-label" maxlength="64" autocomplete="off">
+				</div>
+				<div class="df">
+					<label for="os-slug">Slug <span class="field-required">*</span></label>
+					<input type="text" id="os-slug" maxlength="32" autocomplete="off" placeholder="e.g. pending, user-cancelled">
+				</div>
+				<div class="df">
+					<label>Color</label>
+					<div class="color-row">
+						<input type="color" id="os-color-picker" value="#6b7280">
+						<input type="text" id="os-color-hex" class="color-hex" maxlength="16" value="#6b7280" placeholder="#6b7280">
+					</div>
+				</div>
+				<div class="df-toggle">
+					<ios-toggle id="os-is-cancellation" name="os-is-cancellation" size="sm" aria-label="Cancellation status"></ios-toggle>
+					<label for="os-is-cancellation">Cancellation status</label>
+				</div>
+			</drawer-content>
+			<drawer-foot>
+				<button class="btn btn-secondary" id="os-drawer-cancel">Cancel</button>
+				<button class="btn btn-primary"   id="os-drawer-save">Save Status</button>
+			</drawer-foot>
+		</me-drawer>
+	</div>
+
+</div>
+
+
+
+{* ── Users tab ── *}
+<div id="tab-seo">
+	<div class="card-grid">
+		<div class="settings-card" style="max-width:680px">
+			<div class="card-head">robots.txt</div>
+			<div class="card-body">
+				<div class="nc-warning-box" role="alert" style="background:#fef3c7;border:1px solid #f59e0b;border-radius:var(--nc-radius);padding:.75rem 1rem;margin-bottom:1rem;font-size:.88rem;color:#92400e">
+					<strong>&#9888; Caution:</strong> An incorrect entry in robots.txt can instruct search engines to ignore your entire site, removing it from search results. Do not make changes here unless you know exactly what you are doing. When in doubt, leave the default.
+				</div>
+				<div class="df">
+					<label for="s_robots_txt">robots.txt content</label>
+					<textarea id="s_robots_txt" rows="10"
+					          style="font-family:monospace;font-size:.85rem"
+					          aria-label="robots.txt content"
+					          aria-describedby="robots-hint"></textarea>
+					<span class="hint" id="robots-hint">Saved to <code>robots.txt</code> in your site root. Changes take effect immediately.</span>
+				</div>
+			</div>
+			<div class="settings-card" style="max-width:680px">
+				<div class="card-head">llms.txt</div>
+				<div class="card-body">
+					<p class="hint" style="margin-top:0">A short summary of your store for AI tools and chatbots to read — what you sell and links to your key pages. Not used by search engines; see robots.txt for that.</p>
+					<div class="df">
+						<label for="s_llms_txt">llms.txt content</label>
+						<textarea id="s_llms_txt" rows="10"
+						          style="font-family:monospace;font-size:.85rem"
+						          aria-label="llms.txt content"
+						          aria-describedby="llms-hint"></textarea>
+						<span class="hint" id="llms-hint">Saved to <code>llms.txt</code> in your site root. Changes take effect immediately.</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="tab-users">
+	<div class="nc-toolbar">
+		<button class="btn btn-primary" id="btn-add-user">+ Add User</button>
+	</div>
+	<div class="settings-card full-width">
+		<div class="card-body" style="padding:0">
+			<table class="nc-table">
+				<thead>
+					<tr>
+						<th>User</th>
+						<th>Email</th>
+						<th>Access Level</th>
+						<th class="col-toggle">Active</th>
+						<th class="delete-col"></th>
+					</tr>
+				</thead>
+				<tbody id="user-tbody">
+					<tr><td colspan="5"><div class="nc-empty">Loading…</div></td></tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+{* ── Analytics tab ── *}
+<div id="tab-analytics">
+	<div class="card-grid">
+		<div class="settings-card" style="max-width:680px">
+			<div class="card-head">Google Analytics (GA4)</div>
+			<div class="card-body">
+				<p class="section-hint" style="margin-bottom:1rem">
+					Enter your GA4 Measurement ID to enable Google Analytics tracking on every storefront page.
+					Leave blank to disable.
+				</p>
+				<div class="df">
+					<label for="s_ga4_measurement_id">Measurement ID</label>
+					<input type="text" id="s_ga4_measurement_id" maxlength="50"
+					       placeholder="G-XXXXXXXXXX">
+					<div class="hint">Found in Google Analytics → Admin → Data Streams → your stream.</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+{* ── Error log tab ── *}
+<div id="tab-errors">
+	<div class="settings-card full-width">
+		<div class="card-head">Error Log</div>
+		<div class="card-body">
+			<textarea id="error-log" readonly placeholder="No errors logged."></textarea>
+			<div class="log-toolbar">
+				<button class="btn btn-secondary" id="btn-download-log">&#11015; Download</button>
+				<button class="btn btn-danger"    id="btn-clear-log">Clear Log</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+</div>{* /data-nc-tabs *}
+
+{* ── Overlay ── *}
+<div id="drawer-overlay"></div>
+
+{* ── User drawer ── *}
+<me-drawer id="user-drawer">
+	<drawer-head>
+		<h2 id="drawer-title">Add User</h2>
+		<button class="drawer-close" id="drawer-close">&times;</button>
+	</drawer-head>
+	<drawer-content>
+		<input type="hidden" id="u_id" value="">
+
+		<div class="df">
+			<label>Avatar</label>
+			<div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+				<div class="avatar-upload-area" id="avatar-drop-zone" title="Click or drop image here">
+					<img id="preview-avatar" alt="Avatar">
+					<div class="avatar-upload-placeholder" id="avatar-placeholder">&#128247;</div>
+					<button type="button" class="avatar-delete-btn" id="btn-delete-avatar">&#10005; Remove</button>
+				</div>
+				<input type="file" id="input-avatar" accept="image/jpeg,image/png,image/webp" style="display:none">
+				<div class="avatar-upload-hint">
+					Click or drag an image here.<br>
+					JPG, PNG or WebP. Cropped to circle.
+				</div>
+			</div>
+		</div>
+
+		<div class="df">
+			<label for="u_username">Username <span class="field-required">*</span></label>
+			<input type="text" id="u_username" minlength="3" maxlength="64" required autocomplete="off">
+		</div>
+		<div class="df">
+			<label for="u_email">Email <span class="field-required">*</span></label>
+			<input type="email" id="u_email" maxlength="128" required autocomplete="off">
+		</div>
+		<div class="df">
+			<label for="u_password">Password</label>
+			<password-field id="u_password" name="u_password" minlength="8" placeholder="Required for new users"></password-field>
+			<div class="hint">Minimum 8 characters. Leave blank to keep current password.</div>
+		</div>
+		<div class="df">
+			<label for="u_access_level">Access Level</label>
+			<select id="u_access_level">
+				<option value="254">Admin</option>
+				<option value="234">Super Editor</option>
+				<option value="10">Editor</option>
+				<option value="0">User</option>
+			</select>
+		</div>
+		<div class="df-toggle">
+			<ios-toggle id="u_status" name="u_status" size="sm" checked></ios-toggle>
+			<label for="u_status">Active</label>
+		</div>
+	</drawer-content>
+	<drawer-foot>
+		<button class="btn btn-secondary" id="btn-drawer-cancel">Cancel</button>
+		<save-button class="btn btn-primary" id="btn-drawer-save" data-label="Save User">Save User</save-button>
+	</drawer-foot>
+</me-drawer>
+
+{/block}
+
+{block name="scripts"}
+<script>
+Object.assign(NC, {
+	adminUrl: '{$url_admin}',
+	rootUrl:  '{$url_root}',
+	adminReal: '{$url_admin_real}'
+});
+</script>
+<link rel="stylesheet" href="{$url_admin_real}css/filemanager.css?v={$fm_css_v}">
+<script src="{$url_admin_real}js/filemanager.js?v={$fm_js_v}"></script>
+<script src="{$url_admin_real}js/order-statuses.js?v={$nowstr}"></script>
+<script src="{$url_admin_real}js/settings.js?v={$settings_js_v}"></script>
+{/block}

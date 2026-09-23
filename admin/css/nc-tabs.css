@@ -1,0 +1,45 @@
+/* ── NcTabs ─────────────────────────────────────────────────────────────────
+   Scoped to [data-nc-tabs] so styles apply from the attribute in HTML,
+   independent of whether JS has run yet.
+   ────────────────────────────────────────────────────────────────────────── */
+
+[data-nc-tabs] > ul {
+	display: flex;
+	gap: 0;
+	border-bottom: 2px solid var(--nc-border);
+	margin-bottom: 1.5rem;
+	flex-wrap: wrap;
+	list-style: none;
+	padding: 0;
+}
+
+[data-nc-tabs] > ul li a {
+	display: block;
+	padding: .65rem 1.25rem;
+	font-size: .87rem;
+	font-weight: 600;
+	color: var(--nc-text-secondary);
+	cursor: pointer;
+	border-bottom: 3px solid transparent;
+	margin-bottom: -2px;
+	text-decoration: none;
+	font-family: var(--nc-font);
+	transition: color .15s, border-color .15s;
+	position: relative;
+}
+
+[data-nc-tabs] > ul li a:hover        { color: var(--nc-text); }
+[data-nc-tabs] > ul li.active a       { color: var(--nc-primary); border-bottom-color: var(--nc-primary); }
+[data-nc-tabs] > ul li.has-error a    { color: var(--nc-danger); }
+
+[data-nc-tabs] > ul li.has-error a::after {
+	content: '●';
+	font-size: .5rem;
+	position: absolute;
+	top: .4rem;
+	right: .4rem;
+	color: var(--nc-danger);
+}
+
+[data-nc-tabs] > div           { display: none; }
+[data-nc-tabs] > div.active    { display: block; }

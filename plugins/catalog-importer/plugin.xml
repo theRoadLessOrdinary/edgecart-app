@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+    <code>catalog-importer</code>
+    <name>Catalog Importer</name>
+    <version>1.0</version>
+    <type>utility</type>
+    <icon>📥</icon>
+    <author>EdgeCart</author>
+    <description>Import categories, products, and customers from another store platform. Paste or upload data already converted to EdgeCart's staging format, review a summary, and run the import. Use it from Setup &amp; Utilities → Catalog Importer in the sidebar — this plugin has no settings drawer.</description>
+    <admin_menu section="setup">
+        <item label="Catalog Importer" route="catalog-importer" />
+    </admin_menu>
+</plugin>

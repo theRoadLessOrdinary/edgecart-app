@@ -1,0 +1,11 @@
+#drawer-overlay {
+	display: none;
+	position: fixed;
+	inset: 0;
+	background: rgba(0,0,0,.35);
+	z-index: 499;
+}
+
+#drawer-overlay.show {
+	display: block;
+}

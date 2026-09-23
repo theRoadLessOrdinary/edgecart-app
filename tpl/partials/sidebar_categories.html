@@ -1,0 +1,9 @@
+{if isset($sidebar_categories) && $sidebar_categories}
+<ul>
+{foreach $sidebar_categories as $cat}
+	<li class="{if isset($current_category) && $current_category.id == $cat.id}active{/if}">
+		<a href="{$url_root}category/{$cat.slug|escape}">{$cat.name|escape}</a>
+	</li>
+{/foreach}
+</ul>
+{/if}

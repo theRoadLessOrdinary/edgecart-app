@@ -1,0 +1,293 @@
+{extends file="layout.html"}
+
+{block name="title"}Shipping — {$site_name|escape}{/block}
+{block name="page_title"}Shipping{/block}
+{block name="content_actions"}<button class="btn btn-primary" id="btn-add-method">+ Add Method</button>{/block}
+
+{block name="content"}
+
+<p class="page-desc" style="margin-top: 1rem;">
+	Flat-rate shipping methods shown at checkout. Set a <strong>Free above</strong> threshold to automatically offer free shipping once an order reaches that amount.
+	For live carrier rates, install the <strong>GoShippo Shipping</strong> plugin.
+</p>
+
+<div class="nc-table-wrapper" style="margin-top: 2rem;">
+	<table class="nc-table" id="methods-table">
+		<thead>
+			<tr>
+				<th>Method Name</th>
+				<th>Delivery</th>
+				<th style="width:90px">Rate</th>
+				<th style="width:100px">Free Above</th>
+				<th style="width:100px">Min Order</th>
+				<th style="width:120px">Countries</th>
+				<th style="width:70px">Active</th>
+				<th class="delete-col"></th>
+			</tr>
+		</thead>
+		<tbody id="methods-tbody">
+			<tr class="nc-loading"><td colspan="8"><div class="nc-empty">Loading…</div></td></tr>
+		</tbody>
+	</table>
+</div>
+
+{* ── Drawer ── *}
+<div id="drawer-overlay"></div>
+<me-drawer id="method-drawer">
+	<drawer-head>
+		<h2 id="method-drawer-title">Add Shipping Method</h2>
+		<button class="drawer-close" id="method-drawer-close">&times;</button>
+	</drawer-head>
+	<drawer-content>
+
+		<div class="df">
+			<label for="m-name">Method Name <span class="field-required" aria-hidden="true">*</span></label>
+			<input type="text" id="m-name" placeholder="e.g., Standard Shipping" required aria-required="true">
+		</div>
+
+		<div class="df" style="margin-top: 1.25rem;">
+			<label for="m-description">Delivery Estimate</label>
+			<input type="text" id="m-description" placeholder="e.g., 5–7 business days">
+		</div>
+
+		<div class="df-row" style="margin-top: 1.25rem;">
+			<div class="df">
+				<label for="m-rate">Rate ($)</label>
+				<input type="number" id="m-rate" value="0.00" min="0" step="0.01" placeholder="0.00">
+			</div>
+			<div class="df">
+				<label for="m-free-above">Free Above ($)</label>
+				<input type="number" id="m-free-above" min="0" step="0.01" placeholder="e.g., 75 (leave blank to disable)">
+			</div>
+		</div>
+
+		<div class="df-row" style="margin-top: 1.25rem;">
+			<div class="df">
+				<label for="m-min-order">Min Order ($)</label>
+				<input type="number" id="m-min-order" value="0.00" min="0" step="0.01" placeholder="0.00">
+			</div>
+			<div class="df">
+				<label for="m-sort-order">Sort Order</label>
+				<input type="number" id="m-sort-order" value="0" min="0" step="1">
+			</div>
+		</div>
+
+		<div class="df" style="margin-top: 1.25rem;">
+			<label for="m-countries">Countries <span class="field-hint">(comma-separated codes, blank = all)</span></label>
+			<input type="text" id="m-countries" placeholder="e.g., US, CA, GB">
+		</div>
+
+		<div class="df-toggle" style="margin-top: 1.5rem;">
+			<ios-toggle id="m-active" size="sm" checked></ios-toggle>
+			<label for="m-active">Active</label>
+		</div>
+
+	</drawer-content>
+	<drawer-foot>
+		<button class="btn btn-secondary" id="method-drawer-cancel">Cancel</button>
+		<button class="btn btn-primary" id="method-drawer-save">Save Method</button>
+		<delete-in-place caption="🗑" confirm="OK?" data-id="0" id="btn-delete-method" style="margin-left: auto"></delete-in-place>
+	</drawer-foot>
+</me-drawer>
+
+{/block}
+
+{block name="scripts"}
+<script>
+NC.ajaxUrl = '{$url_admin_real}?route=shipping';
+</script>
+<script>
+(function() {
+'use strict';
+
+var ajax    = NC.ajaxUrl;
+var csrfTok = document.querySelector('meta[name="csrf-token"]').content;
+
+// ── DOM refs ──────────────────────────────────────────────────────────────────
+var tbody          = document.getElementById('methods-tbody');
+var drawer         = document.getElementById('method-drawer');
+var drawerTitle    = document.getElementById('method-drawer-title');
+var drawerOverlay  = document.getElementById('drawer-overlay');
+var btnAdd         = document.getElementById('btn-add-method');
+var btnClose       = document.getElementById('method-drawer-close');
+var btnCancel      = document.getElementById('method-drawer-cancel');
+var btnSave        = document.getElementById('method-drawer-save');
+var btnDelete      = document.getElementById('btn-delete-method');
+var fName          = document.getElementById('m-name');
+var fDesc          = document.getElementById('m-description');
+var fRate          = document.getElementById('m-rate');
+var fFreeAbove     = document.getElementById('m-free-above');
+var fMinOrder      = document.getElementById('m-min-order');
+var fCountries     = document.getElementById('m-countries');
+var fSortOrder     = document.getElementById('m-sort-order');
+var fActive        = document.getElementById('m-active');
+
+var editingId = 0;
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function post(action, data) {
+	var fd = new FormData();
+	fd.append('action', action);
+	fd.append('csrf_token', csrfTok);
+	Object.keys(data || {}).forEach(function(k) { fd.append(k, data[k]); });
+	return fetch(ajax, { method: 'POST', body: fd }).then(function(r) { return r.json(); });
+}
+
+function currency(v) {
+	return parseFloat(v || 0).toFixed(2);
+}
+
+function openDrawer() {
+	drawer.classList.add('open');
+	drawerOverlay.classList.add('show');
+	fName.focus();
+}
+
+function closeDrawer() {
+	drawer.classList.remove('open');
+	drawerOverlay.classList.remove('show');
+}
+
+function resetForm() {
+	editingId = 0;
+	drawerTitle.textContent = 'Add Shipping Method';
+	fName.value       = '';
+	fDesc.value       = '';
+	fRate.value       = '0.00';
+	fFreeAbove.value  = '';
+	fMinOrder.value   = '0.00';
+	fCountries.value  = '';
+	fSortOrder.value  = '0';
+	fActive.setAttribute('checked', '');
+	fActive.checked   = true;
+	btnDelete.style.display = 'none';
+	btnDelete.dataset.id    = '0';
+}
+
+// ── Render table ──────────────────────────────────────────────────────────────
+function loadMethods() {
+	post('list', {}).then(function(res) {
+		if (!res.ok) return;
+		var rows = '';
+		if (!res.methods.length) {
+			rows = '<tr><td colspan="8"><div class="nc-empty">No shipping methods. Add one above.</div></td></tr>';
+		} else {
+			res.methods.forEach(function(m) {
+				var freeAboveTxt = m.free_above !== '' ? '$' + currency(m.free_above) : '—';
+				var minOrderTxt  = parseFloat(m.min_order) > 0 ? '$' + currency(m.min_order) : '—';
+				var countryTxt   = m.countries || 'All';
+				rows += '<tr data-id="' + m.id + '">' +
+					'<td><a class="nc-edit-link" href="#">' + esc(m.name) + '</a></td>' +
+					'<td>' + (m.description ? esc(m.description) : '<span class="text-mute">—</span>') + '</td>' +
+					'<td>$' + currency(m.rate) + '</td>' +
+					'<td>' + freeAboveTxt + '</td>' +
+					'<td>' + minOrderTxt + '</td>' +
+					'<td>' + esc(countryTxt) + '</td>' +
+					'<td><ios-toggle size="sm" data-toggle-id="' + m.id + '"' + (m.active ? ' checked' : '') + '></ios-toggle></td>' +
+					'<td><delete-in-place caption="🗑" confirm="OK?" data-id="' + m.id + '"></delete-in-place></td>' +
+					'</tr>';
+			});
+		}
+		tbody.innerHTML = rows;
+		bindTableEvents();
+	});
+}
+
+function esc(s) {
+	return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function bindTableEvents() {
+	// Edit links
+	tbody.querySelectorAll('.nc-edit-link').forEach(function(a) {
+		a.addEventListener('click', function(e) {
+			e.preventDefault();
+			var id = parseInt(this.closest('tr').dataset.id);
+			openEdit(id);
+		});
+	});
+
+	// Inline toggles
+	tbody.querySelectorAll('[data-toggle-id]').forEach(function(tog) {
+		tog.addEventListener('change', function() {
+			var id = parseInt(this.dataset.toggleId);
+			post('toggle', { id: id });
+		});
+	});
+
+	// Inline delete
+	tbody.querySelectorAll('delete-in-place').forEach(function(dip) {
+		dip.addEventListener('confirm', function() {
+			var id = parseInt(this.dataset.id);
+			post('delete', { id: id }).then(function(res) {
+				if (res.ok) loadMethods();
+			});
+		});
+	});
+}
+
+function openEdit(id) {
+	post('get', { id: id }).then(function(res) {
+		if (!res.ok) return;
+		var m = res.method;
+		editingId          = m.id;
+		drawerTitle.textContent = 'Edit Shipping Method';
+		fName.value        = m.name;
+		fDesc.value        = m.description;
+		fRate.value        = m.rate;
+		fFreeAbove.value   = m.free_above;
+		fMinOrder.value    = m.min_order;
+		fCountries.value   = m.countries;
+		fSortOrder.value   = m.sort_order;
+		if (m.active) { fActive.setAttribute('checked',''); fActive.checked = true; }
+		else          { fActive.removeAttribute('checked'); fActive.checked = false; }
+		btnDelete.style.display = '';
+		btnDelete.dataset.id    = m.id;
+		openDrawer();
+	});
+}
+
+// ── Events ────────────────────────────────────────────────────────────────────
+btnAdd.addEventListener('click', function() {
+	resetForm();
+	openDrawer();
+});
+
+[btnClose, btnCancel].forEach(function(b) {
+	b.addEventListener('click', closeDrawer);
+});
+drawerOverlay.addEventListener('click', closeDrawer);
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeDrawer(); });
+
+btnSave.addEventListener('click', function() {
+	var name = fName.value.trim();
+	if (!name) { NC.notify('Method name is required', 'error'); fName.focus(); return; }
+
+	post('save', {
+		id:          editingId,
+		name:        name,
+		description: fDesc.value.trim(),
+		rate:        fRate.value,
+		free_above:  fFreeAbove.value,
+		min_order:   fMinOrder.value,
+		countries:   fCountries.value.trim(),
+		sort_order:  fSortOrder.value,
+		active:      fActive.checked ? 1 : 0,
+	}).then(function(res) {
+		if (res.ok) { closeDrawer(); loadMethods(); NC.notify('Saved'); }
+		else        { NC.notify(res.message || 'Error', 'error'); }
+	});
+});
+
+btnDelete.addEventListener('confirm', function() {
+	post('delete', { id: editingId }).then(function(res) {
+		if (res.ok) { closeDrawer(); loadMethods(); }
+	});
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadMethods();
+
+}());
+</script>
+{/block}

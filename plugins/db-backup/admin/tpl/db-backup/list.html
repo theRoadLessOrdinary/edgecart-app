@@ -1,0 +1,41 @@
+{extends file="layout.html"}
+
+{block name="content"}
+<div class="nc-card db-backup-card">
+    <h2>Database Backup</h2>
+    <p class="page-desc">
+        Downloads a complete SQL dump of your store database. Keep backups before major changes.
+    </p>
+
+    <div class="df-row stat-row">
+        <div class="stat-block">
+            <div class="stat-num">{$table_count}</div>
+            <div class="stat-label">Tables</div>
+        </div>
+        <div class="stat-block">
+            <div class="stat-num">{$row_count}</div>
+            <div class="stat-label">Rows (approx.)</div>
+        </div>
+        <div class="stat-block">
+            <div class="stat-num">{$data_mb} MB</div>
+            <div class="stat-label">Data size</div>
+        </div>
+    </div>
+
+    <a href="{$url_admin}?route=db-backup/download" class="btn btn-primary" id="btn-download">
+        ⬇ Download SQL Backup
+    </a>
+    <p class="page-note">
+        The file downloads immediately — no server-side storage.
+    </p>
+</div>
+
+<style>
+.db-backup-card { max-width: 520px; margin: 2.5rem auto; padding: 2.5rem; }
+.db-backup-card h2 { margin-top: 0; margin-bottom: 1rem; }
+.stat-row   { gap: 2.5rem; margin-bottom: 2rem; }
+.stat-block { text-align: center; }
+.stat-num   { font-size: 1.6rem; font-weight: 700; color: var(--nc-primary); }
+.stat-label { font-size: .8rem; color: var(--nc-text-dim); margin-top: .35rem; }
+</style>
+{/block}

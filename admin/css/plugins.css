@@ -1,0 +1,75 @@
+/* ── Plugins admin ── */
+
+.plugin-notice {
+	display: flex; align-items: flex-start; gap: .75rem;
+	background: #fff8e1; border: 1px solid #f59e0b;
+	border-radius: var(--nc-radius); padding: .85rem 1rem;
+	margin-bottom: 1.25rem; font-size: .87rem; color: #333; line-height: 1.5;
+}
+.plugin-notice .notice-icon { font-size: 1.1rem; flex-shrink: 0; }
+.plugin-notice .notice-dismiss {
+	margin-left: auto; background: none; border: none; cursor: pointer;
+	color: #777; font-size: 1.1rem; line-height: 1; padding: 0 .25rem; flex-shrink: 0;
+}
+.plugin-notice .notice-dismiss:hover { color: #333; }
+
+/* ── Upload zone ── */
+.plugin-upload {
+	border: 2px dashed var(--nc-border); border-radius: var(--nc-radius-lg);
+	padding: 2rem; text-align: center; margin-bottom: 1.5rem;
+	cursor: pointer; transition: border-color .2s, background .2s;
+	color: var(--nc-text-secondary); font-size: .9rem;
+}
+.plugin-upload:hover,
+.plugin-upload.drag-over {
+	border-color: var(--nc-primary); background: #eff6ff; color: var(--nc-primary);
+}
+.plugin-upload .upload-icon { font-size: 2rem; margin-bottom: .5rem; }
+.plugin-upload p { margin: 0; }
+.plugin-upload .upload-hint { font-size: .78rem; color: var(--nc-text-dim); margin-top: .3rem; }
+
+/* ── Uploading spinner ── */
+.upload-progress {
+	display: none; align-items: center; gap: .75rem;
+	padding: .75rem 1rem; background: var(--nc-bg-alt);
+	border: 1px solid var(--nc-border); border-radius: var(--nc-radius);
+	margin-bottom: 1.25rem; font-size: .87rem; color: var(--nc-text);
+}
+.upload-progress.show { display: flex; }
+
+.spinner {
+	width: 1rem; height: 1rem;
+	border: 2px solid var(--nc-border); border-top-color: var(--nc-primary);
+	border-radius: 50%; animation: spin .6s linear infinite; flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Table column widths ── */
+.nc-table th.col-toggle { width: 80px; text-align: center; }
+.nc-table th.col-delete { width: 60px; text-align: center; }
+.nc-table td.col-toggle,
+.nc-table td.col-delete { text-align: center; }
+
+/* ── Plugin table td padding (slightly taller than default) ── */
+.nc-table td { padding: .6rem .85rem; }
+
+/* ── Plugin info ── */
+.plugin-name       { font-weight: 600; }
+.plugin-icon       { margin-right: .3rem; font-style: normal; }
+.plugin-code       { font-size: .78rem; color: var(--nc-text-dim); }
+.plugin-author     { color: var(--nc-text-secondary); font-size: .85rem; }
+.plugin-link a { color: var(--nc-primary); font-size: .82rem; }
+
+/* ── Plugin settings button ── */
+.col-settings { width: 110px; white-space: nowrap; }
+.plugin-settings-btn { font-size: .8rem; }
+
+.btn-sm { padding: .28rem .65rem; font-size: .8rem; }
+
+.plugin-unlicensed-badge { display:inline-block; padding:.1rem .55rem; font-size:.72rem; font-weight:600; border-radius:var(--nc-radius-sm); background:#fff3cd; color:#856404; border:1px solid #ffc107; }
+
+/* ── Plugin type tabs ── */
+.plugin-tabs { display:flex; gap:.25rem; margin-bottom:1rem; flex-wrap:wrap; }
+.plugin-tab { padding:.35rem .85rem; font-size:.85rem; font-weight:500; border:1px solid var(--nc-border); border-radius:var(--nc-radius); background:var(--nc-bg); color:var(--nc-text-secondary); cursor:pointer; transition:background .15s,color .15s,border-color .15s; }
+.plugin-tab:hover { background:var(--nc-hover); color:var(--nc-text); }
+.plugin-tab.active { background:var(--nc-primary); color:#fff; border-color:var(--nc-primary); }

@@ -1,0 +1,22 @@
+{extends file="layout.html"}
+
+{block name="title"}{if $page.seo_title}{$page.seo_title|escape}{else}{$page.title|escape}{/if} — {$site_name}{/block}
+{block name="meta_desc"}{$page.seo_description|escape}{/block}
+
+{block name="content"}
+{if $page.title !== 'Home'}
+<div class="page-head" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem;">
+	<h1 style="margin: 0; flex: 1;">{$page.title|escape}</h1>
+	{if $is_admin_user}<a href="{$url_admin}?route=pages&amp;edit={$page.id}" style="color: #2563eb; text-decoration: none; font-size: 0.9rem; white-space: nowrap;">✏ Edit</a>{/if}
+</div>
+{/if}
+
+{if $content_before}<div class="page-content">{$content_before nofilter}</div>{/if}
+{if $page_simple_content}<div class="page-content">{$page_simple_content nofilter}</div>{/if}
+{include file="_blocks.html" blocks=$blocks}
+{if $content_after}<div class="page-content">{$content_after nofilter}</div>{/if}
+{/block}
+
+{block name="scripts"}
+<script src="{$url_root}js/page.js?v={$nowstr}"></script>
+{/block}

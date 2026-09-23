@@ -1,0 +1,48 @@
+{extends file="layout.html"}
+{block name="title"}Search — {$site_name}{/block}
+{block name="content"}
+<div class="page-head">
+	<h1>{if $q}Search results for &ldquo;{$q|escape}&rdquo;{else}Search{/if}</h1>
+</div>
+
+{if $q}
+	{if $products}
+	<p style="font-size:.88rem;color:var(--nc-text-dim);margin-bottom:1rem">
+		{$products|count} result{if $products|count != 1}s{/if} found
+	</p>
+	<div class="product-grid">
+		{foreach $products as $prod}
+		<a href="{$url_root}product/{$prod.slug|escape}" class="product-card">
+			<div class="product-card-img">
+				{if $prod.image}
+				<img src="{$prod.image|escape}" alt="{$prod.name|escape}" loading="lazy">
+				{else}
+				<div class="product-card-no-image">&#128247;</div>
+				{/if}
+			</div>
+			<div class="product-card-body">
+				<div class="product-card-name">{$prod.name|escape}</div>
+				<div class="product-card-price">
+					{if $prod.list_price > 0 && $prod.list_price > $prod.price}
+					<span class="product-card-list-price">{$site_currency}{$prod.list_price|string_format:"%.2f"}</span>
+					{/if}
+					{$site_currency}{$prod.price|string_format:"%.2f"}
+				</div>
+			</div>
+		</a>
+		{/foreach}
+	</div>
+	{else}
+	<div class="empty-state">
+		<div class="empty-state-icon">&#128269;</div>
+		<h2>No results found</h2>
+		<p>Try different keywords or browse our categories.</p>
+	</div>
+	{/if}
+{else}
+<div class="empty-state">
+	<div class="empty-state-icon">&#128269;</div>
+	<h2>Enter a search term above</h2>
+</div>
+{/if}
+{/block}

@@ -1,0 +1,58 @@
+{extends file="layout.html"}
+
+{block name="title"}Downloads — {$site_name|escape}{/block}
+
+{block name="content"}
+<div class="page-header">
+    <h1>Downloads</h1>
+    <p class="page-subhead">Download tokens issued to customers after purchase.</p>
+</div>
+
+<table id="dd-tokens-table" class="data-table">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>File</th>
+            <th>Customer</th>
+            <th>Order</th>
+            <th>Issued</th>
+            <th>Expires</th>
+            <th>Downloads</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+(function() {
+    const tbody = document.querySelector('#dd-tokens-table tbody');
+
+    fetch(NC.adminUrl + '?route=digital-download/ajax', {
+        method: 'POST',
+        body: (() => { const fd = new FormData(); fd.append('action','dd_token_list'); fd.append('csrf_token', getCsrfToken()); return fd; })()
+    }).then(r => r.json()).then(res => {
+        if (!res.ok || !res.rows.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No download tokens yet.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = res.rows.map(r => {
+            const used = r.download_count >= r.max_downloads ? ' style="color:var(--nc-text-dim)"' : '';
+            const exp  = new Date(r.expires_at) < new Date() ? ' style="color:var(--nc-danger)"' : '';
+            return `<tr>
+                <td>${esc(r.product_name)}</td>
+                <td>${esc(r.filename)}</td>
+                <td>${esc(r.customer_email)}</td>
+                <td><a href="?route=orders&id=${r.order_id}">#${r.order_id}</a></td>
+                <td>${r.created_at}</td>
+                <td${exp}>${r.expires_at}</td>
+                <td${used}>${r.download_count} / ${r.max_downloads}</td>
+            </tr>`;
+        }).join('');
+    });
+
+    function esc(s) {
+        return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+})();
+</script>
+{/block}

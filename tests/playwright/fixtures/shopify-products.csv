@@ -1,0 +1,5 @@
+Handle,Title,Body (HTML),Vendor,Type,Published,Option1 Name,Option1 Value,Variant SKU,Variant Price,Variant Grams,Variant Inventory Qty,Image Src
+classic-tee-shopify,Classic Tee (Shopify Import),"<p>A soft, everyday crewneck tee.</p>",Toffee Lifestyle,Shopify Import,TRUE,Size,Small,CTS-SM,22.00,200,15,https://cdn.example.com/classic-tee-1.webp
+classic-tee-shopify,,,,,,Size,Large,CTS-LG,24.00,220,10,
+tank-top-shopify,Tank Top (Shopify Import),<p>Lightweight tank for warm weather.</p>,Toffee Lifestyle,Shopify Import,TRUE,Size,Small,TTS-SM,18.00,120,20,https://cdn.example.com/tank-top-1.webp
+tank-top-shopify,,,,,,Size,Medium,TTS-MD,18.00,130,18,

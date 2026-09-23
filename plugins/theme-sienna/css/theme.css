@@ -1,0 +1,21 @@
+/* Theme: Default — warm sienna */
+:root {
+    --nc-primary:        #a0522d;
+    --nc-primary-hover:  #86422a;
+    --nc-primary-muted:  #f5ede4;
+    --nc-border-focus:   #2563eb;
+    --nc-utility-text:       #ffffff;
+    --nc-utility-text-hover: #ffffff;
+
+    --nc-footer-bg:      #86422a;
+    --nc-footer-text:    #ffffff;
+    --nc-sidebar-bg:     #1e2a38;
+    --nc-sidebar-hover:  #42576d;
+    --nc-sidebar-open:   linear-gradient(to bottom, #233242, #1a2531);
+    --nav-group-open:    #15202b;
+    --nc-sidebar-active: #2563eb;
+    --nc-sidebar-text:   #c8d0da;
+    --nc-sidebar-dim:    #7a8a9a;
+    --nc-topbar-bg:      #2c3e50;
+    --nc-topbar-text:    #ffffff;
+}

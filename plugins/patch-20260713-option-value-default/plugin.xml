@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+    <code>patch-20260713-option-value-default</code>
+    <name>Patch: option value default flag</name>
+    <version>1.0</version>
+    <type>utility</type>
+    <icon>🩹</icon>
+    <author>EdgeCart</author>
+    <description>One-time patch. Adds an is_default column to product_option_values so a product option (e.g. Size) can be pre-selected on page load. Self-disables after running.</description>
+</plugin>

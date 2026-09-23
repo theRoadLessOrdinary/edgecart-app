@@ -1,0 +1,132 @@
+{extends file="../layout.html"}
+
+{block name="title"}Discount Codes — {$site_name|escape}{/block}
+
+{block name="head"}
+<link rel="stylesheet" href="{$url_admin_real}css/discounts.css?v={$nowstr}">
+{/block}
+
+{block name="content"}
+
+<div class="nc-toolbar">
+	<h1>Discount Codes</h1>
+	<button class="btn btn-primary" id="btn-add-code"
+		data-limit="{$discount_limit}">+ New Code</button>
+</div>
+
+<div class="nc-table-wrapper">
+	<table class="nc-table" id="discounts-table">
+		<thead>
+			<tr>
+				<th>Code</th>
+				<th>Type</th>
+				<th>Amount</th>
+				<th>Active</th>
+				<th>Expires</th>
+				<th>Uses</th>
+				<th class="col-toggle">Enabled</th>
+				<th class="delete-col"></th>
+				<th class="checkbox-col"><input type="checkbox" id="chk-all" aria-label="Select all"></th>
+			</tr>
+		</thead>
+		<tbody id="discounts-tbody">
+			<tr class="nc-empty" id="empty-row"><td colspan="9"><div class="nc-empty">No discount codes yet.</div></td></tr>
+		</tbody>
+	</table>
+</div>
+
+<div class="nc-toolbar" style="border-top:1px solid #e5e7eb;padding-top:1rem;margin-top:2rem">
+	<button class="btn btn-danger" id="btn-bulk-delete" style="display:none">Delete Selected</button>
+</div>
+
+{* ── Drawer ── *}
+<div id="drawer-overlay"></div>
+<me-drawer id="code-drawer">
+	<drawer-head>
+		<h2 id="drawer-title">New Discount Code</h2>
+		<button class="drawer-close" id="drawer-close">&times;</button>
+	</drawer-head>
+	<drawer-content id="code-drawer-content">
+		<input type="hidden" id="c_id" value="">
+
+		<div class="df">
+			<label for="c_code">Code <span class="field-required">*</span></label>
+			<div style="display:flex;gap:.5rem;align-items:flex-start">
+				<input type="text" id="c_code" placeholder="e.g., SUMMER50" maxlength="20"
+				       style="flex:1;font-family:monospace;text-transform:uppercase;letter-spacing:1px"
+				       aria-label="Discount code">
+				<button type="button" class="btn btn-secondary btn-sm" id="btn-generate-code" title="Generate random code">🎲 Generate</button>
+			</div>
+			<div class="hint">6-20 uppercase alphanumeric characters. Leave blank to auto-generate.</div>
+		</div>
+
+		<div class="df-row">
+			<div class="df">
+				<label for="c_type">Type <span class="field-required">*</span></label>
+				<select id="c_type" required>
+					<option value="percent">Percent Off (%)</option>
+					<option value="fixed">Fixed Amount ($)</option>
+				</select>
+			</div>
+			<div class="df">
+				<label for="c_amount">Amount <span class="field-required">*</span></label>
+				<input type="number" id="c_amount" min="0" step="0.01" placeholder="e.g., 50" required
+				       aria-label="Discount amount">
+			</div>
+		</div>
+
+		<div class="df">
+			<label for="c_min_amount">Minimum Order Amount</label>
+			<input type="number" id="c_min_amount" min="0" step="0.01"
+			       placeholder="Leave blank for no minimum" aria-label="Minimum order amount">
+			<div class="hint">Discount only applies to orders of this amount or higher.</div>
+		</div>
+
+		<div class="df-row">
+			<div class="df">
+				<label for="c_active_from">Active From <span class="field-required">*</span></label>
+				<input type="date" id="c_active_from" required aria-label="Active from date">
+				<div class="hint">Defaults to today.</div>
+			</div>
+			<div class="df">
+				<label for="c_active_until">Expires On</label>
+				<input type="date" id="c_active_until" aria-label="Expiration date">
+				<div class="hint">Defaults to 365 days from today.</div>
+			</div>
+		</div>
+
+		<div class="df-row">
+			<div class="df">
+				<label for="c_usage_limit">Usage Limit</label>
+				<input type="number" id="c_usage_limit" min="1"
+				       placeholder="1" aria-label="Usage limit">
+				<div class="hint">Maximum number of times this code can be used. Defaults to 1.</div>
+			</div>
+		</div>
+
+		<div class="df-toggle">
+			<input type="hidden" id="c_single_use_hidden" value="0">
+			<ios-toggle id="c_single_use" size="sm"></ios-toggle>
+			<label for="c_single_use">Single Use Only</label>
+			<div class="hint">When enabled, this code can only be used once.</div>
+		</div>
+
+		<div class="df-toggle">
+			<ios-toggle id="c_status" size="sm" checked></ios-toggle>
+			<label for="c_status">Enabled</label>
+		</div>
+	</drawer-content>
+	<drawer-foot>
+		<button class="btn btn-secondary" id="btn-drawer-cancel">Cancel</button>
+		<button class="btn btn-primary" id="btn-drawer-save">Save Code</button>
+	</drawer-foot>
+</me-drawer>
+
+{/block}
+
+{block name="scripts"}
+<script>
+NC.ajaxUrl = '{$url_admin}?route=discounts/ajax';
+</script>
+<script src="{$url_admin_real}js/discounts.js?v={$nowstr}"></script>
+{/block}

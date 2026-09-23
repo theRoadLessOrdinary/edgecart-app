@@ -1,0 +1,124 @@
+./vendor:
+total 32
+-rw-rw-r-- 1 william william 1518 Mar 17 22:44 delete-in-place.js
+-rw-rw-r-- 1 william william 4062 Mar 25 15:12 ios-toggle.js
+-rw-rw-r-- 1 william william 5123 Mar 27 12:38 maps-edge-date.js
+-rw-r--r-- 1 william william 4461 Apr  5  2026 roller-select.js
+drwxrwxr-x 2 william william 4096 Apr  4 22:51 SimpleNotification
+drwxrwxr-x 3 william william 4096 Apr  4 23:15 trumbowyg
+
+./vendor/SimpleNotification:
+total 116
+-rw-rw-r-- 1 william william  6955 Dec 16  2024 simpleNotification.min.css
+-rw-rw-r-- 1 william william 32535 May 25  2025 simpleNotification.min.js
+-rw-rw-r-- 1 william william 44479 Apr  2  2023 SimpleNotification.min.js.map
+-rw-rw-r-- 1 william william 29744 Nov 13  2023 simpleNotificationv2.min.js
+
+./vendor/trumbowyg:
+total 96
+drwxrwxr-x 4 william william  4096 Apr  4 23:15 src
+-rw-rw-r-- 1 william william 13347 Apr  4 23:15 trumbowyg.css
+-rw-rw-r-- 1 william william 71972 Feb 17 15:56 trumbowyg.js
+
+./vendor/trumbowyg/src:
+total 8
+drwxrwxr-x 2 william william 4096 Feb 17 15:09 langs
+drwxrwxr-x 4 william william 4096 Feb 17 15:17 ui
+
+./vendor/trumbowyg/src/langs:
+total 188
+-rw-rw-r-- 1 william william 1664 Mar  2  2025 ar.js
+-rw-rw-r-- 1 william william 1449 Mar  2  2025 az.js
+-rw-rw-r-- 1 william william 1559 Mar  2  2025 bg.js
+-rw-rw-r-- 1 william william 2060 Mar  2  2025 bn.js
+-rw-rw-r-- 1 william william 1762 Mar  2  2025 by.js
+-rw-rw-r-- 1 william william 1679 Mar  2  2025 ca.js
+-rw-rw-r-- 1 william william 1454 Mar  2  2025 cs.js
+-rw-rw-r-- 1 william william 1421 Mar  2  2025 da.js
+-rw-rw-r-- 1 william william 1565 Mar  2  2025 de.js
+-rw-rw-r-- 1 william william 1888 Mar  2  2025 el.js
+-rw-rw-r-- 1 william william  422 Mar  2  2025 en.js
+-rw-rw-r-- 1 william william 1326 Mar  2  2025 es_ar.js
+-rw-rw-r-- 1 william william 1430 Mar  2  2025 es.js
+-rw-rw-r-- 1 william william 1458 Mar  2  2025 et.js
+-rw-rw-r-- 1 william william 1488 Mar  2  2025 fa.js
+-rw-rw-r-- 1 william william 1295 Mar  2  2025 fi.js
+-rw-rw-r-- 1 william william 1623 Mar  2  2025 fr.js
+-rw-rw-r-- 1 william william 1383 Mar  2  2025 he.js
+-rw-rw-r-- 1 william william 1302 Mar  2  2025 hr.js
+-rw-rw-r-- 1 william william 1411 Mar  2  2025 hu.js
+-rw-rw-r-- 1 william william 1339 Mar  2  2025 id.js
+-rw-rw-r-- 1 william william 1400 Mar  2  2025 it.js
+-rw-rw-r-- 1 william william 1495 Mar  2  2025 ja.js
+-rw-rw-r-- 1 william william 1558 Mar  2  2025 ko.js
+-rw-rw-r-- 1 william william 1380 Mar  2  2025 lt.js
+-rw-rw-r-- 1 william william 1719 Mar  2  2025 mn.js
+-rw-rw-r-- 1 william william 1240 Mar  2  2025 my.js
+-rw-rw-r-- 1 william william 1604 Mar  2  2025 nb.js
+-rw-rw-r-- 1 william william 1381 Mar  2  2025 nl.js
+-rw-rw-r-- 1 william william 1251 Mar  2  2025 ph.js
+-rw-rw-r-- 1 william william 1274 Mar  2  2025 pl.js
+-rw-rw-r-- 1 william william 1527 Mar  2  2025 pt_br.js
+-rw-rw-r-- 1 william william 1531 Mar  2  2025 pt.js
+-rw-rw-r-- 1 william william 1407 Mar  2  2025 ro.js
+-rw-rw-r-- 1 william william 1564 Mar  2  2025 rs.js
+-rw-rw-r-- 1 william william 1327 Mar  2  2025 rs_latin.js
+-rw-rw-r-- 1 william william 1785 Mar  2  2025 ru.js
+-rw-rw-r-- 1 william william 1281 Mar  2  2025 sk.js
+-rw-rw-r-- 1 william william 1428 Mar  2  2025 sl.js
+-rw-rw-r-- 1 william william 1398 Mar  2  2025 sq.js
+-rw-rw-r-- 1 william william 1330 Mar  2  2025 sv.js
+-rw-rw-r-- 1 william william 1596 Mar  2  2025 th.js
+-rw-rw-r-- 1 william william 1434 Mar  2  2025 tr.js
+-rw-rw-r-- 1 william william 1583 Mar  2  2025 ua.js
+-rw-rw-r-- 1 william william 1392 Mar  2  2025 vi.js
+-rw-rw-r-- 1 william william 1282 Mar  2  2025 zh_cn.js
+-rw-rw-r-- 1 william william 1490 Mar  2  2025 zh_tw.js
+
+./vendor/trumbowyg/src/ui:
+total 40
+drwxrwxr-x 2 william william  4096 Feb 17 15:09 icons
+-rw-rw-r-- 1 william william 31992 Feb 17 15:16 icons.svg
+drwxrwxr-x 2 william william  4096 Apr  4 23:11 sass
+
+./vendor/trumbowyg/src/ui/icons:
+total 136
+-rw-rw-r-- 1 william william 601 Mar  2  2025 blockquote.svg
+-rw-rw-r-- 1 william william 643 Mar  2  2025 bold.svg
+-rw-rw-r-- 1 william william 201 Mar  2  2025 close.svg
+-rw-rw-r-- 1 william william 890 Mar  2  2025 create-link.svg
+-rw-rw-r-- 1 william william 805 Mar  2  2025 del.svg
+-rw-rw-r-- 1 william william 115 Mar  2  2025 em.svg
+-rw-rw-r-- 1 william william 599 Mar  2  2025 fullscreen.svg
+-rw-rw-r-- 1 william william 277 Mar  2  2025 h1.svg
+-rw-rw-r-- 1 william william 783 Mar  2  2025 h2.svg
+-rw-rw-r-- 1 william william 965 Mar  2  2025 h3.svg
+-rw-rw-r-- 1 william william 250 Mar  2  2025 h4.svg
+-rw-rw-r-- 1 william william 495 Mar  2  2025 h5.svg
+-rw-rw-r-- 1 william william 733 Mar  2  2025 h6.svg
+-rw-rw-r-- 1 william william 102 Mar  2  2025 horizontal-rule.svg
+-rw-rw-r-- 1 william william 279 Mar  2  2025 insert-image.svg
+-rw-rw-r-- 1 william william 115 Mar  2  2025 italic.svg
+-rw-rw-r-- 1 william william 126 Mar  2  2025 justify-center.svg
+-rw-rw-r-- 1 william william 124 Mar  2  2025 justify-full.svg
+-rw-rw-r-- 1 william william 124 Mar  2  2025 justify-left.svg
+-rw-rw-r-- 1 william william 126 Mar  2  2025 justify-right.svg
+-rw-rw-r-- 1 william william 819 Mar  2  2025 link.svg
+-rw-rw-r-- 1 william william 594 Mar  2  2025 ordered-list.svg
+-rw-rw-r-- 1 william william 175 Mar  2  2025 p.svg
+-rw-rw-r-- 1 william william 237 Mar  2  2025 redo.svg
+-rw-rw-r-- 1 william william 272 Mar  2  2025 removeformat.svg
+-rw-rw-r-- 1 william william 805 Mar  2  2025 strikethrough.svg
+-rw-rw-r-- 1 william william 643 Mar  2  2025 strong.svg
+-rw-rw-r-- 1 william william 543 Mar  2  2025 subscript.svg
+-rw-rw-r-- 1 william william 531 Mar  2  2025 superscript.svg
+-rw-rw-r-- 1 william william 481 Mar  2  2025 underline.svg
+-rw-rw-r-- 1 william william 237 Mar  2  2025 undo.svg
+-rw-rw-r-- 1 william william 845 Mar  2  2025 unlink.svg
+-rw-rw-r-- 1 william william 166 Mar  2  2025 unordered-list.svg
+-rw-rw-r-- 1 william william 218 Mar  2  2025 view-html.svg
+
+./vendor/trumbowyg/src/ui/sass:
+total 48
+-rw-rw-r-- 1 william william 21218 Apr  4 23:10 trumbowyg-2.scss.txt
+-rw-rw-r-- 1 william william 21238 Mar  2  2025 trumbowyg.scss

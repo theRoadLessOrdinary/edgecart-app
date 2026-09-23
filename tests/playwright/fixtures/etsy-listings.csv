@@ -1,0 +1,3 @@
+LISTING_ID,TITLE,DESCRIPTION,PRICE,QUANTITY,SKU,SECTION,IMAGE1,IMAGE2,VARIATION 1 NAME,VARIATION 1 VALUES,VARIATION 2 NAME,VARIATION 2 VALUES
+90010001,Handwoven Market Tote (Etsy Import),A sturdy handwoven cotton market tote.,34.00,12,ETSY-TOTE-01,Etsy Import,https://cdn.example.com/tote-1.webp,https://cdn.example.com/tote-2.webp,Color,"Natural, Charcoal",,
+90010002,Embroidered Zip Pouch (Etsy Import),Small zip pouch with hand embroidery.,16.50,25,ETSY-POUCH-01,Etsy Import,https://cdn.example.com/pouch-1.webp,,Size,"Small, Medium",Color,"Cream, Rust"

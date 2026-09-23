@@ -1,0 +1,3 @@
+Email,First Name,Last Name,Address1,Address2,City,Province,Province Code,Zip,Country Code
+shopify.customer1@playwright-test.example,Jamie,Rivera,123 Cotton Way,,Austin,Texas,TX,78701,US
+shopify.customer2@playwright-test.example,Morgan,Lee,456 Denim Ave,Apt 2,Portland,Oregon,OR,97201,US

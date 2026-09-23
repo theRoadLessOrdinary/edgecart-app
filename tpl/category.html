@@ -1,0 +1,79 @@
+{extends file="layout.html"}
+
+{block name="title"}{$category.name|escape} — {$site_name}{/block}
+{block name="meta_desc"}{$category.seo_description|escape|default:$category.name|escape}{/block}
+{block name="og_title"}{$category.name|escape}{/block}
+{block name="og_type"}website{/block}
+{block name="head"}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "CollectionPage",
+  "name": "{$category.name|escape}",
+  "description": "{$category.seo_description|escape}",
+  "url": "{$url_root}?route=category&id={$category.id}",
+  "breadcrumb": {
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "{$site_name|escape}",
+        "item": "{$url_root}"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "{$category.name|escape}",
+        "item": "{$url_root}?route=category&id={$category.id}"
+      }
+    ]
+  }
+}
+</script>
+{/block}
+
+{block name="content"}
+{if $category.banner || $category.image}
+<div class="category-banner" style="background-image:url('{$category.banner|default:$category.image|escape}')">
+	<h1>{$category.name|escape}</h1>
+</div>
+{else}
+<div class="page-head">
+	<h1>{$category.name|escape}</h1>
+	{if $category.html_long}
+		<p>{$category.html_long|strip_tags|truncate:200|escape}</p>
+	{/if}
+</div>
+{/if}
+
+{if $products}
+<div class="product-grid">
+	{foreach $products as $prod}
+	<a class="product-card" href="{$url_root}product/{$prod.slug|escape}" aria-label="{$prod.name|escape}">
+		<div class="product-card-img">
+			{if $prod.image}
+				<img src="{$prod.image|escape}" alt="{$prod.name|escape}" loading="lazy">
+			{else}
+				<div class="product-card-no-image" aria-hidden="true">&#128247;</div>
+			{/if}
+		</div>
+		<div class="product-card-body">
+			<div class="product-card-name">{$prod.name|escape}</div>
+			<div class="product-card-price">
+				{if $prod.list_price && $prod.list_price > $prod.price}
+					<span class="product-card-list-price">{$site_currency}{$prod.list_price|string_format:"%.2f"}</span>
+				{/if}
+				{$site_currency}{$prod.price|string_format:"%.2f"}
+			</div>
+		</div>
+	</a>
+	{/foreach}
+</div>
+{else}
+<div class="empty-state">
+	<div class="empty-state-icon">&#128247;</div>
+	<h2>No products in this category</h2>
+</div>
+{/if}
+{/block}

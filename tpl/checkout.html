@@ -1,0 +1,332 @@
+{extends file="layout.html"}
+
+{block name="title"}Checkout — {$site_name}{/block}
+
+{block name="head"}
+{$payment_head_html nofilter}
+{/block}
+
+{block name="content"}
+{if $page.title && $page.title !== 'Checkout'}
+<div class="page-head">
+	<h1>{$page.title|escape}</h1>
+</div>
+{else}
+<div class="page-head"><h1>Checkout</h1></div>
+{/if}
+
+{if $content_before}<div class="page-content">{$content_before nofilter}</div>{/if}
+
+{if $blocks}
+{foreach $blocks as $block}
+<div class="page-block{if $block.is_core} block-core{/if}">
+
+	{if $block.block_type === 'checkout_form'}
+
+<form class="checkout-layout" method="POST">
+	<input type="hidden" name="csrf_token" value="{$csrf_token|escape}">
+
+	{* ── Accessibility: form error announcements ── *}
+	<div id="form-errors" role="alert" aria-live="polite" aria-atomic="true" style="display:none;padding:1rem;margin-bottom:1rem;background:#fee;color:#c33;border:1px solid #fcc;border-radius:4px;"></div>
+
+	{* ── Left: forms ── *}
+	<div>
+
+		{* Contact *}
+		<div class="checkout-section">
+			<div class="checkout-section-head"><h3>Contact</h3></div>
+
+			{if !$is_logged_in && $google_oauth_enabled}
+			<div class="checkout-field">
+				<a href="{$url_root}?route=google-oauth&next=checkout" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.6rem 0.75rem; background: white; border: 1px solid #d1d5db; border-radius: 0.375rem; color: #1a1a1a; text-decoration: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: background 0.2s; margin-bottom: 0.75rem;">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+						<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+						<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+						<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+					</svg>
+					Sign in with Google
+				</a>
+			</div>
+			{/if}
+
+			<div class="checkout-field-row">
+				<div class="checkout-field">
+					<label for="co-first">First Name <span class="field-required">*</span></label>
+					<input type="text" id="co-first" class="uppercase-input" autocomplete="given-name" required aria-required="true" value="{if $is_logged_in && $customer}{$customer.first_name|escape}{/if}">
+				</div>
+				<div class="checkout-field">
+					<label for="co-last">Last Name <span class="field-required">*</span></label>
+					<input type="text" id="co-last" class="uppercase-input" autocomplete="family-name" required aria-required="true" value="{if $is_logged_in && $customer}{$customer.last_name|escape}{/if}">
+				</div>
+			</div>
+			<div class="checkout-field">
+				<label for="co-email">Email <span class="field-required">*</span></label>
+				<input type="email" id="co-email" autocomplete="email" required aria-required="true" value="{if $is_logged_in && $customer}{$customer.email|escape}{/if}">
+			</div>
+			<div class="checkout-field">
+				<label for="co-phone">Phone <span style="color:var(--nc-text-dim);font-size:.85rem" id="co-phone-desc">(optional)</span></label>
+				<input type="tel" id="co-phone" autocomplete="tel" aria-describedby="co-phone-desc">
+			</div>
+		</div>
+
+		{* Plugin-injected fields (e.g. store domain from ec-fulfillment) *}
+		{if $checkout_extra_fields}
+		{$checkout_extra_fields nofilter}
+		{/if}
+
+		{if $cart_requires_shipping}
+		{* Shipping address — only when the cart has at least one physical item *}
+		<div class="checkout-section">
+			<div class="checkout-section-head"><h3>Shipping Address</h3></div>
+			<div class="checkout-field">
+				<label for="co-addr1">Address <span class="field-required">*</span></label>
+				<input type="text" id="co-addr1" class="uppercase-input" autocomplete="address-line1" required aria-required="true">
+			</div>
+			<div class="checkout-field">
+				<label for="co-addr2">Apartment, suite, etc. <span style="color:var(--nc-text-dim);font-size:.85rem" id="co-addr2-desc">(optional)</span></label>
+				<input type="text" id="co-addr2" class="uppercase-input" autocomplete="address-line2" aria-describedby="co-addr2-desc">
+			</div>
+			<div class="checkout-field-row">
+				<div class="checkout-field" style="flex:0 0 110px">
+					<label for="co-zip">ZIP <span class="field-required">*</span></label>
+					<input type="text" id="co-zip" class="uppercase-input" autocomplete="postal-code" maxlength="20" required aria-required="true">
+				</div>
+				<div class="checkout-field">
+					<label for="co-city">City <span class="field-required">*</span></label>
+					<input type="text" id="co-city" class="uppercase-input" autocomplete="address-level2" required aria-required="true">
+				</div>
+				<div class="checkout-field" style="flex:0 0 90px">
+					<label for="co-state">State <span class="field-required">*</span></label>
+					<input type="text" id="co-state" class="uppercase-input" autocomplete="address-level1" maxlength="32" required aria-required="true">
+				</div>
+			</div>
+			<div class="checkout-field">
+				<label for="co-country">Country <span style="color:var(--nc-text-dim);font-size:.85rem" id="co-country-desc">(optional)</span></label>
+				<select id="co-country" autocomplete="country" aria-describedby="co-country-desc">
+					<option value="US">United States</option>
+					<option value="CA">Canada</option>
+					<option value="GB">United Kingdom</option>
+					<option value="AU">Australia</option>
+				</select>
+			</div>
+		</div>
+
+		{* Shipping rates *}
+		<div class="checkout-section checkout-section--spaced" id="section-shipping">
+			<div class="checkout-section-head"><h3>Shipping</h3></div>
+			<div class="checkout-field">
+				<button class="btn btn-primary" id="btn-get-rates" type="button">Get Shipping Rates</button>
+			</div>
+			<div id="shipping-rates-wrap">
+				<div class="shipping-rates" id="shipping-rates-list" role="radiogroup">
+					{* populated by JS *}
+				</div>
+				<div class="shipping-rates-action">
+					<button class="btn btn-primary" id="btn-use-rate" type="button" style="display:none">Use this shipping method</button>
+				</div>
+			</div>
+			<div id="shipping-selected-summary" style="display:none">
+				<div class="shipping-chosen">
+					<span id="shipping-selected-label"></span>
+					<button class="btn-link" id="btn-change-rate" type="button">Change</button>
+				</div>
+			</div>
+		</div>
+		{else}
+		{* Digital-only cart — no physical shipping applies. Hidden dummy values
+		   satisfy the existing required-fields check in ctl/checkout.php without
+		   changing server-side validation; shipping total stays $0 (no rate ever
+		   gets selected, which the totals JS already handles as its default). *}
+		<input type="hidden" id="co-addr1" value="N/A">
+		<input type="hidden" id="co-addr2" value="">
+		<input type="hidden" id="co-zip" value="00000">
+		<input type="hidden" id="co-city" value="N/A">
+		<input type="hidden" id="co-state" value="">
+		<input type="hidden" id="co-country" value="US">
+		{/if}
+
+		{* Discount code (plugin) *}
+		{if isset($active_plugins.discounts)}
+		<div class="checkout-section checkout-section--spaced">
+			<div class="checkout-section-head"><h3>Discount Code</h3></div>
+			<div class="checkout-field">
+				<label for="co-discount-code">Have a discount code?</label>
+				<div style="display:flex;gap:.5rem">
+					<input type="text" id="co-discount-code" placeholder="Enter code" maxlength="20" style="flex:1" aria-label="Discount code">
+					<button type="button" id="btn-apply-discount" class="btn btn-secondary">Apply</button>
+				</div>
+				<div id="discount-message" style="margin-top:.5rem;display:none"></div>
+			</div>
+		</div>
+		{/if}
+
+		{* Save information *}
+		{if !$is_logged_in}
+		<div class="checkout-section checkout-section--spaced">
+			<div class="checkout-section-head"><h3>Save Information</h3></div>
+			<div class="checkout-field">
+				<label for="co-password">
+					Enter a password to save your information for next time
+					<span style="color:var(--nc-text-dim);font-size:.85rem" id="co-password-desc">(optional)</span>
+				</label>
+				<input type="text" id="co-password" name="co-password" minlength="8"
+				       placeholder="Password"
+				       autocomplete="new-password"
+				       aria-describedby="co-password-desc password-strength-text co-password-hint">
+				<div id="co-password-hint" style="color:var(--nc-text-dim);font-size:.82rem;margin-top:.35rem">
+					Lets you view your order history later. Your download link in the confirmation email expires
+					after 7 days — without an account, there's no way to get your files after that.
+				</div>
+				<div id="password-strength" class="password-strength" style="margin-top: 0.5rem; display: none;">
+					<div class="password-strength-bar">
+						<div id="password-strength-fill" class="password-strength-fill"></div>
+					</div>
+					<div id="password-strength-text" class="password-strength-text" role="status" aria-live="polite"></div>
+				</div>
+			</div>
+		</div>
+		{/if}
+		{* Payment — hidden until a shipping rate is chosen when shipping applies;
+		   shown immediately for an all-digital cart, since there's no rate step *}
+		<div class="checkout-section" id="section-payment" {if $cart_requires_shipping}style="display:none"{/if}>
+			<div class="checkout-section-head"><h3>Payment</h3></div>
+
+			{if $payment_methods|count > 1}
+			<div style="margin-bottom:1rem">
+				{foreach $payment_methods as $pm}
+				<label style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;cursor:pointer">
+					<input type="radio" name="payment_method" value="{$pm.id|escape}"
+						   {if $pm@first}checked{/if}>
+					{$pm.label|escape}
+				</label>
+				{/foreach}
+			</div>
+			{elseif $payment_methods}
+			{* Only one method available (e.g. no gateway configured yet, just the
+			   Check/Money Order or Pay on Delivery fallback) — still show which
+			   one it is rather than silently checking out with an unstated method,
+			   and carry its real id so the JS never has to guess a fallback. *}
+			<div style="margin-bottom:1rem;font-size:.9rem;color:var(--nc-text-secondary)">
+				Payment method: <strong>{$payment_methods[0].label|escape}</strong>
+				<input type="hidden" name="payment_method" value="{$payment_methods[0].id|escape}">
+			</div>
+			{/if}
+
+			<button class="btn btn-primary btn-lg" id="btn-place-order" type="button" style="width:100%">
+				Pay for your Order
+			</button>
+		</div>
+
+	</div>
+
+	{* ── Right: order summary ── *}
+	<div class="order-summary-card">
+		<div class="order-summary-head">
+			<strong>Order Summary</strong>
+			<a href="{$url_root}cart">Edit Cart</a>
+		</div>
+		{foreach $items as $item}
+		<div class="order-summary-item">
+			{if $item.product.image}
+			<img src="{$item.product.image|escape}" alt="{$item.product.name|escape}" class="order-summary-thumb">
+			{/if}
+			<div class="order-summary-item-info">
+				<div class="order-summary-item-name">{$item.product.name|escape}</div>
+				{if $item.qty > 1}
+				<div class="order-summary-item-qty">&times;{$item.qty}</div>
+				{/if}
+			</div>
+			<div class="order-summary-item-price">{$site_currency}{$item.line_total|string_format:"%.2f"}</div>
+		</div>
+		{/foreach}
+		<hr class="order-summary-divider">
+		<div class="order-summary-row order-summary-subtotal">
+			<span>Subtotal</span>
+			<span>{$subtotal}</span>
+		</div>
+		<div class="order-summary-row order-summary-shipping" id="summary-shipping" style="display:none">
+			<span>Shipping</span>
+			<span id="summary-shipping-price">—</span>
+		</div>
+		<div class="order-summary-row order-summary-tax" id="summary-tax" style="display:none">
+			<span id="summary-tax-label">Sales Tax</span>
+			<span id="summary-tax-price">—</span>
+		</div>
+		<div class="order-summary-discount" id="summary-discount" style="display:none">
+			<span>Discount</span>
+			<span id="summary-discount-price">—</span>
+		</div>
+		<hr class="order-summary-divider">
+		<div class="order-summary-total">
+			<span>Total</span>
+			<span id="summary-total">{$subtotal}</span>
+		</div>
+	</div>
+
+</form>
+
+	{* ── Additional blocks (menu, products, etc.) ── *}
+	{elseif $block.block_type === 'menu'}
+		{if isset($block.menu_items) && $block.menu_items}
+		<nav class="page-block block-menu">
+			{foreach $block.menu_items as $item}
+			{if $item.enabled}
+			<a href="{if $item.item_type === 'category' && $item.category_slug}{$url_root}category/{$item.category_slug|escape}{elseif $item.item_type === 'page' && $item.page_slug}{$url_root}page/{$item.page_slug|escape}{else}{$item.url|default:'#'|escape}{/if}" class="block-menu-link">
+				{$item.label|escape}
+				{if $item.show_count && isset($item.product_count)}<span class="block-menu-count">({$item.product_count})</span>{/if}
+			</a>
+			{/if}
+			{/foreach}
+		</nav>
+		{/if}
+	{elseif $block.block_type === 'rich_text'}
+		<div class="page-block block-rich-text">{$block.settings.content|default:''}</div>
+	{elseif $block.block_type === 'html'}
+		<div class="page-block block-html">{$block.settings.html|default:''}</div>
+	{elseif in_array($block.block_type, ['featured_products','best_sellers','new_arrivals'])}
+		{if isset($block.products) && $block.products}
+		<div class="page-block block-products">
+			{if $block.heading}<h2 class="block-heading">{$block.heading|escape}</h2>{/if}
+			<div class="product-grid">
+				{foreach $block.products as $prod}
+				<a class="product-card" href="{$url_root}product/{$prod.slug|escape}">
+					<div class="product-card-img">
+						{if $prod.image}<img src="{$prod.image|escape}" alt="{$prod.name|escape}" loading="lazy">
+						{else}<div class="product-card-no-image" aria-hidden="true">&#128247;</div>{/if}
+					</div>
+					<div class="product-card-body">
+						<div class="product-card-name">{$prod.name|escape}</div>
+						<div class="product-card-price">
+							{if $prod.list_price && $prod.list_price > $prod.price}<span class="product-card-list-price">{$site_currency}{$prod.list_price|string_format:"%.2f"}</span>{/if}
+							{$site_currency}{$prod.price|string_format:"%.2f"}
+						</div>
+					</div>
+				</a>
+				{/foreach}
+			</div>
+		</div>
+		{/if}
+	{/if}
+
+</div>{* /page-block *}
+{/foreach}
+{/if}
+
+{if $content_after}<div class="page-content">{$content_after nofilter}</div>{/if}
+{/block}
+
+
+{block name="scripts"}
+<script>
+var CART_CURRENCY        = 'USD';
+var CART_CURRENCY_SYMBOL = '{$site_currency|escape}';
+var CART_SUBTOTAL        = {$subtotal_raw|string_format:"%.2f"};
+var CART_AMOUNT_CENTS    = 0;
+var ORDER_ID             = 0;
+var THANKYOU_URL         = '{$url_root}order-complete';
+</script>
+{$payment_scripts_html nofilter}
+<script src="{$url_root}plugins/zippopotam/catalog/zippopotam.js?v={$nowstr}"></script>
+<script src="{$url_root}js/checkout.js?v={$nowstr}"></script>
+{/block}

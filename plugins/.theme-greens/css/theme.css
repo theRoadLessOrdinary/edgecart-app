@@ -1,0 +1,21 @@
+/* Theme: Greens — forest green */
+:root {
+    --nc-primary:        #0e7c4a;
+    --nc-primary-hover:  #0a5f38;
+    --nc-primary-muted:  #f0fdf4;
+    --nc-border-focus:   #0e7c4a;
+    --nc-utility-text:       #ffffff;
+    --nc-utility-text-hover: #ffffff;
+
+    --nc-footer-bg:      #0a5f38;
+    --nc-footer-text:    #ffffff;
+    --nc-sidebar-bg:     #0f2418;
+    --nc-sidebar-hover:  #1a4a2e;
+    --nc-sidebar-open:   linear-gradient(to bottom, #23663f, #1a4b2e);
+    --nav-group-open:    #0c2717;
+    --nc-sidebar-active: #22c55e;
+    --nc-sidebar-text:   #c8ddd0;
+    --nc-sidebar-dim:    #7a9a82;
+    --nc-topbar-bg:     linear-gradient(to bottom, #0d7243, #08472a) ;
+    --nc-topbar-text:    #ffffff;
+}

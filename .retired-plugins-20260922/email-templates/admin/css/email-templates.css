@@ -1,0 +1,16 @@
+.et-tabs { display: flex; gap: .25rem; margin: 0 0 1.5rem; border-bottom: 1px solid var(--nc-border, #d1d5db); }
+.et-tab { padding: .6rem 1rem; background: none; border: 0; border-bottom: 2px solid transparent; cursor: pointer; font-size: .9rem; color: var(--nc-text); }
+.et-tab.active { border-bottom-color: var(--nc-primary); font-weight: 600; }
+.et-panel { display: none; }
+.et-panel.active { display: block; }
+.et-row { cursor: pointer; }
+.et-h { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--nc-text-dim); margin: 2.5rem 0 .75rem; }
+.et-off { color: var(--nc-text-dim); }
+.et-info { display: inline-flex; align-items: center; justify-content: center; width: 1.25rem; height: 1.25rem; margin-left: .4rem;
+	border: 1px solid var(--nc-border, #d1d5db); border-radius: 50%; background: var(--nc-bg, #fff); color: var(--nc-text);
+	font-size: .75rem; font-weight: 700; font-style: italic; cursor: pointer; padding: 0; }
+.et-tokens { margin: .5rem 0 .75rem; padding: .5rem; border: 1px solid var(--nc-border, #d1d5db); border-radius: .375rem; max-height: 14rem; overflow: auto; }
+.et-token { display: block; width: 100%; text-align: left; padding: .35rem .5rem; background: none; border: 0; cursor: pointer; font-size: .85rem; color: var(--nc-text); }
+.et-token:hover { background: var(--nc-bg-alt, #f3f4f6); }
+.et-token-line { padding: .25rem .5rem; font-size: .85rem; }
+.et-picker { margin-bottom: 1rem; }

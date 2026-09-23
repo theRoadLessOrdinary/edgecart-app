@@ -1,0 +1,543 @@
+{extends file="layout.html"}
+
+{block name="title"}{if $product.seo_title}{$product.seo_title|escape}{else}{$product.name|escape}{/if} — {$site_name}{/block}
+{block name="meta_desc"}{$product.seo_description|default:$product.description|strip_tags|escape|truncate:200}{/block}
+{block name="og_title"}{$product.name|escape}{/block}
+{block name="og_type"}product{/block}
+{block name="og_url"}{$url_root}?route=product&id={$product.id}{/block}
+{block name="head"}
+<meta property="og:image" content="{$og_image|escape}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="1200">
+<script type="application/ld+json">{$product_json_ld nofilter}</script>
+{/block}
+
+{block name="content"}
+{if $content_before}<div class="page-content">{$content_before nofilter}</div>{/if}
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 2rem;">
+	<h1 style="margin: 0; flex: 1;">{$product.name|escape}</h1>
+	{if $is_admin_user}<a href="{$url_admin}?route=products&amp;edit={$product.id}" style="color: #2563eb; text-decoration: none; font-size: 0.9rem; white-space: nowrap;">✏ Edit</a>{/if}
+</div>
+
+<div class="product-detail">
+
+	{* ── Gallery ── *}
+	<div class="product-gallery">
+		<div class="product-gallery-main" id="gallery-main" role="button"
+		     aria-label="View full-size image" tabindex="0"
+		     style="max-width:{$img_product_width}px">
+			{if $images}
+				<img id="main-image"
+				     src="{$images[0].filename|escape}"
+				     alt="{$product.name|escape}">
+			{else}
+				<div class="product-card-no-image" aria-hidden="true">&#128247;</div>
+			{/if}
+		</div>
+		{assign var='_has_ov_thumbs' value=false}
+		{if !$use_option_images}
+			{foreach $product_options as $_po}
+				{foreach $_po.values as $_v}
+					{if $_v.image}{assign var='_has_ov_thumbs' value=true}{/if}
+				{/foreach}
+			{/foreach}
+		{/if}
+		{if $images|count > 1 || $_has_ov_thumbs}
+		<div class="product-thumbnails" role="list">
+			{foreach $images as $i => $img}
+			<button class="product-thumb{if $i == 0} active{/if}"
+			        data-src="{$img.filename|escape}"
+			        {if $use_option_images}data-pov-id="{$img.option_value_id}"{/if}
+			        aria-label="View image {$i+1}"
+			        role="listitem">
+				<img src="{$img.filename|escape}" alt="{$product.name|escape} image {$i+1}" loading="lazy">
+			</button>
+			{/foreach}
+			{if $_has_ov_thumbs}
+				{foreach $product_options as $_po}
+					{foreach $_po.values as $_v}
+						{if $_v.image}
+						<button class="product-thumb"
+						        data-src="{$_v.image|escape}"
+						        data-po-id="{$_po.id}"
+						        data-pov-id="{$_v.id}"
+						        aria-label="{if $_v.label}{$_v.label|escape}{else}{$_v.value_text|escape}{/if}"
+						        role="listitem">
+							<img src="{$_v.image|escape}" alt="{if $_v.label}{$_v.label|escape}{else}{$_v.value_text|escape}{/if}" loading="lazy">
+						</button>
+						{/if}
+					{/foreach}
+				{/foreach}
+			{/if}
+		</div>
+		{/if}
+	</div>
+
+	{* Lightbox *}
+	<div id="product-lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
+		<button id="lightbox-close" aria-label="Close">&times;</button>
+		<button id="lightbox-prev" aria-label="Previous image">&#8249;</button>
+		<img id="lightbox-img" src="" alt="{$product.name|escape}">
+		<button id="lightbox-next" aria-label="Next image">&#8250;</button>
+	</div>
+
+	{* ── Info ── *}
+	<div class="product-info">
+		{if isset($active_plugins.reviews)}
+		<div id="review-summary" style="margin-bottom: 1rem; font-size: 0.95rem;">
+			<div id="review-summary-content"></div>
+		</div>
+		{/if}
+
+		<div class="product-price-block">
+			{if $product.list_price && $product.list_price > $display_price}
+				{assign var="saving_pct" value=($product.list_price - $display_price) / $product.list_price * 100}
+				<div class="product-price">{$site_currency}{$display_price|string_format:"%.2f"}</div>
+				<div class="product-list-price">List: {$site_currency}{$product.list_price|string_format:"%.2f"}</div>
+				<div class="product-you-save">You save {$saving_pct|string_format:"%.0f"}%</div>
+			{else}
+				<div class="product-price">{$site_currency}{$display_price|string_format:"%.2f"}</div>
+			{/if}
+		</div>
+
+		{if $product.description && $product.description !== 'false'}
+		<div class="product-short-desc">{$product.description|strip_tags|escape}</div>
+		{/if}
+
+		{if $product.stock !== null && $product.stock == 0}
+		<div class="product-stock-warning" role="alert">
+			&#9888; This item is currently out of stock.
+		</div>
+		{/if}
+
+		{* ── Options ── *}
+		{if $product_options}
+		<div class="product-options" id="product-options">
+			{foreach $product_options as $po}
+			<div class="product-option" data-po-id="{$po.id}">
+				<label for="opt-{$po.id}">
+					{if $po.label}{$po.label|escape}{else}{$po.option_name|escape}{/if}
+					{if $po.required}<span class="option-required" aria-hidden="true">*</span>{/if}
+				</label>
+
+				{if $po.type == 'select'}
+					<select id="opt-{$po.id}" name="options[{$po.id}]" class="option-dropdown"
+					        {if $po.required}required aria-required="true"{/if}
+					        data-po-id="{$po.id}">
+						<option value="">{if $po.placeholder}{$po.placeholder|escape}{else}— Select —{/if}</option>
+						{foreach $po.values as $v}
+						<option value="{$v.id}"
+						        {if $v.is_default}selected{/if}
+						        data-price-prefix="{$v.price_prefix}"
+						        data-price-mod="{$v.price_modifier}"
+						        data-weight-mod="{$v.weight_modifier}"
+						        data-image="{$v.image|escape}">
+							{if $v.label}{$v.label|escape}{else}{$v.value_text|escape}{/if}
+							{if $v.price_modifier != 0}
+								({if $v.price_prefix === '='}= {else}{$v.price_prefix}{/if}{$site_currency}{$v.price_modifier|string_format:"%.2f"})
+							{/if}
+						</option>
+						{/foreach}
+					</select>
+
+				{elseif $po.type == 'radio'}
+					<div class="radio-group" role="radiogroup">
+						{foreach $po.values as $v}
+						<label>
+							<input type="radio" name="options[{$po.id}]" value="{$v.id}"
+							       data-po-id="{$po.id}"
+							       data-price-prefix="{$v.price_prefix}"
+							       data-price-mod="{$v.price_modifier}"
+							       data-weight-mod="{$v.weight_modifier}"
+							       data-image="{$v.image|escape}"
+							       {if $v.is_default}checked{/if}
+							       {if $po.required}required{/if}>
+							{if $v.image}<img src="{$v.image|escape}" alt="{$v.value_text|escape}" style="width:24px;height:24px;object-fit:cover;border-radius:3px">{/if}
+							{if $v.label}{$v.label|escape}{else}{$v.value_text|escape}{/if}
+							{if $v.price_modifier != 0}({if $v.price_prefix === '='}= {else}{$v.price_prefix}{/if}{$site_currency}{$v.price_modifier|string_format:"%.2f"}){/if}
+						</label>
+						{/foreach}
+					</div>
+
+				{elseif $po.type == 'checkbox'}
+					<div class="checkbox-group">
+						{foreach $po.values as $v}
+						<label>
+							<input type="checkbox" name="options[{$po.id}][]" value="{$v.id}"
+							       data-po-id="{$po.id}"
+							       data-price-prefix="{$v.price_prefix}"
+							       data-price-mod="{$v.price_modifier}"
+							       data-weight-mod="{$v.weight_modifier}"
+							       data-image="{$v.image|escape}"
+							       {if $v.is_default}checked{/if}>
+							{if $v.image}<img src="{$v.image|escape}" alt="{$v.value_text|escape}" style="width:24px;height:24px;object-fit:cover;border-radius:3px">{/if}
+							{if $v.label}{$v.label|escape}{else}{$v.value_text|escape}{/if}
+							{if $v.price_modifier != 0}({if $v.price_prefix === '='}= {else}{$v.price_prefix}{/if}{$site_currency}{$v.price_modifier|string_format:"%.2f"}){/if}
+						</label>
+						{/foreach}
+					</div>
+
+				{elseif $po.type == 'toggle'}
+					{foreach $po.values as $v}
+					<label style="display:flex;align-items:center;gap:.65rem">
+						<ios-toggle name="options[{$po.id}]" value="{$v.id}"
+						            data-po-id="{$po.id}"
+						            data-price-prefix="{$v.price_prefix}"
+						            data-price-mod="{$v.price_modifier}"
+						            data-weight-mod="{$v.weight_modifier}"
+						            data-image="{$v.image|escape}"
+						            {if $v.is_default}checked{/if}>
+						</ios-toggle>
+						{if $v.label}{$v.label|escape}{else}{$v.value_text|escape}{/if}
+					</label>
+					{/foreach}
+
+				{elseif $po.type == 'text'}
+					<input type="text" id="opt-{$po.id}" name="options_text[{$po.id}]"
+					       placeholder="{$po.placeholder|escape}"
+					       {if $po.required}required aria-required="true"{/if}
+					       maxlength="512">
+
+				{elseif $po.type == 'textarea'}
+					<textarea id="opt-{$po.id}" name="options_text[{$po.id}]"
+					          placeholder="{$po.placeholder|escape}"
+					          {if $po.required}required aria-required="true"{/if}
+					          rows="3"></textarea>
+
+				{elseif $po.type == 'file'}
+					<input type="file" id="opt-{$po.id}" name="options_file[{$po.id}]"
+					       {if $po.required}required aria-required="true"{/if}>
+
+				{elseif $po.type == 'date'}
+					<input type="date" id="opt-{$po.id}" name="options_text[{$po.id}]"
+					       {if $po.required}required aria-required="true"{/if}>
+
+				{elseif $po.type == 'time'}
+					<input type="time" id="opt-{$po.id}" name="options_text[{$po.id}]"
+					       {if $po.required}required aria-required="true"{/if}>
+
+				{elseif $po.type == 'datetime'}
+					<input type="datetime-local" id="opt-{$po.id}" name="options_text[{$po.id}]"
+					       {if $po.required}required aria-required="true"{/if}>
+				{/if}
+
+			</div>
+			{/foreach}
+		</div>
+		{/if}
+
+		<div class="product-add-to-cart" style="margin-top: 1.5rem; display: flex; align-items: center; gap: .75rem;">
+			{if $product.stock === null || $product.stock != 0}
+			<input type="number" id="qty" class="qty-input" value="1" min="1" aria-label="Quantity">
+			<button id="btn-add-to-cart" class="btn btn-primary btn-lg" type="button" data-product-id="{$product.id}"><span class="atc-label">Add to Cart</span></button>
+			{/if}
+			<span id="add-to-cart-msg" role="alert"></span>
+		</div>
+
+
+	</div>
+</div>
+
+{* ── Long description ── *}
+{assign var="_dl" value=$product.description_long|default:''}
+{if $_dl && $_dl !== 'false'}
+<div class="cart-product-description">
+	{$_dl|strip_tags|escape}
+</div>
+{/if}
+
+{* ── Reviews ── *}
+<style>
+.product-reviews {
+	padding-top: 2rem;
+	margin-top: 3rem;
+	border-top: 1px solid #e5e7eb;
+}
+
+.product-reviews h2 {
+	margin-bottom: 1.5rem;
+	font-size: 1.5rem;
+	font-weight: 600;
+}
+
+.reviews-list {
+	margin-bottom: 3rem;
+}
+
+.review-item {
+	padding: 1.25rem;
+	margin-bottom: 1rem;
+	border: 1px solid #e5e7eb;
+	border-radius: 0.375rem;
+	background: #fafafa;
+}
+
+.review-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	margin-bottom: 0.5rem;
+	gap: 1rem;
+}
+
+.review-author {
+	font-weight: 600;
+	font-size: 0.95rem;
+}
+
+.review-date {
+	font-size: 0.85rem;
+	color: #6b7280;
+}
+
+.review-rating {
+	font-size: 1rem;
+	color: #f59e0b;
+	margin-bottom: 0.5rem;
+	letter-spacing: 1px;
+}
+
+.rating-text {
+	font-size: 0.85rem;
+	color: #6b7280;
+	margin-left: 0.5rem;
+}
+
+.review-title {
+	font-weight: 600;
+	margin: 0.5rem 0;
+	font-size: 0.95rem;
+}
+
+.review-body {
+	font-size: 0.9rem;
+	line-height: 1.5;
+	color: #374151;
+}
+
+.review-form-section {
+	margin-top: 2.5rem;
+	padding-top: 2rem;
+	border-top: 1px solid #e5e7eb;
+}
+
+.review-form-section h3 {
+	margin-bottom: 1.5rem;
+	font-size: 1.25rem;
+	font-weight: 600;
+}
+
+.review-form {
+	max-width: 600px;
+}
+
+.form-group {
+	margin-bottom: 1.25rem;
+}
+
+.form-group label {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-weight: 500;
+	font-size: 0.95rem;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group textarea {
+	width: 100%;
+	padding: 0.5rem 0.75rem;
+	border: 1px solid #d1d5db;
+	border-radius: 0.375rem;
+	font-family: inherit;
+	font-size: 0.95rem;
+	box-sizing: border-box;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group textarea:focus {
+	outline: none;
+	border-color: #3b82f6;
+	box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-group textarea {
+	resize: vertical;
+	line-height: 1.5;
+}
+
+/* Rating input: hide radio buttons, show stars */
+.rating-input {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+
+.star-label {
+	display: inline-flex;
+	cursor: pointer;
+	align-items: center;
+	justify-content: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	margin: 0;
+	padding: 0;
+}
+
+.star-label input[type="radio"] {
+	display: none;
+}
+
+.star {
+	font-size: 2rem;
+	color: #d1d5db;
+	cursor: pointer;
+	transition: color 0.15s, transform 0.15s;
+	line-height: 1;
+	user-select: none;
+}
+
+.star-label:hover .star {
+	color: #f59e0b;
+	transform: scale(1.1);
+}
+
+.star-label input[type="radio"]:checked ~ .star {
+	color: #f59e0b;
+}
+
+.rating-input:hover .star.hover {
+	color: #f59e0b;
+}
+
+.star.active {
+	color: #f59e0b;
+}
+
+#review-msg {
+	margin-top: 0.5rem;
+	font-size: 0.9rem;
+	display: none;
+}
+
+#review-msg.show {
+	display: block;
+}
+
+.reviews-empty {
+	text-align: center;
+	padding: 2rem;
+	color: #6b7280;
+	font-style: italic;
+}
+
+.form-checkbox {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	margin-bottom: 1.25rem;
+}
+
+.form-checkbox input[type="checkbox"] {
+	width: 1rem;
+	height: 1rem;
+	margin: 0;
+	cursor: pointer;
+	accent-color: #3b82f6;
+}
+
+.form-checkbox label {
+	margin: 0;
+	font-weight: 400;
+	cursor: pointer;
+	font-size: 0.95rem;
+}
+</style>
+
+{if isset($active_plugins.reviews)}
+<div class="product-reviews">
+	<h2>Customer Reviews</h2>
+
+	<div class="reviews-stats" id="reviews-stats">
+		<div class="review-rating-summary">
+			<div class="avg-rating" id="avg-rating">—</div>
+			<div class="rating-count" id="review-count">(0 reviews)</div>
+		</div>
+	</div>
+
+	<div class="reviews-list" id="reviews-list">
+		<div class="reviews-loading">Loading reviews...</div>
+	</div>
+
+	<div class="review-form-section">
+		<h3>Write a Review</h3>
+		{if $can_review}
+		<form id="review-form" class="review-form">
+			<input type="hidden" name="csrf_token" value="{$csrf_token|escape}">
+			{if !isset($smarty.session.customer_id)}
+			<div class="form-group">
+				<label for="review-name">Name *</label>
+				<input type="text" id="review-name" name="name" required maxlength="128">
+			</div>
+			<div class="form-group">
+				<label for="review-email">Email *</label>
+				<input type="email" id="review-email" name="email" required maxlength="128">
+			</div>
+			<div class="form-group form-checkbox">
+				<input type="checkbox" id="review-show-info" name="show_info" checked>
+				<label for="review-show-info">Show my information on my review (first name and state)</label>
+			</div>
+			{/if}
+
+			<fieldset class="form-group" style="border:0;padding:0;margin:0">
+				<legend>Rating *</legend>
+				<div class="rating-input" id="rating-input">
+					{for $i = 1 to 5}
+					<label class="star-label">
+						<input type="radio" name="rating" value="{$i}" required>
+						<span class="star" data-rating="{$i}">★</span>
+						<span class="sr-only">{$i} star{if $i>1}s{/if}</span>
+					</label>
+					{/for}
+				</div>
+			</fieldset>
+
+			<div class="form-group">
+				<label for="review-title">Title (optional)</label>
+				<input type="text" id="review-title" name="title" maxlength="255">
+			</div>
+
+			<div class="form-group">
+				<label for="review-body">Review *</label>
+				<textarea id="review-body" name="body" required minlength="10" maxlength="5000" rows="4"></textarea>
+			</div>
+
+			<div id="review-msg" style="margin-top:.5rem;font-size:.88rem" aria-live="polite"></div>
+			<button type="submit" class="btn btn-primary" id="btn-submit-review">Submit Review</button>
+		</form>
+		{else}
+		<div style="padding: 1.5rem; background-color: #fef3c7; border: 1px solid #fcd34d; border-radius: 0.375rem; color: #92400e;">
+			You must be logged in and have purchased this product to review it.
+		</div>
+		{/if}
+	</div>
+</div>
+{/if}{* reviews plugin *}
+
+{if $content_after}<div class="page-content">{$content_after nofilter}</div>{/if}
+{/block}
+
+{block name="scripts"}
+<script>
+var _ncProd = {
+	useOptionImages: {if $use_option_images}true{else}false{/if},
+	optImagesPOId:   {if $option_images_po_id}{$option_images_po_id}{else}0{/if},
+	basePrice:       {$product.price+0},
+	currency:        '{$site_currency|escape:"javascript"}',
+	productId:       {$product.id},
+	canReview:       {if isset($active_plugins.reviews) && $can_review}true{else}false{/if}
+};
+</script>
+<script src="{$url_root}js/product.js?v={$nowstr}"></script>
+{/block}

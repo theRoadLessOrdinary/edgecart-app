@@ -1,0 +1,85 @@
+{extends file="../layout.html"}
+
+{block name="title"}Messages — {$site_name|escape}{/block}
+
+{block name="head"}
+<link rel="stylesheet" href="{$url_admin_real}css/messages.css">
+{/block}
+
+{block name="content"}
+
+<div class="nc-toolbar">
+	<h1>Messages</h1>
+</div>
+
+<div class="nc-table-wrapper">
+	<table class="nc-table" id="messages-table">
+		<thead>
+			<tr>
+				<th>Date</th>
+				<th>Form</th>
+				<th>Summary</th>
+				<th class="col-status">Read</th>
+				<th class="delete-col"></th>
+				<th class="checkbox-col"><input type="checkbox" id="chk-all" aria-label="Select all"></th>
+			</tr>
+		</thead>
+		<tbody id="messages-tbody">
+			<tr class="nc-empty" id="empty-row"><td colspan="6"><div class="nc-empty">No messages yet.</div></td></tr>
+		</tbody>
+	</table>
+</div>
+
+<div class="nc-toolbar" style="border-top:1px solid #e5e7eb;padding-top:1rem;margin-top:2rem">
+	<button class="btn btn-danger" id="btn-bulk-delete" style="display:none">Delete Selected</button>
+</div>
+
+{* ── Drawer ── *}
+<div id="drawer-overlay"></div>
+<me-drawer id="msg-drawer">
+	<drawer-head>
+		<h2 id="drawer-title">Message</h2>
+		<button class="drawer-close" id="drawer-close">&times;</button>
+	</drawer-head>
+	<drawer-content id="msg-drawer-content">
+		<div id="message-detail" style="display:none">
+			<div style="margin-bottom:1.5rem">
+				<div class="msg-meta">
+					<span id="msg-form" class="msg-form-badge">Form</span>
+					<span id="msg-date" class="msg-date"></span>
+					<span id="msg-ip" class="msg-ip" title="Sender IP address"></span>
+				</div>
+			</div>
+
+			<div id="message-fields" class="msg-fields">
+				{* populated by JS *}
+			</div>
+		</div>
+
+		<div id="reply-form" style="display:none;margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid #e5e7eb">
+			<div class="df">
+				<label for="reply-text">Your Reply</label>
+				<textarea id="reply-text" rows="5" placeholder="Type your reply message here..." maxlength="5000"></textarea>
+			</div>
+		</div>
+	</drawer-content>
+	<drawer-foot>
+		<button class="btn btn-secondary" id="btn-drawer-cancel">Close</button>
+		<button class="btn btn-secondary" id="btn-toggle-reply" style="display:none">Reply</button>
+		<button class="btn btn-primary" id="btn-send-reply" style="display:none">Send Reply</button>
+		<delete-in-place caption="🗑" confirm="Delete?" data-id="0" id="btn-delete-msg" style="margin-left:auto"></delete-in-place>
+	</drawer-foot>
+</me-drawer>
+
+{/block}
+
+{block name="scripts"}
+<script>
+Object.assign(NC, {
+	adminUrl: '{$url_admin}',
+	rootUrl:  '{$url_root}',
+	ajaxUrl:  '{$url_admin_real}?route=messages/ajax'
+});
+</script>
+<script src="{$url_admin_real}js/messages.js?v={$page_js_v}"></script>
+{/block}

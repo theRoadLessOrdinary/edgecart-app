@@ -1,0 +1,111 @@
+{extends file="layout.html"}
+
+{block name="title"}Login — {$site_name}{/block}
+
+{block name="content"}
+<div class="page-head">
+	<h1>Log In to Your Account</h1>
+</div>
+
+<div class="page-content" style="max-width:500px;margin:2rem auto">
+	{if $error}
+	<div class="login-error">{$error|escape}</div>
+	{/if}
+
+	{if $login_providers}
+	{foreach $login_providers as $provider_html}
+	<div style="margin-bottom:1rem">{$provider_html nofilter}</div>
+	{/foreach}
+	<div style="text-align:center;margin-bottom:1.5rem;color:var(--nc-text-dim)">or use email</div>
+	{/if}
+
+	<form id="login-form" method="post" action="{$url_root}?route=login" style="display:flex;flex-direction:column;gap:1.25rem">
+		<input type="hidden" name="csrf_token" value="{$csrf_token|escape}">
+
+		<div>
+			<label for="email" style="display:block;font-weight:600;margin-bottom:.5rem;color:var(--nc-text)">Email Address</label>
+			<input type="email" id="email" name="email" required autocomplete="email" autofocus
+			       style="width:100%;padding:var(--nc-input-padding);border:1px solid var(--nc-border);border-radius:var(--nc-radius);font-size:1rem;color:var(--nc-text);background:var(--nc-bg)">
+		</div>
+
+		<div>
+			<label for="password" style="display:block;font-weight:600;margin-bottom:.5rem;color:var(--nc-text)">Password</label>
+			<div style="position:relative">
+				<input type="password" id="password" name="password" required autocomplete="current-password"
+				       style="width:100%;padding:var(--nc-input-padding);border:1px solid var(--nc-border);border-radius:var(--nc-radius);font-size:1rem;color:var(--nc-text);background:var(--nc-bg)">
+				<button type="button" id="pw-toggle" aria-label="Show password"
+				        style="position:absolute;right:.6rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--nc-text-dim);font-size:.85rem;padding:.2rem">Show</button>
+			</div>
+		</div>
+
+		<button type="submit" id="login-btn"
+		        style="padding:.75rem 1.5rem;background:var(--nc-primary);color:var(--nc-primary-text);border:none;border-radius:var(--nc-radius);font-size:1rem;font-weight:600;cursor:pointer;margin-top:.5rem">
+			Log In
+		</button>
+	</form>
+
+	<div style="text-align:center;margin-top:1.5rem">
+		<a href="{$url_root}?route=forgot-password" style="color:var(--nc-primary);text-decoration:none">Forgot your password?</a>
+	</div>
+
+	<div style="text-align:center;margin-top:.75rem">
+		Don't have an account? <a href="{$url_root}?route=register" style="color:var(--nc-primary);text-decoration:none">Create one</a>
+	</div>
+</div>
+
+<style>
+.login-error {
+	background: color-mix(in srgb, var(--nc-danger) 12%, #fff);
+	color: var(--nc-danger);
+	border-left: 4px solid var(--nc-danger);
+	border-radius: var(--nc-radius);
+	padding: .75rem 1rem;
+	margin-bottom: 1.5rem;
+}
+</style>
+
+<script>
+document.getElementById('pw-toggle').addEventListener('click', function() {
+	const pw = document.getElementById('password');
+	const show = pw.type === 'password';
+	pw.type = show ? 'text' : 'password';
+	this.textContent = show ? 'Hide' : 'Show';
+});
+
+document.getElementById('login-form').addEventListener('submit', async function(e) {
+	e.preventDefault();
+	const form = this;
+	const btn  = document.getElementById('login-btn');
+	let errorDiv = document.querySelector('.login-error');
+
+	btn.disabled    = true;
+	btn.textContent = 'Logging in…';
+
+	try {
+		const res = await fetch(form.action, {
+			method:  'POST',
+			body:    new FormData(form),
+			headers: { 'X-Requested-With': 'XMLHttpRequest' }
+		}).then(r => r.json());
+
+		if (res.ok) {
+			window.location.href = res.redirect;
+		} else {
+			if (!errorDiv) {
+				errorDiv = document.createElement('div');
+				errorDiv.className = 'login-error';
+				form.parentNode.insertBefore(errorDiv, form);
+			}
+			errorDiv.textContent = res.message || 'Login failed. Please try again.';
+			btn.disabled    = false;
+			btn.textContent = 'Log In';
+			document.getElementById('password').focus();
+		}
+	} catch (err) {
+		if (errorDiv) errorDiv.textContent = 'An error occurred. Please try again.';
+		btn.disabled    = false;
+		btn.textContent = 'Log In';
+	}
+});
+</script>
+{/block}

@@ -1,0 +1,91 @@
+/* ── Messages admin ── */
+
+.msg-unread td {
+	font-weight: 600;
+}
+
+.summary-col {
+	max-width: 300px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.col-status {
+	text-align: center;
+	min-width: 40px;
+}
+
+/* Drawer styling */
+.msg-meta {
+	display: flex;
+	gap: 1rem;
+	flex-wrap: wrap;
+	margin-bottom: 1rem;
+}
+
+.msg-form-badge {
+	display: inline-block;
+	background: #3b82f6;
+	color: white;
+	padding: .25rem .6rem;
+	border-radius: 4px;
+	font-size: .75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.msg-date {
+	display: inline-block;
+	font-size: .85rem;
+	color: var(--nc-text-dim);
+}
+
+.msg-ip {
+	display: inline-block;
+	font-size: .85rem;
+	color: var(--nc-text-dim);
+	font-family: monospace;
+	padding: 0 .4rem;
+	background: #f3f4f6;
+	border-radius: 3px;
+}
+
+.msg-fields {
+	max-width: 100%;
+}
+
+.msg-field {
+	display: flex;
+	flex-direction: column;
+	gap: .3rem;
+	padding: .75rem 0;
+	border-bottom: 1px solid var(--nc-border-light, var(--nc-border));
+}
+
+.msg-field-label {
+	font-weight: 600;
+	font-size: .85rem;
+	color: var(--nc-text-dim);
+	text-transform: capitalize;
+}
+
+.msg-field-value {
+	flex: 1;
+	word-break: break-word;
+	padding: .3rem 0;
+	line-height: 1.4;
+}
+
+/* Old styling (kept for compatibility) */
+.message-detail-head {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	margin-bottom: 1.25rem;
+	padding-bottom: .75rem;
+	border-bottom: 1px solid var(--nc-border);
+	font-weight: 700;
+	font-size: 1rem;
+}
+.message-detail-body { max-width: 600px; }

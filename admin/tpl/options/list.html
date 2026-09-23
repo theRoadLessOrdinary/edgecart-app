@@ -1,0 +1,106 @@
+{extends file="../layout.html"}
+
+{block name="head"}
+<link rel="stylesheet" href="{$url_admin_real}css/options.css?{$nowstr}">
+{/block}
+
+{block name="content"}
+
+<div class="nc-toolbar">
+	<button class="btn btn-primary" id="btn-add-option" aria-label="Add option">+ Add Option</button>
+</div>
+
+<div id="options-loading">
+	<p class="nc-empty"><span class="nc-spinner"></span></p>
+</div>
+
+<div id="options-empty" style="display:none">
+	<p class="nc-empty">No options yet.</p>
+	<button class="btn btn-primary" id="btn-add-first">Add your first option</button>
+</div>
+
+<div id="options-list">
+	<!-- option cards rendered by JS -->
+</div>
+
+{* ── Option drawer ── *}
+<div id="drawer-overlay"></div>
+
+<me-drawer id="opt-drawer">
+	<drawer-head>
+		<h2 id="drawer-title">Add Option</h2>
+		<button class="drawer-close" id="drawer-close" aria-label="Close">&times;</button>
+	</drawer-head>
+	<drawer-content id="opt-drawer-content">
+		<input type="hidden" id="opt-id" value="">
+
+		<div class="df">
+			<label for="opt-name">Option Name <span class="field-required" aria-hidden="true">*</span></label>
+			<input type="text" id="opt-name" maxlength="255" required
+			       aria-required="true" aria-label="Option name">
+		</div>
+
+		<div class="df">
+			<label for="opt-type">Type</label>
+			<select id="opt-type" aria-label="Option type">
+				<optgroup label="Choose">
+					<option value="select">Select/Dropdown</option>
+					<option value="radio">Radio</option>
+					<option value="checkbox">Checkbox</option>
+					<option value="toggle">Toggle Switch</option>
+				</optgroup>
+				<optgroup label="Input">
+					<option value="text">Text</option>
+					<option value="textarea">Textarea</option>
+				</optgroup>
+				<optgroup label="File">
+					<option value="file">File</option>
+				</optgroup>
+				<optgroup label="Date">
+					<option value="date">Date</option>
+					<option value="time">Time</option>
+					<option value="datetime">Date &amp; Time</option>
+				</optgroup>
+			</select>
+		</div>
+
+		<div class="df" id="opt-placeholder-wrap">
+			<label for="opt-placeholder">Placeholder</label>
+			<input type="text" id="opt-placeholder" maxlength="255"
+			       placeholder="Hint shown to customer"
+			       aria-label="Placeholder text">
+		</div>
+
+		{* Values section — shown only for choice types *}
+		<div id="opt-values-section">
+			<div class="opt-values-head">
+				<span class="df-section">Option Values</span>
+				<button type="button" class="btn btn-primary btn-sm" id="btn-add-value"
+				        aria-label="Add option value">+ Add Value</button>
+			</div>
+
+			<div id="opt-values-list" role="list" aria-label="Option values">
+				{* rendered by JS *}
+			</div>
+		</div>
+
+	</drawer-content>
+	<drawer-foot>
+		<save-button class="btn btn-primary" id="btn-drawer-save" data-label="Save Option">Save Option</save-button>
+		<button class="btn btn-secondary" id="btn-drawer-cancel">Cancel</button>
+	</drawer-foot>
+</me-drawer>
+
+{/block}
+
+{block name="scripts"}
+<script>
+Object.assign(NC, {
+	adminUrl:    '{$url_admin}',
+	rootUrl:     '{$url_root}',
+	adminReal:   '{$url_admin_real}',
+	weightUnit:  '{$weight_unit|default:"lbs"}'
+});
+</script>
+<script src="{$url_admin_real}js/options.js?{$nowstr}"></script>
+{/block}

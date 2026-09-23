@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Order {$order.id} — {$site_name|escape}</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+	font-size: .93rem;
+	color: #111;
+	background: #fff;
+	padding: 2.5rem 2rem;
+	max-width: 680px;
+	margin: 0 auto;
+}
+.receipt-head {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	margin-bottom: 2rem;
+	padding-bottom: 1.25rem;
+	border-bottom: 2px solid #111;
+}
+.receipt-head h1 { font-size: 1.4rem; font-weight: 700; }
+.receipt-head .order-num { font-size: .85rem; color: #555; margin-top: .2rem; }
+.receipt-site { text-align: right; font-size: .88rem; color: #333; }
+.receipt-site strong { font-size: 1rem; display: block; }
+
+.section-label {
+	font-size: .72rem;
+	text-transform: uppercase;
+	letter-spacing: .07em;
+	color: #666;
+	margin-bottom: .3rem;
+	margin-top: 1.25rem;
+}
+.receipt-meta {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 1.25rem;
+	margin-bottom: 1.5rem;
+}
+.receipt-parties {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1.25rem;
+	margin-bottom: 1.75rem;
+}
+.receipt-parties div { line-height: 1.6; }
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-bottom: 1rem;
+}
+thead th {
+	font-size: .75rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: .05em;
+	color: #555;
+	padding: .5rem .6rem;
+	border-bottom: 2px solid #ddd;
+	text-align: left;
+}
+thead th.r { text-align: right; }
+thead th.c { text-align: center; }
+tbody td {
+	padding: .55rem .6rem;
+	border-bottom: 1px solid #eee;
+	vertical-align: top;
+}
+tbody td.r { text-align: right; }
+tbody td.c { text-align: center; }
+tfoot td {
+	padding: .4rem .6rem;
+	font-size: .88rem;
+}
+tfoot tr.total td { font-weight: 700; font-size: 1rem; border-top: 2px solid #111; padding-top: .6rem; }
+tfoot td.r { text-align: right; }
+
+.item-opts { font-size: .8rem; color: #666; margin-top: .15rem; }
+
+.receipt-foot {
+	margin-top: 2rem;
+	padding-top: 1rem;
+	border-top: 1px solid #ddd;
+	font-size: .8rem;
+	color: #888;
+	text-align: center;
+}
+
+@media print {
+	body { padding: 1rem; }
+	.no-print { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="receipt-head">
+	<div>
+		<h1>Order Receipt</h1>
+		<div class="order-num">Order #{$order.id}</div>
+	</div>
+	<div class="receipt-site">
+		<strong>{$site_name|escape}</strong>
+	</div>
+</div>
+
+<div class="receipt-meta">
+	<div>
+		<div class="section-label">Date</div>
+		{$order.date_fmt|escape}
+	</div>
+	<div>
+		<div class="section-label">Status</div>
+		{$order.status|escape}
+	</div>
+	<div>
+		<div class="section-label">Payment Ref</div>
+		{if $order.payment_ref}{$order.payment_ref|escape}{else}—{/if}
+	</div>
+</div>
+
+<div class="receipt-parties">
+	<div>
+		<div class="section-label">Customer</div>
+		{if $order.customer_name|trim}{$order.customer_name|escape}<br>{/if}
+		{if $order.customer_email}{$order.customer_email|escape}<br>{/if}
+		{if $order.ship_phone}{$order.ship_phone|escape}{/if}
+	</div>
+	<div>
+		<div class="section-label">Ship To</div>
+		{assign var="addr_parts" value=[]}{* build address lines *}
+		{if $order.ship_firstname|trim || $order.ship_lastname|trim}
+			{$order.ship_firstname|escape} {$order.ship_lastname|escape}<br>
+		{/if}
+		{if $order.ship_address1}{$order.ship_address1|escape}<br>{/if}
+		{if $order.ship_address2}{$order.ship_address2|escape}<br>{/if}
+		{if $order.ship_city || $order.ship_state || $order.ship_zip}
+			{$order.ship_city|escape}{if $order.ship_city && $order.ship_state}, {/if}{$order.ship_state|escape} {$order.ship_zip|escape}<br>
+		{/if}
+		{if $order.ship_country}{$order.ship_country|escape}{/if}
+	</div>
+</div>
+
+{if $order.ship_method}
+<div style="margin-bottom:1.5rem">
+	<div class="section-label">Ship Method</div>
+	{$order.ship_method|escape}
+</div>
+{/if}
+
+<div class="section-label">Items</div>
+<table>
+	<thead>
+		<tr>
+			<th>Item</th>
+			<th class="c">Qty</th>
+			<th class="r">Price</th>
+			<th class="r">Line</th>
+		</tr>
+	</thead>
+	<tbody>
+		{foreach $items as $item}
+		<tr>
+			<td>
+				{$item.name|escape}
+				{if $item.options_summary}<div class="item-opts">{$item.options_summary|escape}</div>{/if}
+			</td>
+			<td class="c">{$item.qty|escape}</td>
+			<td class="r">${$item.price|escape:'html'|number_format:2}</td>
+			<td class="r">${($item.price * $item.qty)|number_format:2}</td>
+		</tr>
+		{/foreach}
+	</tbody>
+	<tfoot>
+		<tr>
+			<td colspan="3" class="r" style="color:#555">Subtotal</td>
+			<td class="r">${$order.subtotal|default:0|number_format:2}</td>
+		</tr>
+		{if $order.shipping > 0}
+		<tr>
+			<td colspan="3" class="r" style="color:#555">Shipping</td>
+			<td class="r">${$order.shipping|number_format:2}</td>
+		</tr>
+		{/if}
+		{if $order.tax > 0}
+		<tr>
+			<td colspan="3" class="r" style="color:#555">Tax</td>
+			<td class="r">${$order.tax|number_format:2}</td>
+		</tr>
+		{/if}
+		<tr class="total">
+			<td colspan="3" class="r">Total</td>
+			<td class="r">${$order.total|number_format:2}</td>
+		</tr>
+	</tfoot>
+</table>
+
+<div class="receipt-foot">
+	Thank you for your order.
+</div>
+
+<div class="no-print" style="text-align:center;margin-top:2rem">
+	<button onclick="window.print()" style="padding:.5rem 1.5rem;font-size:.9rem;cursor:pointer;border:1px solid #ccc;border-radius:.375rem;background:#f9fafb">
+		Print / Save as PDF
+	</button>
+</div>
+
+</body>
+</html>

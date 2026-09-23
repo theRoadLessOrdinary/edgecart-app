@@ -1,0 +1,172 @@
+{extends file="../layout.html"}
+
+{block name="head"}
+<link rel="stylesheet" href="{$url_admin_real}css/pages.css">
+{/block}
+
+{block name="content"}
+<div class="nc-toolbar">
+{if $block_editor_enabled}
+	<button class="btn btn-primary" id="btn-add-page">+ Add Page</button>
+{else}
+	<button class="btn btn-primary" id="btn-add-page" disabled style="display:none">+ Add Page</button>
+	<span class="ec-limit-hint">Page Block Editor required to add pages. <a href="{$ec_upgrade_url|default:'#'}" target="_blank" rel="noopener">Upgrade</a>.</span>
+{/if}
+</div>
+
+<div id="pages-empty" style="display:none">
+	<p class="nc-empty">No pages yet.</p>
+{if $block_editor_enabled}
+	<button class="btn btn-primary" id="btn-add-first">Create your first page</button>
+{/if}
+</div>
+
+<table class="nc-table" id="pages-table" style="display:none">
+	<thead>
+		<tr>
+			<th style="width:28px"></th>
+			<th>Title</th>
+			<th>Slug</th>
+			<th>Status</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody id="pages-tbody"></tbody>
+</table>
+
+{* ── Page drawer ── *}
+<div id="drawer-overlay"></div>
+<me-drawer id="page-drawer">
+	<drawer-head>
+		<h2 id="drawer-title">Edit Page</h2>
+		<button class="drawer-close" id="drawer-close" aria-label="Close">&times;</button>
+	</drawer-head>
+	<drawer-content id="page-drawer-content">
+		<input type="hidden" id="page-id">
+
+		<div class="drawer-tabs" role="tablist" aria-label="Page editor sections">
+			<button class="drawer-tab active" data-panel="panel-info"
+			        role="tab" aria-selected="true" aria-controls="panel-info">Settings</button>
+			<button class="drawer-tab" data-panel="panel-blocks"
+			        role="tab" aria-selected="false" aria-controls="panel-blocks">Content</button>
+			<button class="drawer-tab" data-panel="panel-seo"
+			        role="tab" aria-selected="false" aria-controls="panel-seo">SEO</button>
+		</div>
+
+		{* Settings tab *}
+		<div class="drawer-tab-panel active" id="panel-info" role="tabpanel">
+			<div class="df">
+				<label for="page-title">Title <span class="field-required" aria-hidden="true">*</span></label>
+				<input type="text" id="page-title" maxlength="255" required aria-required="true">
+			</div>
+			<div class="df">
+				<label for="page-slug">Slug</label>
+				<input type="text" id="page-slug" maxlength="255"
+				       placeholder="auto-generated from title"
+				       aria-describedby="slug-hint">
+				<span class="hint" id="slug-hint">Used in the URL: /page/your-slug</span>
+			</div>
+			<div class="df">
+				<label for="page-status">Status</label>
+				<roller-select id="page-status" name="page-status" value="1" aria-label="Page status">
+					<rs-item value="0">Draft</rs-item>
+					<rs-item value="1">Public</rs-item>
+					<rs-item value="2">With Link</rs-item>
+				</roller-select>
+				<ul class="hint-list">
+					<li><strong>Draft</strong> — visible to admins only</li>
+					<li><strong>Public</strong> — visible to everyone</li>
+					<li><strong>With Link</strong> — not listed, but accessible via direct URL</li>
+				</ul>
+			</div>
+		</div>
+
+		{* Content tab *}
+		<div class="drawer-tab-panel" id="panel-blocks" role="tabpanel">
+{if $block_editor_enabled}
+			<div class="nc-toolbar" style="margin-bottom:.75rem">
+				<select id="block-type-select" aria-label="Block type" style="flex:1">
+					<option value="">— Choose block type —</option>
+					<optgroup label="Content">
+						<option value="rich_text">Rich Text</option>
+						<option value="html">Custom HTML</option>
+					</optgroup>
+					<optgroup label="Products">
+						<option value="featured_products">Featured Products</option>
+						<option value="best_sellers">Best Sellers</option>
+						<option value="best_sellers_category">Best Sellers by Category</option>
+						<option value="new_arrivals">New Arrivals</option>
+						<option value="related_products">Related Products</option>
+					</optgroup>
+					{if $slideshows_enabled}
+					<optgroup label="Media">
+						<option value="slideshow">Slideshow</option>
+					</optgroup>
+					{/if}
+					<optgroup label="Interactive">
+						<option value="contact_form">Contact Form</option>
+						<option value="sitemap">Site Map</option>
+					</optgroup>
+				</select>
+				<button class="btn btn-primary btn-sm" id="btn-add-block"
+				        aria-label="Add selected block type">+ Add Block</button>
+			</div>
+			<div id="blocks-list" role="list" aria-label="Content blocks"></div>
+{else}
+			<div class="df" id="page-content-before-wrap" style="display:none">
+				<label for="page-content-before">Content Before</label>
+				<div class="hint">Appears above the main page content</div>
+				<textarea id="page-content-before" rows="6" aria-label="Content before main content"></textarea>
+			</div>
+			<div class="df" id="page-content-after-wrap" style="display:none">
+				<label for="page-content-after">Content After</label>
+				<div class="hint">Appears below the main page content</div>
+				<textarea id="page-content-after" rows="6" aria-label="Content after main content"></textarea>
+			</div>
+			<div class="df">
+				<label for="page-content">Main Content</label>
+				<textarea id="page-content" rows="12" aria-label="Page main content"></textarea>
+			</div>
+{/if}
+		</div>
+
+		{* SEO tab *}
+		<div class="drawer-tab-panel" id="panel-seo" role="tabpanel">
+			<div class="df">
+				<label for="page-seo-title">SEO Title</label>
+				<input type="text" id="page-seo-title" maxlength="300"
+				       aria-describedby="seo-title-hint">
+				<span class="hint" id="seo-title-hint">Defaults to page title if blank.</span>
+			</div>
+			<div class="df">
+				<label for="page-seo-keywords">Meta Keywords</label>
+				<input type="text" id="page-seo-keywords" maxlength="500"
+				       placeholder="comma, separated, keywords">
+			</div>
+			<div class="df">
+				<label for="page-seo-desc">Meta Description</label>
+				<textarea id="page-seo-desc" rows="3" maxlength="500"></textarea>
+			</div>
+		</div>
+
+	</drawer-content>
+	<drawer-foot>
+		<save-button class="btn btn-primary" id="btn-drawer-save" data-label="Save Page">Save Page</save-button>
+		<button class="btn btn-secondary" id="btn-preview-page" style="display:none"
+		        aria-label="Preview this page in a new tab">Preview</button>
+		<button class="btn btn-secondary" id="btn-drawer-cancel">Cancel</button>
+	</drawer-foot>
+</me-drawer>
+{/block}
+
+{block name="scripts"}
+<script>
+Object.assign(NC, {
+	adminUrl:    '{$url_admin}',
+	rootUrl:     '{$url_root}',
+	adminReal:   '{$url_admin_real}',
+	blockEditor: {if $block_editor_enabled}true{else}false{/if}
+});
+</script>
+<script src="{$url_admin_real}js/pages.js?v={$nowstr}"></script>
+{/block}

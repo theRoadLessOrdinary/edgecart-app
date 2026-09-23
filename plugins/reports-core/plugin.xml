@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+    <code>reports-core</code>
+    <name>Reports — Core</name>
+    <version>1.0</version>
+    <author>EdgeCart</author>
+    <description>Sales and operations reports: Sales by Product, Sales by Category, Sales by State, Order Status Pipeline.</description>
+    <type>reporting</type>
+    <icon>📊</icon>
+</plugin>
