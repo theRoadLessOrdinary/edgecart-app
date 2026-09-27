@@ -67,6 +67,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && post('action') === 'place_order') {
 		echo json_encode(['ok' => false, 'message' => 'Please fill in all required fields.']);
 		exit;
 	}
+	// The email ends up in the order, the customer record and the admin, so
+	// it must be a real address (this is also what blocks HTML being saved as one).
+	if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+		echo json_encode(['ok' => false, 'message' => 'Please enter a valid email address.']);
+		exit;
+	}
 
 	// Plugin validation — listeners append to $ctx['errors']; post data in $ctx['post']
 	$_validate = ['errors' => [], 'post' => $_POST];

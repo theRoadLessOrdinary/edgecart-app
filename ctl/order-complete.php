@@ -97,6 +97,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && post('action') === 'create_account'
 		exit;
 	}
 
+	// Orders placed before checkout validated the email could hold anything.
+	if (!filter_var($order['ship_email'], FILTER_VALIDATE_EMAIL)) {
+		echo json_encode(['ok' => false, 'message' => 'This order does not have a valid email address.']);
+		exit;
+	}
+
 	$existing = DB::row("SELECT id FROM `{$p}customers` WHERE email = ?", [$order['ship_email']]);
 	if ($existing) {
 		echo json_encode(['ok' => false, 'message' => 'An account already exists for this email.']);

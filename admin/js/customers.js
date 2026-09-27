@@ -69,7 +69,7 @@
 					     + (name || '<em style="opacity:.5">No name</em>') + '</button>';
 				}
 			},
-			{ data: 'email' },
+			{ data: 'email', render: function (d, type) { return type === 'display' ? esc(d) : d; } },
 			{
 				data: 'status', orderable: false, searchable: false,
 				render: function (val, type, row) {
