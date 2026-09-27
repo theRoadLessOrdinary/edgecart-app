@@ -170,6 +170,13 @@ function applyModifier(base, adj, prefix, mod) {
 	else return { base: base, adj: adj + mod };
 }
 
+// Price-only wrapper: an '=' value with no price (blank or 0) means "no
+// override", matching Cart::get() on the server, instead of showing $0.
+function applyPriceModifier(base, adj, prefix, mod) {
+	if (prefix === '=' && !(parseFloat(mod) > 0)) return { base: base, adj: adj };
+	return applyModifier(base, adj, prefix, mod);
+}
+
 function getDisplayPrice() {
 	var base = _ncProd.basePrice;
 	var adj  = 0;
@@ -178,20 +185,20 @@ function getDisplayPrice() {
 		if (sel && sel.value) {
 			var opt = sel.querySelector('option[value="' + CSS.escape(sel.value) + '"]');
 			if (opt && opt.dataset.priceMod) {
-				var result = applyModifier(base, adj, opt.dataset.pricePrefix, opt.dataset.priceMod);
+				var result = applyPriceModifier(base, adj, opt.dataset.pricePrefix, opt.dataset.priceMod);
 				base = result.base;
 				adj = result.adj;
 			}
 		}
 		var radio = optDiv.querySelector('input[type=radio][data-po-id]:checked');
 		if (radio && radio.dataset.priceMod) {
-			var result = applyModifier(base, adj, radio.dataset.pricePrefix, radio.dataset.priceMod);
+			var result = applyPriceModifier(base, adj, radio.dataset.pricePrefix, radio.dataset.priceMod);
 			base = result.base;
 			adj = result.adj;
 		}
 		optDiv.querySelectorAll('input[type=checkbox][data-po-id]:checked').forEach(function (cb) {
 			if (cb.dataset.priceMod) {
-				var result = applyModifier(base, adj, cb.dataset.pricePrefix, cb.dataset.priceMod);
+				var result = applyPriceModifier(base, adj, cb.dataset.pricePrefix, cb.dataset.priceMod);
 				base = result.base;
 				adj = result.adj;
 			}

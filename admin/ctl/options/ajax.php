@@ -111,7 +111,7 @@ if ($action === 'clone') {
 	foreach ($values as $v) {
 		DB::insert(
 			"INSERT INTO `{$p}option_values` (option_id, text, image, price_prefix, price_modifier, weight_modifier, display_order) VALUES (?,?,?,?,?,?,?)",
-			[$new_id, $v['text'], $v['image'], $v['price_prefix'] ?? '=', $v['price_modifier'] ?? null, $v['weight_modifier'] ?? null, $v['display_order']]
+			[$new_id, $v['text'], $v['image'], $v['price_prefix'] ?? '+', $v['price_modifier'] ?? null, $v['weight_modifier'] ?? null, $v['display_order']]
 		);
 	}
 	$new_row = DB::row("SELECT * FROM `{$p}options` WHERE id = ?", [$new_id]);
@@ -137,12 +137,12 @@ if ($action === 'save_value') {
 	$option_id      = (int)post('option_id');
 	$text           = trim(post('text'));
 	$image          = trim(post('image'));
-	$price_prefix   = trim(post('price_prefix', '='));
+	$price_prefix   = trim(post('price_prefix', '+'));
 	$price_modifier = post('price_modifier') !== '' ? (float)post('price_modifier') : null;
 	$weight_modifier = post('weight_modifier') !== '' ? (float)post('weight_modifier') : null;
 
 	if (!$text) ajax_out(false, 'Value text is required.');
-	if (!in_array($price_prefix, ['+', '-', '='])) $price_prefix = '=';
+	if (!in_array($price_prefix, ['+', '-', '='])) $price_prefix = '+';
 
 	if ($id) {
 		DB::exec(

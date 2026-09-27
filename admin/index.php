@@ -1,6 +1,6 @@
 <?php
 /**
- * EdgeCart admin — front controller
+ * EdgeCart admin - front controller
  */
 define('IS_ADMIN', true);
 
@@ -9,7 +9,7 @@ require __DIR__ . '/../cfg/config.php';
 
 // Reject any request that didn't come in through the obfuscated admin path.
 // This file is also reachable directly at the real /admin/ URL (it's a real
-// directory with a DirectoryIndex), which defeats the point of ADMIN_PATH —
+// directory with a DirectoryIndex), which defeats the point of ADMIN_PATH -
 // close that off rather than letting it fall through to the normal
 // not-logged-in redirect, which would confirm the real path back to a scanner.
 if (php_sapi_name() !== 'cli') {
@@ -67,13 +67,14 @@ $_nc_favicon_svg_url = $_nc_settings['favicon_svg_url'] ?? '';
 // ── Boot plugins ───────────────────────────────────────────────────────────────
 // No cfg/license.php at all means this isn't a fulfillment-built customer
 // install (e.g. EdgeCart's own source tree, or store.edgecart.io itself,
-// neither of which are domain-licensed) — nothing to enforce. A license file
+// neither of which are domain-licensed) - nothing to enforce. A license file
 // that IS present but doesn't match this domain is enforced below.
 if (file_exists(DIR_ROOT . 'cfg/license.php')) {
     require_once DIR_ROOT . 'cfg/license.php';
     License::enforceOrBlock();
 }
 PluginLoader::boot();
+require_once DIR_LIB . 'shipping.php';
 Hook::fire('app.boot');
 Hook::fire('admin.bootstrap.before');
 
@@ -85,7 +86,7 @@ $smarty->registerClass('Smarty', 'Smarty');
 // Vendor debug.tpl uses {Smarty::SMARTY_VERSION}, which triggers a PHP 8
 // "unregistered static method" deprecation warning on every debug-console
 // render regardless of registerClass() above (that call doesn't cover
-// constant access) — override with a local copy that hardcodes the version
+// constant access) - override with a local copy that hardcodes the version
 // string instead.
 $smarty->debug_tpl = 'file:' . DIR_LIB . 'smarty-overrides/debug.tpl';
 register_smarty_modifiers($smarty);
@@ -119,7 +120,7 @@ $smarty->setCacheDir(DIR_CACHE . 'smarty/admin/');
 
 // Set error handling from settings or fall back to constants. Display Errors
 // and the Smarty Debug Console (above) put raw stack traces/template internals
-// straight into the page — gate both behind an actual logged-in admin session
+// straight into the page - gate both behind an actual logged-in admin session
 // (called directly here, not cached in a shared var, since this runs after
 // the debugging line above already made its own is_admin() call) so a toggle
 // left on in Settings never leaks anything to an anonymous visitor hitting
@@ -132,7 +133,7 @@ set_exception_handler('cc_exception_handler');
 
 // Set Smarty compilation/caching from settings or fall back to constants
 $smarty->force_compile = !empty($_nc_settings['smarty_force_compile']) ? true : SMARTY_FORCE_COMPILE;
-$smarty->caching       = Smarty::CACHING_OFF; // Admin pages are never cached — authenticated + SPA partials would poison cache
+$smarty->caching       = Smarty::CACHING_OFF; // Admin pages are never cached - authenticated + SPA partials would poison cache
 
 $smarty->assign('site_name',        $_nc_site_name);
 $smarty->assign('site_favicon',     $_nc_site_favicon);
@@ -178,7 +179,7 @@ $smarty->assign('plugin_page_scripts',    Hook::collect('admin.page.scripts', ['
 // don't require auth
 if (!in_array($route, ['login', 'forgot-password', 'reset-password'], true)) {
 	// AJAX routes (route=X/ajax → ctl/X/ajax.php) must fail with JSON, not a
-	// redirect — a redirect breaks a fetch().then(r => r.json()) caller
+	// redirect - a redirect breaks a fetch().then(r => r.json()) caller
 	// silently (it gets the login page's HTML back, not JSON), which is
 	// exactly how "my settings save does nothing" happens on session expiry.
 	if (str_ends_with($route, '/ajax')) {
@@ -199,7 +200,7 @@ if (!file_exists($ctl_file)) {
 if (!file_exists($ctl_file)) {
 	// Try plugin admin routes: "lipsum" → plugins/lipsum/admin/index.php
 	$parts      = explode('/', $route, 2);
-	// Gated on PluginLoader::loaded(), not just file_exists() — a plugin
+	// Gated on PluginLoader::loaded(), not just file_exists() - a plugin
 	// that failed its license check still has its files on disk, so
 	// file_exists() alone would dispatch to them regardless.
 	$plugin_ctl = DIR_ROOT . 'plugins/' . ($parts[0] ?? '') . '/admin/' . ($parts[1] ?? 'index') . '.php';

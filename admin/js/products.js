@@ -707,6 +707,7 @@
 		document.getElementById('prod-price').value           = '';
 		document.getElementById('prod-list-price').value      = '';
 		document.getElementById('prod-weight').value          = '';
+		['prod-pkg-l','prod-pkg-w','prod-pkg-h'].forEach(function (i) { document.getElementById(i).value = ''; });
 		document.getElementById('prod-stock').value           = '0';
 		if (window._trumbProdDone) jQuery('#prod-desc').trumbowyg('html', '');
 		else document.getElementById('prod-desc').value = '';
@@ -750,6 +751,9 @@
 		document.getElementById('prod-price').value           = parseFloat(d.price || 0).toFixed(2);
 		document.getElementById('prod-list-price').value      = parseFloat(d.list_price || 0).toFixed(2);
 		document.getElementById('prod-weight').value          = parseFloat(d.weight || 0).toFixed(2);
+		document.getElementById('prod-pkg-l').value = d.pkg_length > 0 ? parseFloat(d.pkg_length) : '';
+		document.getElementById('prod-pkg-w').value = d.pkg_width  > 0 ? parseFloat(d.pkg_width)  : '';
+		document.getElementById('prod-pkg-h').value = d.pkg_height > 0 ? parseFloat(d.pkg_height) : '';
 		document.getElementById('prod-stock').value           = d.stock;
 		if (window._trumbProdDone) jQuery('#prod-desc').trumbowyg('html', d.description || '');
 		else document.getElementById('prod-desc').value = d.description || '';
@@ -802,6 +806,9 @@
 			price:            document.getElementById('prod-price').value,
 			list_price:       document.getElementById('prod-list-price').value || 0,
 			weight:           document.getElementById('prod-weight').value || '',
+			pkg_length:       document.getElementById('prod-pkg-l').value || 0,
+			pkg_width:        document.getElementById('prod-pkg-w').value || 0,
+			pkg_height:       document.getElementById('prod-pkg-h').value || 0,
 			stock:            document.getElementById('prod-stock').value,
 			status:           togVal('prod-active'),
 			featured:         togVal('prod-featured'),
@@ -1071,6 +1078,9 @@
 				document.getElementById('prod-price').value           = parseFloat(d.price || 0).toFixed(2);
 				document.getElementById('prod-list-price').value      = parseFloat(d.list_price || 0).toFixed(2);
 				document.getElementById('prod-weight').value          = parseFloat(d.weight || 0).toFixed(2);
+				document.getElementById('prod-pkg-l').value = d.pkg_length > 0 ? parseFloat(d.pkg_length) : '';
+				document.getElementById('prod-pkg-w').value = d.pkg_width  > 0 ? parseFloat(d.pkg_width)  : '';
+				document.getElementById('prod-pkg-h').value = d.pkg_height > 0 ? parseFloat(d.pkg_height) : '';
 				document.getElementById('prod-stock').value           = d.stock;
 				if (window._trumbProdDone) jQuery('#prod-desc').trumbowyg('html', d.description || '');
 				else document.getElementById('prod-desc').value = d.description || '';
@@ -1416,7 +1426,7 @@
 		// Price modifier
 		const prefixRoller = document.createElement('roller-select');
 		prefixRoller.setAttribute('aria-label', 'Price modifier sign');
-		prefixRoller.setAttribute('value', ['=', '+', '-'].includes(v.price_prefix) ? v.price_prefix : '=');
+		prefixRoller.setAttribute('value', ['=', '+', '-'].includes(v.price_prefix) ? v.price_prefix : '+');
 		[{value: '+', label: '+'}, {value: '-', label: '−'}, {value: '=', label: '='}].forEach(function (item) {
 			const ri = document.createElement('rs-item');
 			ri.setAttribute('value', item.value);

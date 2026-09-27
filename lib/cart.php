@@ -50,13 +50,19 @@ class Cart {
 					 JOIN `{$p}options` o ON o.id = po.option_id
 					 JOIN `{$p}product_option_values` pov ON pov.product_option_id = po.id
 					 JOIN `{$p}option_values` ov ON ov.id = pov.option_value_id
-					 WHERE po.id = ? AND pov.id = ?",
-					[(int)$po_id, (int)$pov_id]
+					 WHERE po.id = ? AND pov.id = ? AND po.product_id = ?",
+					[(int)$po_id, (int)$pov_id, (int)$product['id']]
 				);
 				if ($opt) {
 					$options[] = $opt;
 					$mod = (float)$opt['price_modifier'];
-					if ($opt['price_prefix'] === '=') {
+					// An '=' value with no price set (NULL, the default for new
+					// option values) or 0 means "no price override", not "free".
+					// The product page JS already treats a blank modifier this way;
+					// without this the cart charged $0 for the item.
+					if ($opt['price_prefix'] === '=' && $mod <= 0) {
+						// no price change
+					} elseif ($opt['price_prefix'] === '=') {
 						$price_override = $mod;
 						$price_adj      = 0.0;
 					} elseif ($opt['price_prefix'] === '-') {

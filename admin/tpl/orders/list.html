@@ -1,6 +1,6 @@
 {extends file="../layout.html"}
 
-{block name="title"}Orders — {$site_name|escape}{/block}
+{block name="title"}Orders - {$site_name|escape}{/block}
 
 {block name="head"}
 <style>
@@ -101,6 +101,13 @@ table.dataTable thead th.sorting_desc { cursor: pointer; }
 }
 .status-select:focus { outline: none; box-shadow: 0 0 0 2px rgba(37,99,235,.2); }
 .status-select.saving { opacity: .6; pointer-events: none; }
+.oe-h { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--nc-text-dim); margin: 2rem 0 .75rem; }
+#oe-items input { width: 100%; padding: .3rem .4rem; }
+#oe-prod-results { position: absolute; left: 0; right: 0; z-index: 5; background: var(--nc-bg, #fff); border: 1px solid var(--nc-border, #d1d5db); border-radius: .375rem; max-height: 14rem; overflow: auto; }
+#oe-prod-results button { display: block; width: 100%; text-align: left; padding: .5rem .7rem; background: none; border: 0; cursor: pointer; font-size: .85rem; color: var(--nc-text); }
+#oe-prod-results button:hover { background: var(--nc-bg-alt, #f3f4f6); }
+.oe-rate { display: flex; gap: .6rem; align-items: center; padding: .4rem 0; font-size: .88rem; }
+
 </style>
 {/block}
 
@@ -110,6 +117,7 @@ table.dataTable thead th.sorting_desc { cursor: pointer; }
 	<div style="display:flex;gap:.75rem;align-items:center">
 		<span style="font-size:.88rem;color:var(--nc-text-dim)" id="ord-count"></span>
 	</div>
+	<button class="btn btn-primary" id="btn-new-order" type="button" style="float:right;margin-left:.75rem">New Order</button>
 	<button class="btn btn-danger" id="btn-bulk-delete" disabled style="float:right;">Delete Selected</button>
 	<input type="search" id="ord-search" class="ord-search-input" placeholder="Search order # or customer…" aria-label="Search orders">
 </div>
@@ -142,6 +150,7 @@ table.dataTable thead th.sorting_desc { cursor: pointer; }
 
 			<div class="drawer-tabs" role="tablist">
 				<button class="drawer-tab active" data-ord-tab="details" role="tab">Details</button>
+				<button class="drawer-tab"        data-ord-tab="edit"    role="tab">Edit</button>
 				<button class="drawer-tab"        data-ord-tab="message" role="tab">Message</button>
 			</div>
 
@@ -176,7 +185,7 @@ table.dataTable thead th.sorting_desc { cursor: pointer; }
 
 				<div id="ord-d-mark-paid-row" style="display:none;margin-bottom:1.25rem">
 					<button class="btn btn-primary btn-sm" id="btn-ord-mark-paid" type="button">Mark Payment Received</button>
-					<div class="hint" style="margin-top:.35rem">Fires fulfillment immediately — same as a Stripe/PayPal payment completing.</div>
+					<div class="hint" style="margin-top:.35rem">Fires fulfillment immediately - same as a Stripe/PayPal payment completing.</div>
 				</div>
 
 				<table class="nc-table" id="ord-d-items-table">
@@ -207,9 +216,87 @@ table.dataTable thead th.sorting_desc { cursor: pointer; }
 
 			</div>
 
+			<div id="ord-panel-edit" class="drawer-tab-panel">
+
+				<div id="oe-paid-warn" class="hint" style="display:none;margin-top:1rem;color:#92400e">This order is already paid. Changes here update the order record only; they do not change any charge already made through Stripe or PayPal.</div>
+
+				<h3 class="oe-h" style="margin-top:1.5rem">Customer</h3>
+				<div class="df-row" style="gap:1rem">
+					<div class="df" style="flex:1"><label for="oe-first">First name</label><input type="text" id="oe-first" maxlength="128"></div>
+					<div class="df" style="flex:1"><label for="oe-last">Last name</label><input type="text" id="oe-last" maxlength="128"></div>
+				</div>
+				<div class="df-row" style="gap:1rem">
+					<div class="df" style="flex:1"><label for="oe-email">Email</label><input type="email" id="oe-email" maxlength="255"></div>
+					<div class="df" style="flex:1"><label for="oe-phone">Phone</label><input type="text" id="oe-phone" maxlength="64"></div>
+				</div>
+
+				<h3 class="oe-h">Ship to</h3>
+				<div class="df"><label for="oe-addr1">Address</label><input type="text" id="oe-addr1" maxlength="255"></div>
+				<div class="df"><label for="oe-addr2">Address 2</label><input type="text" id="oe-addr2" maxlength="255"></div>
+				<div class="df-row" style="gap:1rem">
+					<div class="df" style="flex:2"><label for="oe-city">City</label><input type="text" id="oe-city" maxlength="128"></div>
+					<div class="df" style="flex:1"><label for="oe-state">State</label><input type="text" id="oe-state" maxlength="64"></div>
+					<div class="df" style="flex:1"><label for="oe-zip">ZIP</label><input type="text" id="oe-zip" maxlength="20"></div>
+					<div class="df" style="flex:1"><label for="oe-country">Country</label><input type="text" id="oe-country" maxlength="64" value="US"></div>
+				</div>
+
+				<h3 class="oe-h">Items</h3>
+				<table class="nc-table" id="oe-items-table">
+					<thead><tr>
+						<th>Item</th>
+						<th style="width:4.5rem">Qty</th>
+						<th style="width:6rem">Price</th>
+						<th style="width:6rem">Weight each</th>
+						<th style="width:2rem"></th>
+					</tr></thead>
+					<tbody id="oe-items"></tbody>
+				</table>
+				<div style="margin-top:1rem;position:relative">
+					<input type="search" id="oe-prod-search" class="ord-search-input" style="width:100%" placeholder="Add a product: type a name…" autocomplete="off">
+					<div id="oe-prod-results" style="display:none"></div>
+				</div>
+				<button type="button" class="btn btn-secondary btn-sm" id="oe-add-custom" style="margin-top:1rem">Add custom line</button>
+				<div class="hint" style="margin-top:.5rem">Total weight: <strong id="oe-weight">0</strong></div>
+
+				<h3 class="oe-h">Shipping</h3>
+				<div class="df-row" style="gap:1rem">
+					<div class="df" style="flex:2"><label for="oe-ship-method">Method</label><input type="text" id="oe-ship-method" maxlength="128"></div>
+					<div class="df" style="flex:1"><label for="oe-shipping">Cost</label><input type="number" id="oe-shipping" min="0" step="0.01" value="0.00"></div>
+				</div>
+				<div class="df" style="margin-top:1rem"><label for="oe-tracking">Tracking number</label><input type="text" id="oe-tracking" maxlength="128" autocomplete="off"></div>
+				<div class="df-row" style="gap:1rem;margin-top:1rem">
+					<div class="df" style="flex:1"><label for="oe-pkg-l">Package length</label><input type="number" id="oe-pkg-l" min="0" step="0.1"></div>
+					<div class="df" style="flex:1"><label for="oe-pkg-w">Width</label><input type="number" id="oe-pkg-w" min="0" step="0.1"></div>
+					<div class="df" style="flex:1"><label for="oe-pkg-h">Height</label><input type="number" id="oe-pkg-h" min="0" step="0.1"></div>
+					<div class="df" style="flex:0 0 3rem;align-self:flex-end;padding-bottom:.5rem" id="oe-pkg-unit">in</div>
+				</div>
+				<div class="hint">Used for the rate lookup only. Starts at the GoShippo default package size; the weight sent is the total weight above.</div>
+				<button type="button" class="btn btn-secondary btn-sm" id="oe-get-rates" style="margin-top:1rem">Recalculate shipping</button>
+				<div id="oe-rates" style="margin-top:1rem"></div>
+
+				<h3 class="oe-h">Tax and discount</h3>
+				<div class="df-row" style="gap:1rem">
+					<div class="df" style="flex:1"><label for="oe-tax">Tax</label><input type="number" id="oe-tax" min="0" step="0.01" value="0.00"></div>
+					<div class="df" style="flex:1"><label for="oe-discount">Discount</label><input type="number" id="oe-discount" min="0" step="0.01" value="0.00"></div>
+				</div>
+				<button type="button" class="btn btn-secondary btn-sm" id="oe-calc-tax" style="margin-top:1rem">Recalculate tax</button>
+
+				<table class="nc-table" style="margin-top:1.5rem">
+					<tbody>
+						<tr><td style="text-align:right;color:var(--nc-text-dim);font-size:.85rem">Subtotal</td><td id="oe-subtotal" style="text-align:right;width:7rem"></td></tr>
+						<tr style="font-weight:700"><td style="text-align:right">Total</td><td id="oe-total" style="text-align:right"></td></tr>
+					</tbody>
+				</table>
+
+			</div>
+
 			<div id="ord-panel-message" class="drawer-tab-panel">
 				<div style="margin-top:1rem">
 					<div class="df">
+						<label for="ord-msg-to">To</label>
+						<input type="email" id="ord-msg-to" maxlength="255" autocomplete="off">
+					</div>
+					<div class="df" style="margin-top:1rem">
 						<label for="ord-msg-subject">Subject</label>
 						<input type="text" id="ord-msg-subject" maxlength="255" autocomplete="off">
 					</div>
@@ -226,6 +313,7 @@ table.dataTable thead th.sorting_desc { cursor: pointer; }
 		<a id="ord-receipt-link" href="#" target="_blank" class="btn btn-secondary" style="display:none">Print Receipt</a>
 		<a id="ord-label-link" href="#" target="_blank" class="btn btn-secondary" style="display:none">Print Label</a>
 		<button id="ord-label-generate" class="btn btn-secondary" style="display:none">Generate Label</button>
+		<button class="btn btn-primary" id="ord-edit-save" style="display:none">Save Order</button>
 		<button class="btn btn-primary" id="ord-msg-send" style="display:none">Send Message</button>
 		<button class="btn btn-secondary" id="ord-drawer-cancel">Close</button>
 	</drawer-foot>

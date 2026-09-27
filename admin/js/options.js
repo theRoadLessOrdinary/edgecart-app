@@ -245,7 +245,7 @@ function buildValueRow(v, idx) {
 			e.stopPropagation();
 			currentValues[idx].image = '';
 			if (v.id) {
-				await ajax({ action: 'save_value', id: v.id, option_id: currentOptionId || 0, text: v.text, image: '', price_prefix: v.price_prefix || '=', price_modifier: v.price_modifier != null ? v.price_modifier : '', weight_modifier: v.weight_modifier != null ? v.weight_modifier : '' });
+				await ajax({ action: 'save_value', id: v.id, option_id: currentOptionId || 0, text: v.text, image: '', price_prefix: v.price_prefix || '+', price_modifier: v.price_modifier != null ? v.price_modifier : '', weight_modifier: v.weight_modifier != null ? v.weight_modifier : '' });
 			}
 			renderValues();
 		});
@@ -308,7 +308,7 @@ function buildValueRow(v, idx) {
 	// Modifier operator (roller-select, same as products)
 	const prefixRoller = document.createElement('roller-select');
 	prefixRoller.setAttribute('aria-label', 'Price modifier sign');
-	prefixRoller.setAttribute('value', ['+', '-', '='].includes(v.price_prefix) ? v.price_prefix : '=');
+	prefixRoller.setAttribute('value', ['+', '-', '='].includes(v.price_prefix) ? v.price_prefix : '+');
 	[{value: '+', label: '+'}, {value: '-', label: '−'}, {value: '=', label: '='}].forEach(function (item) {
 		const ri = document.createElement('rs-item');
 		ri.setAttribute('value', item.value);
@@ -413,7 +413,7 @@ function editValueText(idx, span) {
 		if (!newText) { input.focus(); return; }
 		v.text = newText;
 		if (v.id) {
-			await ajax({ action: 'save_value', id: v.id, option_id: currentOptionId || 0, text: newText, image: v.image || '', price_prefix: v.price_prefix || '=', price_modifier: v.price_modifier != null ? v.price_modifier : '', weight_modifier: v.weight_modifier != null ? v.weight_modifier : '' });
+			await ajax({ action: 'save_value', id: v.id, option_id: currentOptionId || 0, text: newText, image: v.image || '', price_prefix: v.price_prefix || '+', price_modifier: v.price_modifier != null ? v.price_modifier : '', weight_modifier: v.weight_modifier != null ? v.weight_modifier : '' });
 		}
 		const newSpan       = document.createElement('span');
 		newSpan.className   = 'opt-value-text';
@@ -447,7 +447,7 @@ function pickValueImage(idx) {
 		currentValues[idx].image = items[0].url;
 		const v   = currentValues[idx];
 		if (v.id) {
-			ajax({ action: 'save_value', id: v.id, option_id: currentOptionId || 0, text: v.text, image: v.image, price_prefix: v.price_prefix || '=', price_modifier: v.price_modifier != null ? v.price_modifier : '', weight_modifier: v.weight_modifier != null ? v.weight_modifier : '' });
+			ajax({ action: 'save_value', id: v.id, option_id: currentOptionId || 0, text: v.text, image: v.image, price_prefix: v.price_prefix || '+', price_modifier: v.price_modifier != null ? v.price_modifier : '', weight_modifier: v.weight_modifier != null ? v.weight_modifier : '' });
 		}
 		renderValues();
 	});
@@ -468,7 +468,7 @@ function uploadValueImage(idx, file) {
 			currentValues[idx].image = res.url;
 			const v = currentValues[idx];
 			if (v.id) {
-				ajax({ action: 'save_value', id: v.id, option_id: currentOptionId || 0, text: v.text, image: v.image, price_prefix: v.price_prefix || '=', price_modifier: v.price_modifier != null ? v.price_modifier : '', weight_modifier: v.weight_modifier != null ? v.weight_modifier : '' });
+				ajax({ action: 'save_value', id: v.id, option_id: currentOptionId || 0, text: v.text, image: v.image, price_prefix: v.price_prefix || '+', price_modifier: v.price_modifier != null ? v.price_modifier : '', weight_modifier: v.weight_modifier != null ? v.weight_modifier : '' });
 			}
 			renderValues();
 		});
@@ -476,7 +476,7 @@ function uploadValueImage(idx, file) {
 
 // ── Add value ──────────────────────────────────────────────────────────────────
 document.getElementById('btn-add-value').addEventListener('click', () => {
-	currentValues.push({ id: null, option_id: currentOptionId || 0, text: 'New value', image: '', display_order: currentValues.length, price_prefix: '=', price_modifier: null, weight_modifier: null });
+	currentValues.push({ id: null, option_id: currentOptionId || 0, text: 'New value', image: '', display_order: currentValues.length, price_prefix: '+', price_modifier: null, weight_modifier: null });
 	renderValues();
 	// Auto-open edit on last row
 	const rows = valList.querySelectorAll('.opt-value-row');
@@ -513,7 +513,7 @@ document.getElementById('btn-drawer-save').addEventListener('save', async functi
 			option_id: res.row.id,
 			text:      v.text,
 			image:     v.image || '',
-			price_prefix: v.price_prefix || '=',
+			price_prefix: v.price_prefix || '+',
 			price_modifier: v.price_modifier != null ? v.price_modifier : '',
 			weight_modifier: v.weight_modifier != null ? v.weight_modifier : '',
 		});

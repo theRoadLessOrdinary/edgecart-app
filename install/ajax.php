@@ -740,7 +740,7 @@ if ($action === 'install') {
 			`option_id`             INT UNSIGNED   NOT NULL,
 			`text`                  VARCHAR(255)   NOT NULL,
 			`image`                 VARCHAR(255)   NOT NULL DEFAULT '',
-			`price_prefix`          VARCHAR(1)     DEFAULT '=',
+			`price_prefix`          VARCHAR(1)     DEFAULT '+',
 			`price_modifier`        DECIMAL(10,2)  DEFAULT NULL,
 			`weight_modifier`       DECIMAL(10,2)  DEFAULT NULL,
 			`apply_only_with_value` TINYINT(1)     DEFAULT 0,

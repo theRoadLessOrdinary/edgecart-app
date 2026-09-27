@@ -76,6 +76,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && post('action') === 'place_order') {
 		exit;
 	}
 
+	// Never accept an order line priced at $0 or less - that's a catalog/option
+	// pricing mistake, and a $0 total is auto-marked paid below.
+	foreach ($items as $item) {
+		if ($item['unit_price'] <= 0) {
+			error_log('checkout: blocked $0 line, product_id=' . $item['product_id']);
+			echo json_encode(['ok' => false, 'message' => 'Sorry, "' . $item['product']['name'] . '" can\'t be purchased right now. Please contact us.']);
+			exit;
+		}
+	}
+
 	$subtotal = Cart::subtotal();
 	// Validate discount code — core logic; plugin can override via checkout.discount.apply.instead
 	if ($disc_code) {

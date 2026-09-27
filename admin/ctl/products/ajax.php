@@ -1,6 +1,6 @@
 <?php
 /**
- * new-cart admin — products ajax handler
+ * new-cart admin - products ajax handler
  * route=products/ajax
  */
 
@@ -31,6 +31,7 @@ if ($action === 'list') {
 
 // ── Get single ────────────────────────────────────────────────────────────────
 if ($action === 'get') {
+	ensure_product_pkg_cols();
 	$id  = (int)post('id');
 	$row = DB::row("SELECT * FROM `{$p}products` WHERE id = ?", [$id]);
 	if (!$row) ajax_out(false, 'Product not found.');
@@ -55,6 +56,7 @@ if ($action === 'get') {
 // ── Save (insert or update) ────────────────────────────────────────────────────
 if ($action === 'save') {
 	require_access(ACCESS_EDIT);
+	ensure_product_pkg_cols();
 
 	$id              = (int)post('id');
 	$name            = trim(post('name'));
@@ -121,6 +123,9 @@ if ($action === 'save') {
 			 $seo_title, $seo_keywords, $seo_description, $max + 1]
 		);
 	}
+
+	DB::exec("UPDATE `{$p}products` SET pkg_length=?, pkg_width=?, pkg_height=? WHERE id=?",
+		[max(0, (float)post('pkg_length')), max(0, (float)post('pkg_width')), max(0, (float)post('pkg_height')), $id]);
 
 	// Update categories
 	DB::exec("DELETE FROM `{$p}categories_products` WHERE product_id = ?", [$id]);
@@ -495,7 +500,7 @@ if ($action === 'quick_add_category') {
 		[$name, $slug, $max + 1]
 	);
 
-	// Mark as incomplete — needs full details
+	// Mark as incomplete - needs full details
 	reminder_add(
 		'category', $id, $name,
 		'Category "' . $name . '" was quick-added and needs its full details set.'
@@ -577,7 +582,7 @@ if ($action === 'add_option') {
 			 (product_option_id, option_value_id, label, price_modifier, price_prefix,
 			  weight_modifier, weight_prefix, stock, subtract_stock, enabled)
 			 VALUES (?,?,'',?,?,?,'+',0,0,1)",
-			[$po_id, $v['id'], $v['price_modifier'] ?? 0.00, $v['price_prefix'] ?? '=', $v['weight_modifier'] ?? 0.0000]
+			[$po_id, $v['id'], $v['price_modifier'] ?? 0.00, $v['price_prefix'] ?? '+', $v['weight_modifier'] ?? 0.0000]
 		);
 	}
 
@@ -691,7 +696,7 @@ if ($action === 'save_option_value') {
 	$enabled       = (int)post('enabled');
 	$is_default    = (int)(bool)post('is_default');
 
-	// Only one option per product may set an absolute ("=") price — otherwise two
+	// Only one option per product may set an absolute ("=") price - otherwise two
 	// "=" values from different options (e.g. Size and Color) fight over the final
 	// price and the later one silently wins. All other options must use +/-.
 	if ($price_prefix === '=') {
@@ -709,7 +714,7 @@ if ($action === 'save_option_value') {
 			[$pov_id, $pov_id, $pov_id]
 		);
 		if ($conflict) {
-			ajax_out(false, 'Only one option on a product can set an absolute ("=") price. "' . $conflict['option_name'] . '" already does — use + or - here instead.');
+			ajax_out(false, 'Only one option on a product can set an absolute ("=") price. "' . $conflict['option_name'] . '" already does - use + or - here instead.');
 		}
 	}
 
@@ -722,7 +727,7 @@ if ($action === 'save_option_value') {
 		[$label, $price_prefix, $price_mod, $weight_prefix, $weight_mod,
 		 $stock, $subtract, $enabled, $is_default, $pov_id]
 	);
-	// Only one default value per product option — clear the others when this one is set.
+	// Only one default value per product option - clear the others when this one is set.
 	if ($is_default) {
 		$product_option_id = (int)DB::val(
 			"SELECT product_option_id FROM `{$p}product_option_values` WHERE id = ?",

@@ -1,0 +1,105 @@
+{extends file="layout.html"}
+
+{block name="title"}Email Templates - {$site_name|escape}{/block}
+
+{block name="head"}
+<link rel="stylesheet" href="{$url_admin_real}css/categories.css">
+<link rel="stylesheet" href="{$url_root}plugins/email-templates/admin/css/email-templates.css?{$nowstr}">
+{/block}
+
+{block name="content"}
+
+<div class="et-tabs" role="tablist">
+	<button class="et-tab active" data-tab="templates" role="tab">Templates</button>
+	<button class="et-tab" data-tab="signatures" role="tab">Signatures</button>
+	<button class="et-tab" data-tab="events" role="tab">Events</button>
+</div>
+
+<section class="et-panel active" id="et-panel-templates">
+	<div class="nc-toolbar"><button class="btn btn-primary" id="et-add-template">+ New Template</button></div>
+	<table class="nc-table">
+		<thead><tr><th>Name</th><th>Subject</th><th class="col-delete"></th></tr></thead>
+		<tbody id="et-tpl-body"></tbody>
+	</table>
+</section>
+
+<section class="et-panel" id="et-panel-signatures">
+	<div class="nc-toolbar"><button class="btn btn-primary" id="et-add-sig">+ New Signature</button></div>
+	<table class="nc-table">
+		<thead><tr><th>Token</th><th>Name</th><th class="col-delete"></th></tr></thead>
+		<tbody id="et-sig-body"></tbody>
+	</table>
+</section>
+
+<section class="et-panel" id="et-panel-events">
+	<div class="nc-toolbar"><button class="btn btn-primary" id="et-add-event">+ New Event</button></div>
+	<table class="nc-table">
+		<thead><tr><th>When</th><th>Send template</th><th>Active</th><th class="col-delete"></th></tr></thead>
+		<tbody id="et-ev-body"></tbody>
+	</table>
+	<h3 class="et-h">Recent automatic sends</h3>
+	<table class="nc-table">
+		<thead><tr><th>When</th><th>Order</th><th>Template</th><th>To</th><th>Result</th></tr></thead>
+		<tbody id="et-log-body"></tbody>
+	</table>
+</section>
+
+<div id="drawer-overlay"></div>
+
+<me-drawer id="et-tpl-drawer">
+	<drawer-head><h2 id="et-tpl-title">Template</h2><button class="drawer-close" data-close>&times;</button></drawer-head>
+	<drawer-content>
+		<input type="hidden" id="et-tpl-id">
+		<div class="df"><label for="et-tpl-name">Name</label><input type="text" id="et-tpl-name" maxlength="128" autocomplete="off"></div>
+		<div class="df"><label for="et-tpl-subject">Subject</label><input type="text" id="et-tpl-subject" maxlength="255" autocomplete="off"></div>
+		<div class="df">
+			<label for="et-tpl-body-in">Message <button type="button" class="et-info" id="et-tpl-info" title="Available tokens" aria-label="Show available tokens">i</button></label>
+			<div class="et-tokens" id="et-tpl-tokens" hidden></div>
+			<textarea id="et-tpl-body-in" rows="16"></textarea>
+			<div class="hint">Click a token in the list to insert it. Text like [type something here] is left for you to fill in when sending by hand; such templates cannot be used for automatic events.</div>
+		</div>
+	</drawer-content>
+	<drawer-foot>
+		<button class="btn btn-primary" id="et-tpl-save">Save</button>
+		<button class="btn btn-secondary" data-close>Cancel</button>
+	</drawer-foot>
+</me-drawer>
+
+<me-drawer id="et-sig-drawer">
+	<drawer-head><h2 id="et-sig-title">Signature</h2><button class="drawer-close" data-close>&times;</button></drawer-head>
+	<drawer-content>
+		<input type="hidden" id="et-sig-id">
+		<div class="df"><label for="et-sig-token">Token</label><input type="text" id="et-sig-token" maxlength="64" autocomplete="off" placeholder="signature1"><div class="hint">Use it in a template as [token].</div></div>
+		<div class="df"><label for="et-sig-label">Name</label><input type="text" id="et-sig-label" maxlength="128" autocomplete="off" placeholder="Bill"></div>
+		<div class="df"><label for="et-sig-body-in">Signature text</label><textarea id="et-sig-body-in" rows="12"></textarea></div>
+	</drawer-content>
+	<drawer-foot>
+		<button class="btn btn-primary" id="et-sig-save">Save</button>
+		<button class="btn btn-secondary" data-close>Cancel</button>
+	</drawer-foot>
+</me-drawer>
+
+<me-drawer id="et-ev-drawer">
+	<drawer-head><h2 id="et-ev-title">Event</h2><button class="drawer-close" data-close>&times;</button></drawer-head>
+	<drawer-content>
+		<input type="hidden" id="et-ev-id">
+		<div class="df"><label for="et-ev-event">When</label><select id="et-ev-event"></select></div>
+		<div class="df" id="et-ev-status-row"><label for="et-ev-status">Status</label><select id="et-ev-status"></select></div>
+		<div class="df"><label for="et-ev-template">Send template</label><select id="et-ev-template"></select></div>
+		<div class="df"><label for="et-ev-active">Active</label><ios-toggle id="et-ev-active"></ios-toggle>
+			<div class="hint">When active, the email goes to the order's email address automatically, once per order. It is skipped, and noted in the log below, if a token has no value (for example a missing tracking number).</div></div>
+	</drawer-content>
+	<drawer-foot>
+		<button class="btn btn-primary" id="et-ev-save">Save</button>
+		<button class="btn btn-secondary" data-close>Cancel</button>
+	</drawer-foot>
+</me-drawer>
+
+{/block}
+
+{block name="scripts"}
+<script>
+Object.assign(NC, { adminUrl: '{$url_admin}', rootUrl: '{$url_root}' });
+</script>
+<script src="{$url_root}plugins/email-templates/admin/js/email-templates.js?{$nowstr}"></script>
+{/block}

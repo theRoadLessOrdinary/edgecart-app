@@ -1,6 +1,6 @@
 {extends file="../layout.html"}
 
-{block name="title"}Products — {$site_name|escape}{/block}
+{block name="title"}Products - {$site_name|escape}{/block}
 
 {block name="head"}
 <link rel="stylesheet" href="{$url_admin_real}css/products.css?v={$prod_css_v}">
@@ -124,6 +124,15 @@
 					<label for="prod-weight">Weight</label>
 					<input type="number" id="prod-weight" min="0" step="0.01" aria-label="Product weight">
 					<div class="hint">For shipping calculations</div>
+				</div>
+				<div class="df">
+					<label for="prod-pkg-l">Package size (one unit, packed flat)</label>
+					<div style="display:flex;gap:.5rem;margin-top:.25rem">
+						<input type="number" id="prod-pkg-l" min="0" step="0.1" placeholder="Length" aria-label="Package length">
+						<input type="number" id="prod-pkg-w" min="0" step="0.1" placeholder="Width" aria-label="Package width">
+						<input type="number" id="prod-pkg-h" min="0" step="0.1" placeholder="Height" aria-label="Package height">
+					</div>
+					<div class="hint">Extra units stack: length and width stay the same, height adds up. Used for shipping rates on edited orders.</div>
 				</div>
 			</div>
 
