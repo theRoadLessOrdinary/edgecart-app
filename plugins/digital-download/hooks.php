@@ -1,6 +1,6 @@
 <?php
 /**
- * Digital Downloads — hooks
+ * Digital Downloads: hooks
  */
 
 // ── Schema ────────────────────────────────────────────────────────────────────
@@ -34,7 +34,7 @@ Hook::on('app.boot', function() {
         KEY `order_id` (`order_id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-    // download_count on the token itself is just a running total — this
+    // download_count on the token itself is just a running total, this
     // records each individual download as its own event (when, from where),
     // since "was this ever downloaded" and "prove/investigate a specific
     // download" are different questions the counter alone can't answer.
@@ -93,7 +93,10 @@ Hook::on('catalog.order.payment_complete', function(&$order) {
     $site_name = defined('SITE_NAME') ? SITE_NAME : 'Our Store';
     $lines     = [];
     foreach ($links as $l) {
-        $url     = rtrim($url_root, '/') . '?route=digital-download/download&token=' . $l['token'];
+        // Emails need a full link. URL_ROOT is only a path ('/'), so
+        // absolute_url() adds the scheme and host of the current request
+        // (Stripe's webhook call to this site, or the order-complete page).
+        $url     = absolute_url(rtrim($url_root, '/') . '/?route=digital-download/download&token=' . $l['token']);
         $lines[] = $l['label'] . "\n" . $url;
     }
     $link_word = count($links) > 1 ? 'links are' : 'link is';
@@ -104,13 +107,13 @@ Hook::on('catalog.order.payment_complete', function(&$order) {
           . "IMPORTANT:\n"
           . "• Each link expires in {$expiry_days} days from today.\n"
           . "• Each link can be used up to {$max_dl} times.\n"
-          . "• Save your files as soon as possible — expired links cannot be reactivated.\n"
+          . "• Save your files as soon as possible. Expired links cannot be reactivated.\n"
           . "• If you have trouble downloading, reply to this email for assistance.\n"
           . str_repeat('-', 50) . "\n\n"
-          . "— {$site_name}\n"
+          . "{$site_name}\n"
           . $url_root;
 
-    nc_mail($order['ship_email'], "Your download" . (count($links) > 1 ? 's' : '') . " from {$site_name} — Order #{$order['id']}", $body);
+    nc_mail($order['ship_email'], "Your download" . (count($links) > 1 ? 's' : '') . " from {$site_name}, Order #{$order['id']}", $body);
 });
 
 // ── Product drawer: Downloads tab ─────────────────────────────────────────────
@@ -134,7 +137,7 @@ Hook::on('admin.product.drawer.panels', function() {
                style="flex:1;padding:.4rem .6rem;border:1px solid var(--nc-border);border-radius:var(--nc-radius);font-size:.9rem">
         <button type="button" id="dd-upload-btn" class="btn btn-secondary btn-sm" disabled>Upload</button>
     </div>
-    <div class="hint" style="margin-top:.5rem">Files are served via secure token after purchase — not directly accessible. Product photos go on the Images tab, not here.</div>
+    <div class="hint" style="margin-top:.5rem">Files are served via secure token after purchase, not directly accessible. Product photos go on the Images tab, not here.</div>
 </div>
 HTML;
 });

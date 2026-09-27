@@ -1,7 +1,10 @@
 <?php
+// Already installed: send visitors to the store's home page instead of
+// showing an error. Relative, so it also works when installed in a subfolder.
+// (Delete install/.installed to run the installer again.)
 if (file_exists(__DIR__ . '/.installed')) {
-	http_response_code(403);
-	exit('Installation is already complete. Remove install/.installed to reinstall.');
+	header('Location: ../', true, 302);
+	exit;
 }
 
 require_once __DIR__ . '/../lib/license.php';
@@ -533,7 +536,7 @@ $defaultAdminPath = randomAdminPath();
 	}
 
 	// Tracks whether the admin password currently in the field is one we
-	// generated (vs. hand-typed) — used to show it once more on the final
+	// generated (vs. hand-typed), used to show it once more on the final
 	// "Installation Complete" screen, since the 5s inline reveal above is easy
 	// to miss and this is the customer's only login credential.
 	let adminPassGenerated = false;
@@ -555,7 +558,7 @@ $defaultAdminPath = randomAdminPath();
 			input.dispatchEvent(new Event('input', { bubbles: true }));
 			reveal(input);
 
-			// The admin step has a confirm field — fill it to match so the
+			// The admin step has a confirm field, fill it to match so the
 			// customer doesn't have to retype a generated password by hand.
 			if (targetId === 'admin_pass') {
 				const confirmInput = el('admin_confirm');
@@ -568,14 +571,14 @@ $defaultAdminPath = randomAdminPath();
 	});
 
 	// Manually editing the admin password after generating it means it's no
-	// longer the value we'd be showing back — stop treating it as "generated".
+	// longer the value we'd be showing back, stop treating it as "generated".
 	el('admin_pass').addEventListener('input', function () {
 		if (this.value !== this.dataset.lastGenerated) adminPassGenerated = false;
 	});
 
 	// ── Click-to-copy (📋 buttons) ───────────────────────────────────────────────
 	// navigator.clipboard requires a secure context (https, or literally
-	// "localhost") — a plain http:// dev vhost like this one doesn't qualify,
+	// "localhost"), a plain http:// dev vhost like this one doesn't qualify,
 	// so fall back to the classic hidden-textarea + execCommand approach.
 	function copyText(text) {
 		if (window.isSecureContext && navigator.clipboard) {
@@ -785,7 +788,7 @@ $defaultAdminPath = randomAdminPath();
 
 	// ── Step 2: DB setup mode toggle ───────────────────────────────────────────
 	// Most shared/cPanel-style hosts provision the database and its user
-	// themselves and never hand out true MySQL root — the "root" account they
+	// themselves and never hand out true MySQL root, the "root" account they
 	// give a customer is really just that one database's own scoped user,
 	// which typically can't CREATE USER or CREATE DATABASE (and doesn't need
 	// to, since the host already did that). This toggle skips creation
@@ -845,7 +848,7 @@ $defaultAdminPath = randomAdminPath();
 	});
 	el('db_name_create').addEventListener('input', function () {
 		// Strip disallowed characters as-typed, then any leading run of
-		// digits/underscores — a MySQL identifier this field feeds into
+		// digits/underscores, a MySQL identifier this field feeds into
 		// must start with a letter.
 		let v = this.value.replace(/[^A-Za-z0-9_]/g, '').replace(/^[^A-Za-z]+/, '');
 		if (v !== this.value) this.value = v;
@@ -861,7 +864,7 @@ $defaultAdminPath = randomAdminPath();
 		});
 	});
 
-	// applyDbSetupMode() calls step2Check() itself — this also has to run after
+	// applyDbSetupMode() calls step2Check() itself, this also has to run after
 	// credentialsVerified is declared above, same reason it was moved out of
 	// the mode-toggle wiring block earlier in the script.
 	applyDbSetupMode();
@@ -893,7 +896,7 @@ $defaultAdminPath = randomAdminPath();
 	// ── Step 2: Continue ────────────────────────────────────────────────────────
 	// Root mode: creates the database if it doesn't exist yet (silently no-ops
 	// if it does) and only advances once that's confirmed to have worked.
-	// Existing-db mode: nothing to create or test yet — there's no credentials
+	// Existing-db mode: nothing to create or test yet, there's no credentials
 	// to test with until step 3, this just records the name/host the customer
 	// already has and moves on.
 	el('btn-step1-next').addEventListener('click', async function () {
