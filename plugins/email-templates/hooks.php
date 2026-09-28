@@ -189,6 +189,7 @@ function et_run_events(string $event, string $status_slug, int $order_id): void 
 		$from = $vals['store name'] . ' <' . ($_nc_settings['mail_from'] ?? SITE_EMAIL) . '>';
 		$ok = nc_mail($to, $subj['text'], et_html($body['text']), $from, true);
 		et_log($eid, $order_id, $tid, $to, $ok ? 'sent' : 'failed', $ok ? '' : 'mail server could not send');
+		if (function_exists('order_message_log')) order_message_log($order_id, $to, $subj['text'], $body['text'], 'Email Templates: ' . $tpl['name'], $ok);
 	}
 }
 

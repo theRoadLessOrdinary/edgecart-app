@@ -1,6 +1,6 @@
 <?php
 /**
- * CandyCart — shared utility functions
+ * CandyCart - shared utility functions
  */
 
 // ── Output helpers ─────────────────────────────────────────────────────────────
@@ -151,7 +151,7 @@ function is_admin(): bool {
 	$loginAt   = (int)($_SESSION['admin_login_at']    ?? 0);
 	$lastActive = (int)($_SESSION['admin_last_active'] ?? 0);
 
-	// Sessions created before this check existed won't have these set — treat as expired
+	// Sessions created before this check existed won't have these set - treat as expired
 	// rather than grandfathering them in with no bound.
 	if (!$loginAt || !$lastActive
 		|| ($now - $lastActive) > ADMIN_IDLE_TIMEOUT
@@ -182,7 +182,7 @@ function require_access(int $flag): void {
 	if (!admin_can($flag))  redirect(URL_ADMIN . '?route=dashboard');
 }
 
-// JSON-safe counterparts for AJAX endpoints — a redirect() response breaks a
+// JSON-safe counterparts for AJAX endpoints - a redirect() response breaks a
 // fetch().then(r => r.json()) caller silently (it gets HTML back, not JSON),
 // which is exactly how "my settings save silently does nothing" happens when
 // a session has simply expired mid-use. Mirrors require_csrf_token_json().
@@ -205,7 +205,7 @@ function require_access_json(int $flag): void {
 	}
 }
 
-// URL_ROOT/URL_ADMIN are relative-only ('/', '/admin/') — fine for links rendered
+// URL_ROOT/URL_ADMIN are relative-only ('/', '/admin/') - fine for links rendered
 // inside a page, but anything going into an email needs a real absolute URL.
 // $relative should already start with the right leading slash (e.g. URL_ADMIN).
 function absolute_url(string $relative): string {
@@ -215,7 +215,7 @@ function absolute_url(string $relative): string {
 }
 
 // The google-oauth plugin being installed/enabled isn't enough to show a "Sign in
-// with Google" button — without a client ID and secret configured in its admin
+// with Google" button - without a client ID and secret configured in its admin
 // settings, clicking it would just fail. Check both.
 function google_oauth_configured(): bool {
 	if (!in_array('google-oauth', PluginLoader::loaded(), true)) return false;
@@ -307,13 +307,13 @@ function cc_exception_handler(Throwable $e): void {
  * registered explicitly. Add to this list as new ones are needed.
  *
  * A plugin that needs its own modifier or function should not be added to
- * the static list below — that would make core depend on a specific plugin
+ * the static list below - that would make core depend on a specific plugin
  * being installed, and a store without it would throw "unknown modifier"
  * from any template that still called it. Instead the plugin registers
  * itself, by listening on 'smarty.register_modifiers' and calling
  * $smarty->registerPlugin() there; the plugin ships its own copies of any
  * template that uses it (Smarty resolves plugin template dirs before the
- * base one, so installing the plugin folder is enough — see
+ * base one, so installing the plugin folder is enough - see
  * PluginLoader::templateDirs()), so a store without the plugin never has a
  * template referencing a modifier that doesn't exist.
  */
@@ -330,7 +330,7 @@ function register_smarty_modifiers(Smarty $smarty): void {
 function load_menu(int $menu_id, string $p, int $product_id = 0): array {
 	if (!$menu_id) return [];
 
-	// Check menu type — some menus are auto-built rather than item-driven
+	// Check menu type - some menus are auto-built rather than item-driven
 	$menu = DB::row("SELECT menu_type FROM `{$p}menus` WHERE id=?", [$menu_id]);
 
 	if ($menu && ($menu['menu_type'] ?? '') === 'related_products') {
@@ -454,7 +454,7 @@ function load_menu(int $menu_id, string $p, int $product_id = 0): array {
 
 function catalog_sidebar(Smarty $smarty, int $product_id = 0): void {
 	// $_nc_settings (lib/db.php) is populated at bootstrap as a top-level
-	// global with the full settings table — functions don't inherit
+	// global with the full settings table - functions don't inherit
 	// outer-scope variables automatically, so it must be pulled in explicitly.
 	global $_nc_settings;
 	$p = DB_PREFIX;
@@ -630,7 +630,7 @@ function checkout_mark_discount_used(string $code): void {
 /**
  * Default sales-tax calculation, used when no plugin overrides
  * checkout.tax.calculate.instead. Reads the merchant-managed zones/rates
- * from the core Locations & Tax admin screen (admin/ctl/locations.php) —
+ * from the core Locations & Tax admin screen (admin/ctl/locations.php) -
  * no external tax provider or API key required.
  */
 function checkout_calculate_tax(string $state, string $country, array $items, float $shipping = 0.0): float {
@@ -669,4 +669,53 @@ function checkout_calculate_tax(string $state, string $country, array $items, fl
     }
 
     return round($taxable_subtotal * $rate, 2);
+}
+
+// ── Order message history ─────────────────────────────────────────────────────
+// Every email sent to a customer about an order (the order drawer's Message tab,
+// plus plugin sends like Email Templates) is recorded here so the order shows
+// what the customer has been told. Body is stored as plain text.
+function order_messages_ensure_table(): void {
+	static $done = false;
+	if ($done) return;
+	$p = DB_PREFIX;
+	DB::exec("CREATE TABLE IF NOT EXISTS `{$p}order_messages` (
+		`id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+		`order_id`   INT UNSIGNED NOT NULL,
+		`to_email`   VARCHAR(255) NOT NULL DEFAULT '',
+		`subject`    VARCHAR(255) NOT NULL DEFAULT '',
+		`body`       MEDIUMTEXT,
+		`source`     VARCHAR(64)  NOT NULL DEFAULT '',
+		`sent_by`    VARCHAR(64)  NOT NULL DEFAULT '',
+		`result`     VARCHAR(16)  NOT NULL DEFAULT 'sent',
+		`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		PRIMARY KEY (`id`),
+		KEY `order_id` (`order_id`)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+	$done = true;
+}
+
+function order_message_log(int $order_id, string $to, string $subject, string $body, string $source, bool $ok): void {
+	if (!$order_id) return;
+	order_messages_ensure_table();
+	// HTML bodies (the Message tab sends <p>..<br>..</p>) become readable text
+	if ($body !== strip_tags($body)) {
+		$body = preg_replace('~<br\s*/?>|</p>\s*<p[^>]*>~i', "\n", $body);
+		$body = html_entity_decode(strip_tags($body), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+	}
+	DB::exec(
+		"INSERT INTO `" . DB_PREFIX . "order_messages` (order_id, to_email, subject, body, source, sent_by, result) VALUES (?,?,?,?,?,?,?)",
+		[$order_id, mb_substr($to, 0, 255), mb_substr($subject, 0, 255), trim($body), mb_substr($source, 0, 64),
+		 mb_substr((string)($_SESSION['admin_username'] ?? ''), 0, 64), $ok ? 'sent' : 'failed']
+	);
+}
+
+function order_messages_for(int $order_id): array {
+	order_messages_ensure_table();
+	return DB::rows(
+		"SELECT id, to_email, subject, body, source, sent_by, result,
+		        DATE_FORMAT(created_at, '%b %e, %Y %l:%i %p') AS date_fmt
+		 FROM `" . DB_PREFIX . "order_messages` WHERE order_id = ? ORDER BY id DESC",
+		[$order_id]
+	);
 }

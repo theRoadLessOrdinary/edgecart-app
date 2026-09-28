@@ -305,6 +305,9 @@ table.dataTable thead th.sorting_desc { cursor: pointer; }
 						<textarea id="ord-msg-body" rows="8" style="resize:vertical"></textarea>
 					</div>
 				</div>
+
+				<h3 class="ord-msg-history-head">Message History</h3>
+				<div id="ord-msg-history"></div>
 			</div>
 
 		</div>
@@ -378,6 +381,14 @@ table.dataTable thead th.sorting_desc { cursor: pointer; }
 </me-drawer>
 
 <style>
+.ord-msg-history-head { margin-top: 2rem; margin-bottom: .75rem; font-size: 1rem; }
+.ord-msg-empty { color: var(--nc-text-dim); font-size: .9rem; }
+.ord-msg-item { border: 1px solid var(--nc-border, #e5e7eb); border-radius: 6px; padding: .6rem .8rem; }
+.ord-msg-item + .ord-msg-item { margin-top: .75rem; }
+.ord-msg-item summary { cursor: pointer; font-weight: 600; }
+.ord-msg-meta { display: block; font-weight: 400; font-size: .8rem; color: var(--nc-text-dim); margin-top: .2rem; }
+.ord-msg-failed { color: #b91c1c; font-weight: 600; }
+.ord-msg-text { white-space: pre-wrap; font-size: .9rem; margin-top: .75rem; }
 .peek-label {
 	font-size: .75rem;
 	text-transform: uppercase;

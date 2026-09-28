@@ -1,6 +1,6 @@
 <?php
 /**
- * new-cart install wizard — ajax handler
+ * new-cart install wizard - ajax handler
  */
 
 header('Content-Type: application/json');
@@ -114,7 +114,7 @@ if ($action === 'check_permissions') {
 			$made = @mkdir($path, 0755, true);
 			$details[] = $label . ': mkdir ' . ($made ? 'OK' : 'FAILED');
 		}
-		// Use actual write test — is_writable() can lie about effective user
+		// Use actual write test - is_writable() can lie about effective user
 		$testFile = $path . '/.nc_write_test';
 		$wrote = @file_put_contents($testFile, '1');
 		if ($wrote === false) {
@@ -128,7 +128,7 @@ if ($action === 'check_permissions') {
 		}
 	}
 
-	// Directory-level write tests above only prove *new* files can be created —
+	// Directory-level write tests above only prove *new* files can be created -
 	// they don't prove an *existing* file with different ownership can be
 	// overwritten. .htaccess is exactly that case: a stale copy from an earlier
 	// partial install, a zip extracted as a different user, or a host default
@@ -155,7 +155,7 @@ if ($action === 'check_permissions') {
 		out(false,
 			"Not writable: {$list}\n" .
 			"Try: find {$targets} -type d -exec chmod 755 {} + && find {$targets} -type f -exec chmod 644 {} + && chmod 644 {$base}.htaccess\n" .
-			"If that doesn't fix it, these files are likely owned by a different user than your hosting account can control — contact your web host's support and ask them to correct file ownership for this directory.",
+			"If that doesn't fix it, these files are likely owned by a different user than your hosting account can control - contact your web host's support and ask them to correct file ownership for this directory.",
 			['details' => $details, 'base' => $base]
 		);
 	}
@@ -229,20 +229,20 @@ if ($action === 'create_user') {
 		$safeDb = str_replace('`', '', $db_name);
 
 		// PDO::quote() escapes for a SQL string literal without altering the
-		// value itself — unlike stripping quote characters out, which silently
+		// value itself - unlike stripping quote characters out, which silently
 		// changes the password to something other than what was typed and
 		// verification below would then fail to authenticate with the (unaltered)
 		// original password.
 		$userSql = $pdo->quote($newuser);
 		$passSql = $pdo->quote($newpass);
-		// Grant on whatever host was actually entered — hardcoding 'localhost'
+		// Grant on whatever host was actually entered - hardcoding 'localhost'
 		// here would silently mismatch a customer-entered '127.0.0.1' (or any
 		// other host), and MySQL treats those as different grant scopes even
 		// though PHP connects to both the same way.
 		$hostSql = $pdo->quote($host);
 
 		// CREATE USER IF NOT EXISTS is a no-op when the account already exists
-		// (e.g. a prior install attempt against this same DB user) — it would
+		// (e.g. a prior install attempt against this same DB user) - it would
 		// silently leave that older password in place while this run's
 		// verification tries the password just submitted. ALTER USER always
 		// sets the password, whether the account was just created here or
@@ -254,7 +254,7 @@ if ($action === 'create_user') {
 		$pdo->exec("FLUSH PRIVILEGES");
 
 		// Verify the new user can actually connect. Root's CREATE USER/GRANT
-		// above have already succeeded by this point — a failure here is a
+		// above have already succeeded by this point - a failure here is a
 		// separate, subsequent problem (e.g. a host-scope mismatch), not a
 		// sign that user creation itself used the wrong credentials. Catch it
 		// separately so the message doesn't read as "creation used the new
@@ -265,7 +265,7 @@ if ($action === 'create_user') {
 		} catch (PDOException $e) {
 			out(false,
 				"User '{$newuser}' was created, but connecting as that user failed: {$e->getMessage()}\n" .
-				"This usually means the grant host ('{$host}') doesn't match how MySQL sees this connection — try 'localhost' or '127.0.0.1' for the DB host."
+				"This usually means the grant host ('{$host}') doesn't match how MySQL sees this connection - try 'localhost' or '127.0.0.1' for the DB host."
 			);
 		}
 
@@ -302,7 +302,7 @@ if ($action === 'create_user') {
 
 // ── Verify an already-created database + user ───────────────────────────────────
 // Some hosts (most shared/cPanel-style hosting) provision the database and its
-// user themselves and never hand out a true MySQL root account — the "root"
+// user themselves and never hand out a true MySQL root account - the "root"
 // they give a customer is really just that one database's own scoped user,
 // which typically lacks CREATE USER/CREATE DATABASE privileges entirely (and
 // doesn't need them, since the host already did that part). create_db/
@@ -328,7 +328,7 @@ if ($action === 'test_existing_db') {
 	} catch (PDOException $e) {
 		out(false,
 			"Could not connect to '{$db_name}' as '{$newuser}': {$e->getMessage()}\n" .
-			"Double-check these are exactly the database name, username, and password your host gave you — this install path never attempts to create or change them."
+			"Double-check these are exactly the database name, username, and password your host gave you - this install path never attempts to create or change them."
 		);
 	}
 
@@ -374,7 +374,7 @@ function seed_sample_inventory(PDO $pdo, string $p, string $base): void {
 		(1,1,'XS',0),(2,1,'S',1),(3,1,'M',2),(4,1,'L',3),(5,1,'XL',4),
 		(6,2,'Black',0),(7,2,'White',1),(8,2,'Navy',2),(9,2,'Gray',3)");
 
-	// Categories — [id, name, slug, image, banner, homepage_default]
+	// Categories - [id, name, slug, image, banner, homepage_default]
 	// Both categories have real seeded products. Kept to 2, one under the
 	// free-tier category limit (admin.limit.categories default is 3), so a
 	// fresh eval install with sample data has room to actually try adding a
@@ -388,19 +388,19 @@ function seed_sample_inventory(PDO $pdo, string $p, string $base): void {
 	$sc = $pdo->prepare("INSERT IGNORE INTO `{$p}categories` (id, name, slug, image, banner, homepage_default, status, display_order) VALUES (?,?,?,?,?,?,1,?)");
 	foreach ($cats as $i => $c) { $sc->execute([$c[0], $c[1], $c[2], $c[3], $c[4], $c[5], $i]); }
 
-	// Products — [id, cat_id, name, slug, price, list_price, desc, img1, img2]
+	// Products - [id, cat_id, name, slug, price, list_price, desc, img1, img2]
 	// Four per category, for neatness. "Lace-Trim V-Neck Tee" (id 9) references a
-	// photo that doesn't exist on disk yet — the merchant supplies it separately.
+	// photo that doesn't exist on disk yet - the merchant supplies it separately.
 	$products = [
 		// Men's Basics
 		[1, 1, 'Baseball Shirt',      'mens-baseball-shirt',    32.00, 38.00, 'A classic two-tone baseball shirt with contrast sleeves. Comfortable everyday wear.',         '/img/products/mens-baseball-shirt-front.webp',  '/img/products/mens-baseball-shirt-back.webp'],
 		[2, 1, '3/4 Sleeve Tee',      'mens-3-4-sleeve-tee',    28.00,  0.00, 'Relaxed fit 3/4 sleeve tee in soft cotton. Perfect between-season layering piece.',          '/img/products/mens-3-4-sleeve-tee.webp',         ''],
-		[4, 1, 'Classic Tee — Gray',   'mens-classic-tee-gray',  22.00,  0.00, 'Essential heather gray crew-neck tee. Everyday staple in soft ringspun cotton.',            '/img/products/mens-tshirt-gray-front.webp',      ''],
-		[5, 1, 'Classic Tee — Green',  'mens-classic-tee-green', 22.00,  0.00, 'Washed olive crew-neck tee with a lived-in feel. Pairs with everything.',                   '/img/products/mens-tshirt-green-front.webp',     '/img/products/mens-tshirt-green-back.webp'],
+		[4, 1, 'Classic Tee - Gray',   'mens-classic-tee-gray',  22.00,  0.00, 'Essential heather gray crew-neck tee. Everyday staple in soft ringspun cotton.',            '/img/products/mens-tshirt-gray-front.webp',      ''],
+		[5, 1, 'Classic Tee - Green',  'mens-classic-tee-green', 22.00,  0.00, 'Washed olive crew-neck tee with a lived-in feel. Pairs with everything.',                   '/img/products/mens-tshirt-green-front.webp',     '/img/products/mens-tshirt-green-back.webp'],
 		// Women's Basics
 		[6, 2, 'Tank Top',             'womens-tank-top',         20.00,  0.00, 'Soft ribbed tank top with a flattering fit. A wardrobe essential.',                        '/img/products/womens-tanktop-front.webp',        '/img/products/womens-tanktop-back.webp'],
 		[7, 2, 'Long Sleeve',          'womens-long-sleeve',      28.00, 34.00, 'Violet long sleeve top in a relaxed fit. Ultra-soft fabric with a clean minimalist look.', '/img/products/womans-long-sleeve-violet.webp',   ''],
-		[8, 2, 'Classic Tee — Blue',   'womens-classic-tee-blue', 22.00,  0.00, 'Relaxed crew-neck tee in a soft cornflower blue. Easy to wear, easy to love.',            '/img/products/womens-tee-blue-front.webp',       '/img/products/womens-tee.webp'],
+		[8, 2, 'Classic Tee - Blue',   'womens-classic-tee-blue', 22.00,  0.00, 'Relaxed crew-neck tee in a soft cornflower blue. Easy to wear, easy to love.',            '/img/products/womens-tee-blue-front.webp',       '/img/products/womens-tee.webp'],
 		[9, 2, 'Lace-Trim V-Neck Tee', 'womens-lace-vneck-tee',   26.00,  0.00, 'Soft v-neck tee finished with delicate lace trim at the neckline. Effortlessly feminine, easy everyday fit.', '/img/products/womens-vneck-lace-tee-front.webp', ''],
 	];
 
@@ -416,7 +416,7 @@ function seed_sample_inventory(PDO $pdo, string $p, string $base): void {
 		$sp->execute([$id, $name, $slug, $desc, $price, $list_price, $featured, $ord]);
 		$scp->execute([$cat_id, $id]);
 
-		// Product already existed (INSERT IGNORE was a no-op) — its options and images
+		// Product already existed (INSERT IGNORE was a no-op) - its options and images
 		// were seeded on the first run. product_options/product_option_values/
 		// product_images have no unique key of their own, so re-running these inserts
 		// would silently duplicate rows on every re-seed against the same DB.
@@ -437,7 +437,7 @@ function seed_sample_inventory(PDO $pdo, string $p, string $base): void {
 	$pdo->exec("INSERT INTO `{$p}settings` (`key`, `value`) VALUES ('store_logo_url', '/img/homepage/logo-dk.webp')
 		ON DUPLICATE KEY UPDATE `value` = '/img/homepage/logo-dk.webp'");
 
-	// Show the filler categories in the top nav too — hide_empty_categories
+	// Show the filler categories in the top nav too - hide_empty_categories
 	// defaults to on, which would otherwise make them invisible everywhere
 	// except the homepage's category shelf.
 	$pdo->exec("INSERT INTO `{$p}settings` (`key`, `value`) VALUES ('hide_empty_categories', '0')
@@ -460,11 +460,11 @@ function seed_sample_customers(PDO $pdo, string $p): void {
 	// Alex is a repeat customer (2 orders); everyone else has 1
 	$order_data = [
 		// [cust_id, ship_first, ship_last, city, state, zip, country, items => [[product_id, name, price, qty]]]
-		[1,'Alex',   'Morgan',  'INDEPENDENCE',   'MO','64055','US', [[1,'Baseball Shirt',     32.00,1],[5,'Classic Tee — Green',22.00,2]]],
+		[1,'Alex',   'Morgan',  'INDEPENDENCE',   'MO','64055','US', [[1,'Baseball Shirt',     32.00,1],[5,'Classic Tee - Green',22.00,2]]],
 		[1,'Alex',   'Morgan',  'INDEPENDENCE',   'MO','64055','US', [[2,'3/4 Sleeve Tee',     28.00,1],[6,'Tank Top',           20.00,1]]],
-		[2,'Jordan', 'Lee',     'BONNER SPRINGS', 'KS','66012','US', [[2,'3/4 Sleeve Tee',     28.00,1],[8,'Classic Tee — Blue', 22.00,1]]],
-		[3,'Taylor', 'Brooks',  'KANSAS CITY',    'MO','64108','US', [[4,'Classic Tee — Gray', 22.00,2],[7,'Long Sleeve',        28.00,1]]],
-		[4,'Jamie',  'Chen',    'OVERLAND PARK',  'KS','66214','US', [[8,'Classic Tee — Blue',22.00,1],[5,'Classic Tee — Green',22.00,1]]],
+		[2,'Jordan', 'Lee',     'BONNER SPRINGS', 'KS','66012','US', [[2,'3/4 Sleeve Tee',     28.00,1],[8,'Classic Tee - Blue', 22.00,1]]],
+		[3,'Taylor', 'Brooks',  'KANSAS CITY',    'MO','64108','US', [[4,'Classic Tee - Gray', 22.00,2],[7,'Long Sleeve',        28.00,1]]],
+		[4,'Jamie',  'Chen',    'OVERLAND PARK',  'KS','66214','US', [[8,'Classic Tee - Blue',22.00,1],[5,'Classic Tee - Green',22.00,1]]],
 		[5,'Casey',  'Rivera',  'LENEXA',         'KS','66215','US', [[1,'Baseball Shirt',     32.00,1],[6,'Tank Top',           20.00,2]]],
 	];
 
@@ -491,7 +491,7 @@ if ($action === 'install') {
 	// A re-install into the same directory (a failed first attempt, a
 	// redeployed zip, etc.) can leave behind compiled Smarty templates from
 	// a previous run whose plugin/template-dir configuration no longer
-	// matches — Smarty's {extends} inheritance bakes a resolved parent-
+	// matches - Smarty's {extends} inheritance bakes a resolved parent-
 	// template path into the COMPILED php cache file at compile time, and a
 	// stale one can reference a relative path that's no longer valid,
 	// producing "Unable to load template 'file:../layout.html'"-style
@@ -700,6 +700,20 @@ if ($action === 'install') {
 			`qty`             INT UNSIGNED  NOT NULL DEFAULT 1,
 			`options`         TEXT,
 			`options_summary` TEXT,
+			PRIMARY KEY (`id`),
+			KEY `order_id` (`order_id`)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
+
+		"CREATE TABLE IF NOT EXISTS `{$p}order_messages` (
+			`id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+			`order_id`   INT UNSIGNED NOT NULL,
+			`to_email`   VARCHAR(255) NOT NULL DEFAULT '',
+			`subject`    VARCHAR(255) NOT NULL DEFAULT '',
+			`body`       MEDIUMTEXT,
+			`source`     VARCHAR(64)  NOT NULL DEFAULT '',
+			`sent_by`    VARCHAR(64)  NOT NULL DEFAULT '',
+			`result`     VARCHAR(16)  NOT NULL DEFAULT 'sent',
+			`created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY (`id`),
 			KEY `order_id` (`order_id`)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
@@ -1038,13 +1052,13 @@ if ($action === 'install') {
 	}
 
 	// Seed empty API-key rows, with their owning plugin as origin, so the
-	// API Keys Manager plugin (plugins/api-keys/admin/index.php — groups its
+	// API Keys Manager plugin (plugins/api-keys/admin/index.php - groups its
 	// "all API keys" view by `origin`, LIKE '%_key') shows every
 	// payment/shipping credential from install time, not just whichever
 	// plugin's own settings drawer happens to have been saved at least once.
 	// Without an origin here these would still show up (it selects on the
 	// key pattern, not origin), just dumped under "Unknown" instead of
-	// grouped under their real plugin — origin gets corrected for real the
+	// grouped under their real plugin - origin gets corrected for real the
 	// moment a plugin's own drawer is saved, since that flow always writes
 	// it, but there's no reason to leave a wrong label in the meantime.
 	try {
@@ -1101,7 +1115,7 @@ if ($action === 'install') {
 			)->execute([$sm_id]);
 		}
 
-		// Seed the default contact form (core — always available regardless of
+		// Seed the default contact form (core - always available regardless of
 		// the Forms plugin, which only adds the ability to create/manage more)
 		$default_form_fields = json_encode([
 			['name' => 'name',    'label' => 'Name',    'type' => 'text',     'required' => true],
@@ -1158,18 +1172,18 @@ if ($action === 'install') {
 
 		// Seed default menus.
 		// menu_role='menu1' is what tpl/layout.html actually renders in the
-		// footer; menu_role='menu2' isn't a general nav placement at all —
+		// footer; menu_role='menu2' isn't a general nav placement at all -
 		// load_menu() only surfaces it on product pages via $product_id.
 		// Names below match that real behavior (previously named backwards:
 		// 'Main Navigation' on the footer role, 'Footer' on the product-only
-		// role — see edgecart_open_decisions memory, 2026-09-10).
+		// role - see edgecart_open_decisions memory, 2026-09-10).
 		$pdo->exec("INSERT IGNORE INTO `{$p}menus` (id, name, menu_role, menu_type) VALUES
 			(1, 'Footer Links',      'menu1', 'links_pages'),
 			(2, 'Product Page Menu', 'menu2', 'links_pages')
 		");
 
 	} catch (PDOException $e) {
-		// Non-fatal — pages can be created manually
+		// Non-fatal - pages can be created manually
 	}
 
 	// Write config.php
@@ -1203,7 +1217,7 @@ define('DIR_INSTALL',  DIR_ROOT . 'install/');
 
 // Digital-download source files live one level above the docroot (a sibling
 // of the site folder itself) so they're never reachable by any URL, static
-// or otherwise — the download_tokens table (expiring, count-limited, logged
+// or otherwise - the download_tokens table (expiring, count-limited, logged
 // in plugins/digital-download/) is the only real gate customers pass through.
 define('DIR_DOWNLOADS_PRIVATE', dirname(rtrim(realpath(DIR_ROOT), '/')) . '/private-downloads/');
 
@@ -1255,9 +1269,9 @@ DirectoryIndex index.php
 
 RewriteEngine On
 
-# Block direct browser access to admin/ — except its own static assets
+# Block direct browser access to admin/ - except its own static assets
 # (js/css), which the admin page itself must load directly as the browser,
-# and admin/tpl/*/row.html files specifically — plain {{placeholder}} markup
+# and admin/tpl/*/row.html files specifically - plain {{placeholder}} markup
 # partials (no Smarty, no server data) that admin JS (e.g. products.js's
 # fetchRowTemplate()) fetches directly via AJAX to build table rows
 # client-side. Real Smarty .html templates elsewhere under admin/tpl/ stay
@@ -1296,7 +1310,7 @@ HTACCESS;
 
 	@file_put_contents(__DIR__ . '/.installed', date('Y-m-d H:i:s'));
 
-	// Lock the installer down now that setup is done — must not ship pre-baked in
+	// Lock the installer down now that setup is done - must not ship pre-baked in
 	// the distributed zip, or a fresh install could never reach this wizard at all.
 	@file_put_contents(__DIR__ . '/.htaccess', "Require all denied\n");
 

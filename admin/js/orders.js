@@ -203,6 +203,7 @@
 			.then(function (res) {
 				if (!res.ok) { SimpleNotification.error({ text: res.message }); return; }
 				populateOrderDrawer(res.row, res.items || []);
+				renderMsgHistory(res.messages || []);
 			});
 	}
 
@@ -285,6 +286,21 @@
 		ordReceiptLink.style.display = '';
 	}
 
+	function renderMsgHistory(msgs) {
+		var box = document.getElementById('ord-msg-history');
+		if (!msgs.length) {
+			box.innerHTML = '<p class="ord-msg-empty">No messages have been sent for this order.</p>';
+			return;
+		}
+		box.innerHTML = msgs.map(function (m) {
+			var meta = [m.date_fmt, 'to ' + m.to_email, m.sent_by ? 'by ' + m.sent_by : '', m.source].filter(Boolean).map(esc).join(' · ');
+			return '<details class="ord-msg-item"><summary>' + esc(m.subject || '(no subject)')
+				+ (m.result === 'failed' ? ' <span class="ord-msg-failed">Not sent</span>' : '')
+				+ '<span class="ord-msg-meta">' + meta + '</span></summary>'
+				+ '<div class="ord-msg-text">' + esc(m.body) + '</div></details>';
+		}).join('');
+	}
+
 	function closeOrderDrawer() {
 		ordDrawer.classList.remove('open');
 		ordOverlay.classList.remove('show');
@@ -320,6 +336,7 @@
 		if (!body)    { SimpleNotification.error({ text: 'Message body is required.' }); return; }
 		var fd = new FormData();
 		fd.append('action', 'send_message');
+		fd.append('order_id', oeId);
 		fd.append('email', document.getElementById('ord-msg-to').value.trim());
 		fd.append('subject', subject);
 		fd.append('body', '<p>' + body.replace(/\n/g, '<br>') + '</p>');
@@ -327,6 +344,7 @@
 		fetch(ajaxUrl, { method: 'POST', body: fd })
 			.then(function (r) { return r.json(); })
 			.then(function (res) {
+				if (res.messages) renderMsgHistory(res.messages);
 				if (!res.ok) { SimpleNotification.error({ text: res.message }); return; }
 				SimpleNotification.success({ text: res.message });
 				closeOrderDrawer();

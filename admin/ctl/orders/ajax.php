@@ -62,7 +62,7 @@ if ($action === 'get') {
 		}
 	}
 	unset($it);
-	ajax_out(true, '', ['row' => $row, 'items' => $items]);
+	ajax_out(true, '', ['row' => $row, 'items' => $items, 'messages' => order_messages_for($id)]);
 }
 
 // ── Set status ────────────────────────────────────────────────────────────────
@@ -116,8 +116,12 @@ if ($action === 'send_message') {
 	      . '<p style="font-size:.83rem;color:#6b7280;margin-top:1.5rem">' . htmlspecialchars($_nc_site_name, ENT_QUOTES, 'UTF-8') . '</p>'
 	      . '</body></html>';
 	$from = $_nc_site_name . ' <' . ($_nc_settings['mail_from'] ?? SITE_EMAIL) . '>';
-	if (!nc_mail($email, $subject, $html, $from, true)) ajax_out(false, 'Mail server could not send the message.');
-	ajax_out(true, 'Message sent to ' . $email . '.');
+	$ok = nc_mail($email, $subject, $html, $from, true);
+	$order_id = (int)post('order_id');
+	order_message_log($order_id, $email, $subject, $body, 'Message tab', $ok);
+	$history = ['messages' => $order_id ? order_messages_for($order_id) : []];
+	if (!$ok) ajax_out(false, 'Mail server could not send the message.', $history);
+	ajax_out(true, 'Message sent to ' . $email . '.', $history);
 }
 
 if ($action === 'bulk_delete') {
@@ -126,8 +130,10 @@ if ($action === 'bulk_delete') {
 	if (!is_array($ids) || empty($ids)) ajax_out(false, 'No orders selected.');
 	$ids          = array_map('intval', $ids);
 	$placeholders = implode(',', array_fill(0, count($ids), '?'));
-	DB::exec("DELETE FROM `{$p}order_items` WHERE order_id IN ({$placeholders})", $ids);
-	DB::exec("DELETE FROM `{$p}orders`      WHERE id       IN ({$placeholders})", $ids);
+	order_messages_ensure_table();
+	DB::exec("DELETE FROM `{$p}order_items`    WHERE order_id IN ({$placeholders})", $ids);
+	DB::exec("DELETE FROM `{$p}order_messages` WHERE order_id IN ({$placeholders})", $ids);
+	DB::exec("DELETE FROM `{$p}orders`         WHERE id       IN ({$placeholders})", $ids);
 	$n = count($ids);
 	ajax_out(true, $n . ' order' . ($n === 1 ? '' : 's') . ' deleted.');
 }
